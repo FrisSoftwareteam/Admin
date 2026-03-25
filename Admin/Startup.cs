@@ -2,7 +2,8 @@ global using Clear;
 using FirstReg.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.EntityFrameworkCore;
@@ -11,9 +12,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
 using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace FirstReg.Admin
@@ -72,8 +70,9 @@ namespace FirstReg.Admin
 
             services.ConfigureApplicationCookie(options =>
             {
-                // Cookie settings
                 options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60 * 24);
 
                 options.LoginPath = "/login";
@@ -81,9 +80,31 @@ namespace FirstReg.Admin
                 options.SlidingExpiration = true;
             });
 
+            services.AddAntiforgery(options =>
+            {
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            });
+
+            services.Configure<ForwardedHeadersOptions>(options =>
+            {
+                options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
+                options.KnownNetworks.Clear();
+                options.KnownProxies.Clear();
+            });
+
+            services.AddCors(options =>
+            {
+                options.AddDefaultPolicy(builder =>
+                    builder.SetIsOriginAllowed(_ => true)
+                    .AllowAnyMethod()
+                    .AllowAnyHeader()
+                    .AllowCredentials());
+            });
+
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddControllersWithViews().AddRazorRuntimeCompilation(); ;
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
             services.AddRazorPages();
         }
 
@@ -98,15 +119,37 @@ namespace FirstReg.Admin
             else
             {
                 app.UseExceptionHandler("/error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+            app.UseForwardedHeaders();
+
+            // Ensure the request scheme reflects the proxy's protocol (needed for secure cookies / antiforgery)
+            app.Use((context, next) =>
+            {
+                var proto = context.Request.Headers["X-Forwarded-Proto"].ToString();
+                if (!string.IsNullOrEmpty(proto))
+                    context.Request.Scheme = proto;
+                else if (env.IsDevelopment())
+                    context.Request.Scheme = "https";
+                return next(context);
+            });
+
+            app.Use(async (context, next) =>
+            {
+                context.Response.OnStarting(() =>
+                {
+                    context.Response.Headers.Remove("X-Frame-Options");
+                    return Task.CompletedTask;
+                });
+                await next();
+            });
+
             app.UseStaticFiles();
 
             app.UseRouting();
 
+            app.UseCors();
             app.UseAuthentication();
             app.UseAuthorization();
 

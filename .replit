@@ -27,7 +27,7 @@ outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "cd Access && ASPNETCORE_ENVIRONMENT=Development dotnet run --urls http://0.0.0.0:5000"
+args = "cd Admin && ASPNETCORE_ENVIRONMENT=Development dotnet run --urls http://0.0.0.0:5000"
 waitForPort = 5000
 
 [[ports]]
