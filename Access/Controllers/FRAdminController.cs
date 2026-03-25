@@ -6,6 +6,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -259,14 +262,10 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                 $"{User.Identity.Name} downloaded the details of this account: RegCode={regid}, " +
                                 $"Account={accno}, Name={sh.FullName}, CHN={sh.ClearingNo}, Units={sh.TotalUnits}");
 
-                        var regmodel = new RegisterHolderModel(sh);
+                        var model = new RegisterHolderModel(sh);
+                        var pdfBytes = GenerateCertificatePdf(model);
 
-                        var stream = Tools.ExportToXml(regmodel);
-
-                        byte[] fileContent = stream.ToArray(); // simpler way of converting to array
-                        stream.Close();
-
-                        return File(fileContent, "application/force-download", $"shareholder-{accno}-{DateTime.Now:yyyMMddHHmmss}.xlsx");
+                        return File(pdfBytes, "application/pdf", $"certificate-{accno}-{DateTime.Now:yyyyMMddHHmmss}.pdf");
                 }
                 catch (InvalidOperationException ex)
                 {
@@ -278,6 +277,197 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         logger.LogError($"Error: {Clear.Tools.GetAllExceptionMessage(ex)};");
                         return StatusCode(StatusCodes.Status500InternalServerError, Clear.Tools.GetAllExceptionMessage(ex));
                 }
+        }
+
+        private static byte[] GenerateCertificatePdf(RegisterHolderModel model)
+        {
+                var navy = "#1B3A6B";
+                var gold = "#C49A2A";
+                var lightGray = "#F5F7FA";
+                var midGray = "#E2E8F0";
+                var textGray = "#64748B";
+
+                var doc = Document.Create(container =>
+                {
+                        container.Page(page =>
+                        {
+                                page.Size(PageSizes.A4);
+                                page.Margin(0);
+                                page.DefaultTextStyle(x => x.FontFamily("Arial").FontSize(9).FontColor("#1A1A2E"));
+
+                                page.Content().Column(col =>
+                                {
+                                        // ── HEADER ──────────────────────────────────────────
+                                        col.Item().Background(navy).Padding(28).Row(row =>
+                                        {
+                                                row.RelativeItem().Column(c =>
+                                                {
+                                                        c.Item().Text("First Registrars & Investor Services")
+                                                                .FontSize(16).Bold().FontColor(Colors.White);
+                                                        c.Item().PaddingTop(4).Text("CERTIFICATE OF SHAREHOLDING")
+                                                                .FontSize(11).FontColor(gold).Bold().LetterSpacing(0.05f);
+                                                });
+                                                row.ConstantItem(120).AlignRight().AlignMiddle().Column(c =>
+                                                {
+                                                        c.Item().Text($"Date Issued")
+                                                                .FontSize(8).FontColor("#A0AEC0");
+                                                        c.Item().Text(DateTime.Now.ToString("dd MMM yyyy"))
+                                                                .FontSize(11).Bold().FontColor(Colors.White);
+                                                });
+                                        });
+
+                                        // ── GOLD DIVIDER ─────────────────────────────────────
+                                        col.Item().Height(4).Background(gold);
+
+                                        // ── SHAREHOLDER INFO ─────────────────────────────────
+                                        col.Item().Background(lightGray).Padding(24).Column(inner =>
+                                        {
+                                                inner.Item().PaddingBottom(12).Text("Shareholder Information")
+                                                        .FontSize(10).Bold().FontColor(navy);
+
+                                                inner.Item().Table(t =>
+                                                {
+                                                        t.ColumnsDefinition(c =>
+                                                        {
+                                                                c.RelativeColumn(1.2f);
+                                                                c.RelativeColumn(2f);
+                                                                c.RelativeColumn(1.2f);
+                                                                c.RelativeColumn(2f);
+                                                        });
+
+                                                        void InfoCell(string label, string value)
+                                                        {
+                                                                t.Cell().PaddingBottom(8).Column(c =>
+                                                                {
+                                                                        c.Item().Text(label).FontSize(7.5f).FontColor(textGray).Bold();
+                                                                        c.Item().PaddingTop(2).Text(value ?? "-").FontSize(9.5f).Bold().FontColor("#1A1A2E");
+                                                                });
+                                                        }
+
+                                                        InfoCell("Shareholder Name", model.Name?.ToUpper());
+                                                        InfoCell("Register", model.Register?.ToUpper());
+                                                        InfoCell("Account Number", model.AccountNo.ToString());
+                                                        InfoCell("CSCS / CHN Number", string.IsNullOrWhiteSpace(model.ClearingNo) ? "-" : model.ClearingNo);
+                                                        InfoCell("Email Address", string.IsNullOrWhiteSpace(model.Email) ? "-" : model.Email);
+                                                        InfoCell("Phone", string.IsNullOrWhiteSpace(model.Phone) ? (string.IsNullOrWhiteSpace(model.Mobile) ? "-" : model.Mobile) : model.Phone);
+                                                        InfoCell("Address", string.IsNullOrWhiteSpace(model.Address) ? "-" : model.Address);
+                                                        InfoCell("Total Balance (Units)", model.TotalUnits.ToString("N0"));
+                                                });
+                                        });
+
+                                        // ── SECTION HEADER ───────────────────────────────────
+                                        col.Item().PaddingHorizontal(24).PaddingVertical(12).Row(row =>
+                                        {
+                                                row.RelativeItem().Text("Transaction History")
+                                                        .FontSize(10).Bold().FontColor(navy);
+                                                row.ConstantItem(200).AlignRight()
+                                                        .Text($"{model.Units.Count} record(s)")
+                                                        .FontSize(8.5f).FontColor(textGray);
+                                        });
+
+                                        // ── TABLE ────────────────────────────────────────────
+                                        col.Item().PaddingHorizontal(24).Table(t =>
+                                        {
+                                                t.ColumnsDefinition(c =>
+                                                {
+                                                        c.ConstantColumn(28);  // S/N
+                                                        c.RelativeColumn(1f);  // Cert No
+                                                        c.RelativeColumn(1f);  // Old Cert
+                                                        c.RelativeColumn(1.4f); // Date
+                                                        c.RelativeColumn(2.5f); // Narration
+                                                        c.RelativeColumn(1.1f); // Buy
+                                                        c.RelativeColumn(1.1f); // Sell
+                                                        c.RelativeColumn(1.2f); // Balance
+                                                });
+
+                                                // Header row
+                                                void HeaderCell(string text, bool right = false)
+                                                {
+                                                        var cell = t.Cell().Background(navy).Padding(6);
+                                                        var aligned = right ? cell.AlignRight() : cell.AlignLeft();
+                                                        aligned.Text(text).FontSize(8).Bold().FontColor("#FFFFFF");
+                                                }
+
+                                                HeaderCell("S/N");
+                                                HeaderCell("Cert. No.");
+                                                HeaderCell("Old Cert. No.");
+                                                HeaderCell("Trans. Date");
+                                                HeaderCell("Narration");
+                                                HeaderCell("Buy", true);
+                                                HeaderCell("Sell", true);
+                                                HeaderCell("Balance", true);
+
+                                                // Data rows
+                                                int sn = 0;
+                                                decimal balance = 0;
+                                                var units = model.Units.OrderBy(x => x.Id).ToList();
+
+                                                for (int i = 0; i < units.Count; i++)
+                                                {
+                                                        var unit = units[i];
+                                                        sn++;
+                                                        decimal credit = unit.TotalUnits > 0 ? unit.TotalUnits : 0;
+                                                        decimal debit = unit.TotalUnits < 0 ? Math.Abs(unit.TotalUnits) : 0;
+                                                        balance += credit - debit;
+
+                                                        var bg = i % 2 == 0 ? "#FFFFFF" : lightGray;
+
+                                                        void DataCell(string val, bool right = false, bool bold = false)
+                                                        {
+                                                                var cell = t.Cell().Background(bg).BorderBottom(0.5f).BorderColor(midGray).Padding(5);
+                                                                var aligned = right ? cell.AlignRight() : cell.AlignLeft();
+                                                                var txt = aligned.Text(val ?? "-").FontSize(8);
+                                                                if (bold) txt.Bold();
+                                                        }
+
+                                                        DataCell(sn.ToString());
+                                                        DataCell(unit.CertNo > 0 ? unit.CertNo.ToString() : "-");
+                                                        DataCell(string.IsNullOrWhiteSpace(unit.OldCertNo) ? "-" : unit.OldCertNo);
+                                                        DataCell(unit.Date ?? "-");
+                                                        DataCell(unit.Narration ?? unit.Description ?? "-");
+                                                        DataCell(credit > 0 ? credit.ToString("N0") : "-", right: true);
+                                                        DataCell(debit > 0 ? debit.ToString("N0") : "-", right: true);
+                                                        DataCell(balance.ToString("N0"), right: true, bold: true);
+                                                }
+
+                                                // Total row
+                                                t.Cell().ColumnSpan(7).Background(navy).Padding(6)
+                                                        .AlignRight().Text("Total Balance:").FontSize(8.5f).Bold().FontColor(Colors.White);
+                                                t.Cell().Background(gold).Padding(6)
+                                                        .AlignRight().Text(model.TotalUnits.ToString("N0")).FontSize(8.5f).Bold().FontColor(Colors.White);
+                                        });
+
+                                        // ── FOOTER ───────────────────────────────────────────
+                                        col.Item().PaddingTop(30).PaddingHorizontal(24).Column(footer =>
+                                        {
+                                                footer.Item().BorderTop(1).BorderColor(midGray).PaddingTop(16).Row(row =>
+                                                {
+                                                        row.RelativeItem().Column(c =>
+                                                        {
+                                                                c.Item().Text("Authorised Signature").FontSize(8).FontColor(textGray);
+                                                                c.Item().PaddingTop(20).Text("_______________________________").FontColor(midGray);
+                                                                c.Item().PaddingTop(4).Text("Registrar, First Registrars & Investor Services").FontSize(8).FontColor(textGray);
+                                                        });
+                                                        row.ConstantItem(180).AlignRight().Column(c =>
+                                                        {
+                                                                c.Item().Text("Official Stamp").FontSize(8).FontColor(textGray);
+                                                                c.Item().PaddingTop(4).Border(1).BorderColor(midGray)
+                                                                        .Height(50).Width(120)
+                                                                        .AlignCenter().AlignMiddle()
+                                                                        .Text("").FontSize(8).FontColor(midGray);
+                                                        });
+                                                });
+
+                                                footer.Item().PaddingTop(20).Background(lightGray).Padding(10)
+                                                        .Text("This certificate is computer-generated and issued by First Registrars & Investor Services Limited. " +
+                                                              "It is valid as at the date of issue and subject to the records maintained by the registrar.")
+                                                        .FontSize(7.5f).FontColor(textGray).Italic();
+                                        });
+                                });
+                        });
+                });
+
+                return doc.GeneratePdf();
         }
 
         #region profile

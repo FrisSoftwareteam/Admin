@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using MongoDB.Driver;
+using QuestPDF.Infrastructure;
 using System;
 using System.Threading.Tasks;
 
@@ -109,6 +110,8 @@ public class Startup(IConfiguration configuration)
 
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        QuestPDF.Settings.License = LicenseType.Community;
+
         if (env.IsDevelopment())
         {
             app.UseDeveloperExceptionPage();
