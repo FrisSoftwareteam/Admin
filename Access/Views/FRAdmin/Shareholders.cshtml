@@ -154,8 +154,8 @@
             <h3 class="card-title">Shareholder Details</h3>
             <div class="card-toolbar">
                 <div class="btn-group" role="group">
-                    <a class="btn btn-sm btn-primary active" data-bs-toggle="tab" href="#kt_tab_pane_7">Certificate</a>
-                    <a class="btn btn-sm btn-primary" data-bs-toggle="tab" href="#kt_tab_pane_8">Dividends</a>
+                    <button type="button" id="tab_btn_cert" class="btn btn-sm btn-primary" onclick="switchTab('kt_tab_pane_7', 'tab_btn_cert', 'tab_btn_divs')">Certificate</button>
+                    <button type="button" id="tab_btn_divs" class="btn btn-sm btn-light" onclick="switchTab('kt_tab_pane_8', 'tab_btn_divs', 'tab_btn_cert')">Dividends</button>
                 </div>
             </div>
         </div>
@@ -184,13 +184,17 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="~/pages/admin-shareholders.js" asp-append-version="true"></script>
     <script>
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (btn) {
-            btn.addEventListener('shown.bs.tab', function () {
-                document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (b) {
-                    b.classList.remove('active');
-                });
-                btn.classList.add('active');
+        function switchTab(paneId, activeBtn, inactiveBtn) {
+            document.querySelectorAll('#myTabContent .tab-pane').forEach(function (p) {
+                p.classList.remove('show', 'active');
             });
-        });
+            var pane = document.getElementById(paneId);
+            if (pane) { pane.classList.add('show', 'active'); }
+
+            var ab = document.getElementById(activeBtn);
+            var ib = document.getElementById(inactiveBtn);
+            if (ab) { ab.classList.replace('btn-light', 'btn-primary'); }
+            if (ib) { ib.classList.replace('btn-primary', 'btn-light'); }
+        }
     </script>
 }
