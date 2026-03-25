@@ -440,25 +440,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                         // ── FOOTER ───────────────────────────────────────────
                                         col.Item().PaddingTop(30).PaddingHorizontal(24).Column(footer =>
                                         {
-                                                footer.Item().BorderTop(1).BorderColor(midGray).PaddingTop(16).Row(row =>
-                                                {
-                                                        row.RelativeItem().Column(c =>
-                                                        {
-                                                                c.Item().Text("Authorised Signature").FontSize(8).FontColor(textGray);
-                                                                c.Item().PaddingTop(20).Text("_______________________________").FontColor(midGray);
-                                                                c.Item().PaddingTop(4).Text("Registrar, First Registrars & Investor Services").FontSize(8).FontColor(textGray);
-                                                        });
-                                                        row.ConstantItem(180).AlignRight().Column(c =>
-                                                        {
-                                                                c.Item().Text("Official Stamp").FontSize(8).FontColor(textGray);
-                                                                c.Item().PaddingTop(4).Border(1).BorderColor(midGray)
-                                                                        .Height(50).Width(120)
-                                                                        .AlignCenter().AlignMiddle()
-                                                                        .Text("").FontSize(8).FontColor(midGray);
-                                                        });
-                                                });
-
-                                                footer.Item().PaddingTop(20).Background(lightGray).Padding(10)
+                                                footer.Item().Background(lightGray).Padding(10)
                                                         .Text("This certificate is computer-generated and issued by First Registrars & Investor Services Limited. " +
                                                               "It is valid as at the date of issue and subject to the records maintained by the registrar.")
                                                         .FontSize(7.5f).FontColor(textGray).Italic();
