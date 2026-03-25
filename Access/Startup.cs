@@ -16,9 +16,10 @@ using System.Threading.Tasks;
 
 namespace FirstReg.OnlineAccess;
 
-public class Startup(IConfiguration configuration)
+public class Startup(IConfiguration configuration, IWebHostEnvironment env)
 {
     public IConfiguration Configuration { get; } = configuration;
+    private bool IsDevelopment { get; } = env.IsDevelopment();
 
     public void ConfigureServices(IServiceCollection services)
     {
@@ -69,8 +70,8 @@ public class Startup(IConfiguration configuration)
         services.ConfigureApplicationCookie(options =>
         {
             options.Cookie.HttpOnly = true;
-            options.Cookie.SameSite = SameSiteMode.None;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = IsDevelopment ? SameSiteMode.Lax : SameSiteMode.None;
+            options.Cookie.SecurePolicy = IsDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
             options.ExpireTimeSpan = TimeSpan.FromMinutes(60 * 24);
 
             options.LoginPath = "/login";
@@ -80,8 +81,8 @@ public class Startup(IConfiguration configuration)
 
         services.AddAntiforgery(options =>
         {
-            options.Cookie.SameSite = SameSiteMode.None;
-            options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+            options.Cookie.SameSite = IsDevelopment ? SameSiteMode.Lax : SameSiteMode.None;
+            options.Cookie.SecurePolicy = IsDevelopment ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
         });
 
         services.Configure<ForwardedHeadersOptions>(options =>
