@@ -5,7 +5,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
@@ -20,7 +22,7 @@ namespace FirstReg.OnlineAccess.Controllers;
 
 [Authorize]
 [Route("admin")]
-public class FRAdminController(ILogger<FRAdminController> logger, Service service, IApiClient apiClient, EStockApiUrl apiUrl, Mongo mongo, IWebHostEnvironment env)
+public class FRAdminController(ILogger<FRAdminController> logger, Service service, IApiClient apiClient, EStockApiUrl apiUrl, Mongo mongo, IWebHostEnvironment env, IConfiguration config)
         : BaseController(service, AuditLogSection.FrAdmin)
 {
         private async Task<RegSH> GetShareholderDetailsModel(int regid, int accno)
@@ -132,6 +134,38 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         catch (Exception ex)
                         {
                                 logger.LogWarning($"eStock API dividend lookup failed: {Clear.Tools.GetAllExceptionMessage(ex)}");
+                        }
+                }
+
+                // Backfill DatePaid directly from estock ___SDividends view (bypasses deployed API version)
+                if (model.Dividends.Any(d => string.IsNullOrEmpty(d.DatePaid)))
+                {
+                        try
+                        {
+                                var estockCs = config.GetConnectionString("EStockConnection");
+                                using var estockConn = new SqlConnection(estockCs);
+                                await estockConn.OpenAsync();
+                                using var cmd = new SqlCommand(
+                                        $"SELECT DividendNo, DatePaid FROM ___SDividends WITH (NOLOCK) WHERE RegCode = {regid} AND AccountNo = {model.AccountNo}",
+                                        estockConn) { CommandTimeout = 30 };
+                                using var reader = await cmd.ExecuteReaderAsync();
+                                var paidMap = new Dictionary<int, string>();
+                                while (await reader.ReadAsync())
+                                {
+                                        var divNo = reader.GetInt32(0);
+                                        var datePaid = reader.IsDBNull(1) ? null : reader.GetString(1);
+                                        if (!string.IsNullOrEmpty(datePaid))
+                                                paidMap[divNo] = datePaid;
+                                }
+                                foreach (var d in model.Dividends)
+                                {
+                                        if (paidMap.TryGetValue(d.DividendNo, out var paid))
+                                                d.DatePaid = paid;
+                                }
+                        }
+                        catch (Exception ex)
+                        {
+                                logger.LogWarning($"eStock DatePaid backfill failed: {Clear.Tools.GetAllExceptionMessage(ex)}");
                         }
                 }
 
