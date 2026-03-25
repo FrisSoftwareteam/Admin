@@ -153,14 +153,10 @@
         <div class="card-header card-header-stretch">
             <h3 class="card-title">Shareholder Details</h3>
             <div class="card-toolbar">
-                <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
-                    <li class="nav-item">
-                        <a class="nav-link active" data-bs-toggle="tab" href="#kt_tab_pane_7">Certificate</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" data-bs-toggle="tab" href="#kt_tab_pane_8">Dividends</a>
-                    </li>
-                </ul>
+                <div class="btn-group" role="group">
+                    <a class="btn btn-sm btn-primary active" data-bs-toggle="tab" href="#kt_tab_pane_7">Certificate</a>
+                    <a class="btn btn-sm btn-primary" data-bs-toggle="tab" href="#kt_tab_pane_8">Dividends</a>
+                </div>
             </div>
         </div>
         <div class="card-body">
@@ -187,4 +183,14 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     <script src="~/pages/admin-shareholders.js" asp-append-version="true"></script>
+    <script>
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (btn) {
+            btn.addEventListener('shown.bs.tab', function () {
+                document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function (b) {
+                    b.classList.remove('active');
+                });
+                btn.classList.add('active');
+            });
+        });
+    </script>
 }
