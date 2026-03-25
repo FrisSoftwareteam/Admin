@@ -191,7 +191,8 @@ function setDividendHistory(json, url, reg, accno) {
         $('#t_divs_body').append(
             `<tr>
                 <td>${index}</td>
-                <td>${unit.date}</td>
+                <td>${unit.date ?? '-'}</td>
+                <td>${unit.datePaid ?? '-'}</td>
                 <td>${unit.dividendNo ?? '-'}</td>
                 <td>${unit.warrantNo ?? '-'}</td>
                 <td>${unit.type ?? '-'}</td>

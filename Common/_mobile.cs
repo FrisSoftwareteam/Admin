@@ -74,6 +74,7 @@
         public int WarrantNo { get; set; }
         public string Type { get; set; }
         public string Date { get; set; }
+        public string DatePaid { get; set; }
     }
 
     public class Register

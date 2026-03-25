@@ -613,14 +613,15 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                                 t.ColumnsDefinition(c =>
                                                 {
                                                         c.ConstantColumn(28);   // S/N
-                                                        c.RelativeColumn(1.4f); // Date
-                                                        c.RelativeColumn(1f);   // Div No
-                                                        c.RelativeColumn(1f);   // Warrant No
-                                                        c.RelativeColumn(1f);   // Type
-                                                        c.RelativeColumn(1.1f); // Units
-                                                        c.RelativeColumn(1.2f); // Gross
-                                                        c.RelativeColumn(1.1f); // Tax
-                                                        c.RelativeColumn(1.2f); // Net
+                                                        c.RelativeColumn(1.2f); // Date
+                                                        c.RelativeColumn(1.2f); // Date Paid
+                                                        c.RelativeColumn(0.9f); // Div No
+                                                        c.RelativeColumn(0.9f); // Warrant No
+                                                        c.RelativeColumn(0.9f); // Type
+                                                        c.RelativeColumn(1f);   // Units
+                                                        c.RelativeColumn(1.1f); // Gross
+                                                        c.RelativeColumn(1f);   // Tax
+                                                        c.RelativeColumn(1.1f); // Net
                                                 });
 
                                                 void HeaderCell(string text, bool right = false)
@@ -632,6 +633,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
 
                                                 HeaderCell("S/N");
                                                 HeaderCell("Date");
+                                                HeaderCell("Date Paid");
                                                 HeaderCell("Div. No");
                                                 HeaderCell("Warr. No");
                                                 HeaderCell("Type");
@@ -664,6 +666,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
 
                                                         DataCell(sn.ToString());
                                                         DataCell(div.Date ?? "-");
+                                                        DataCell(div.DatePaid ?? "-");
                                                         DataCell(div.DividendNo > 0 ? div.DividendNo.ToString() : "-");
                                                         DataCell(div.WarrantNo > 0 ? div.WarrantNo.ToString() : "-");
                                                         DataCell(div.Type ?? "-");
@@ -674,7 +677,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                                 }
 
                                                 // Total row
-                                                t.Cell().ColumnSpan(6).Background(navy).Padding(6)
+                                                t.Cell().ColumnSpan(7).Background(navy).Padding(6)
                                                         .AlignRight().Text("Totals:").FontSize(8.5f).Bold().FontColor(Colors.White);
                                                 t.Cell().Background(navy).Padding(6)
                                                         .AlignRight().Text(totalGross.ToString("N2")).FontSize(8.5f).Bold().FontColor(Colors.White);

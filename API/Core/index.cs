@@ -93,7 +93,14 @@ public class DataService
     {
         using SqlConnection conn = new(_connectString);
         var units = conn.Query<Bson.Unit>($"SELECT * FROM ___Units WITH (NOLOCK) WHERE RegCode = {regCode} AND AccountNo = {accountNo}", commandTimeout: _commandTimeout).ToList();
-        var dividends = conn.Query<Bson.Dividend>($"SELECT * FROM ___SDividends WITH (NOLOCK) WHERE RegCode = {regCode} AND AccountNo = {accountNo}", commandTimeout: _commandTimeout).ToList();
+        var dividends = conn.Query<Bson.Dividend>($"""
+            SELECT s.Id, s.AccountNo, s.RegCode, s.Gross, s.Total, s.Net, s.DividendNo, s.Tax, s.WarrantNo, s.Type, s.Date,
+                   FORMAT(q.date_paid, 'dd-MMM-yyyy') AS DatePaid
+            FROM ___SDividends s WITH (NOLOCK)
+            LEFT JOIN Qry_Divs q WITH (NOLOCK)
+                ON q.divreg_code = s.RegCode AND q.account_no = s.AccountNo AND q.divpay_no = s.DividendNo
+            WHERE s.RegCode = {regCode} AND s.AccountNo = {accountNo}
+            """, commandTimeout: _commandTimeout).ToList();
         return new Bson.Holding()
         {
             RegCode = regCode,
@@ -108,7 +115,14 @@ public class DataService
         using SqlConnection conn = new(_connectString);
         var shareholder = conn.Query<RegSH>($"SELECT * FROM ___RHoldings WHERE (RegCode = {regCode}) AND (AccountNo = {accountNo})").First();
         shareholder.Units = conn.Query<Bson.Unit>($"SELECT * FROM ___Units WITH (NOLOCK) WHERE RegCode = {regCode} AND AccountNo = {accountNo}", commandTimeout: _commandTimeout).ToList();
-        shareholder.Dividends = conn.Query<Bson.Dividend>($"SELECT * FROM ___SDividends WITH (NOLOCK) WHERE RegCode = {regCode} AND AccountNo = {accountNo}", commandTimeout: _commandTimeout).ToList();
+        shareholder.Dividends = conn.Query<Bson.Dividend>($"""
+            SELECT s.Id, s.AccountNo, s.RegCode, s.Gross, s.Total, s.Net, s.DividendNo, s.Tax, s.WarrantNo, s.Type, s.Date,
+                   FORMAT(q.date_paid, 'dd-MMM-yyyy') AS DatePaid
+            FROM ___SDividends s WITH (NOLOCK)
+            LEFT JOIN Qry_Divs q WITH (NOLOCK)
+                ON q.divreg_code = s.RegCode AND q.account_no = s.AccountNo AND q.divpay_no = s.DividendNo
+            WHERE s.RegCode = {regCode} AND s.AccountNo = {accountNo}
+            """, commandTimeout: _commandTimeout).ToList();
         return shareholder;
     }
 
@@ -121,7 +135,14 @@ public class DataService
     public List<Bson.Dividend> GetDividends(int regCode, string accountNo)
     {
         using SqlConnection conn = new(_connectString);
-        return conn.Query<Bson.Dividend>($"SELECT * FROM ___SDividends WITH (NOLOCK) WHERE RegCode = {regCode} AND AccountNo = {accountNo}", commandTimeout: _commandTimeout).ToList();
+        return conn.Query<Bson.Dividend>($"""
+            SELECT s.Id, s.AccountNo, s.RegCode, s.Gross, s.Total, s.Net, s.DividendNo, s.Tax, s.WarrantNo, s.Type, s.Date,
+                   FORMAT(q.date_paid, 'dd-MMM-yyyy') AS DatePaid
+            FROM ___SDividends s WITH (NOLOCK)
+            LEFT JOIN Qry_Divs q WITH (NOLOCK)
+                ON q.divreg_code = s.RegCode AND q.account_no = s.AccountNo AND q.divpay_no = s.DividendNo
+            WHERE s.RegCode = {regCode} AND s.AccountNo = {accountNo}
+            """, commandTimeout: _commandTimeout).ToList();
     }
 
     public Bson.RegMaxUnitResponse GetRegShareholderMaxUnit(int regcode)
@@ -213,9 +234,14 @@ public class DataService
                 $"SELECT * FROM ___Units WITH (NOLOCK) WHERE RegCode = {holding.RegCode} AND AccountNo = {holding.AccountNo}",
                 commandTimeout: 3600));
 
-            holding.Dividends.AddRange(conn.Query<Bson.Dividend>(
-                $"SELECT * FROM ___SDividends WITH (NOLOCK) WHERE (RegCode = {holding.RegCode}) AND (AccountNo = {holding.AccountNo})",
-                commandTimeout: 3600));
+            holding.Dividends.AddRange(conn.Query<Bson.Dividend>($"""
+                SELECT s.Id, s.AccountNo, s.RegCode, s.Gross, s.Total, s.Net, s.DividendNo, s.Tax, s.WarrantNo, s.Type, s.Date,
+                       FORMAT(q.date_paid, 'dd-MMM-yyyy') AS DatePaid
+                FROM ___SDividends s WITH (NOLOCK)
+                LEFT JOIN Qry_Divs q WITH (NOLOCK)
+                    ON q.divreg_code = s.RegCode AND q.account_no = s.AccountNo AND q.divpay_no = s.DividendNo
+                WHERE s.RegCode = {holding.RegCode} AND s.AccountNo = {holding.AccountNo}
+                """, commandTimeout: 3600));
 
             shareholder.Holdings.Add(holding);
         }
