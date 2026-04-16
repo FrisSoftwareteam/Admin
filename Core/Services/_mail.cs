@@ -185,4 +185,8 @@ namespace FirstReg.Services
             return await email.SendAsync();
         }
 	}
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> origin/main
