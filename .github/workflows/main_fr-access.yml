@@ -1,4 +1,4 @@
-name: Deploy Online Access
+name: Deploy Admin App
 
 on:
   push:
@@ -19,12 +19,12 @@ jobs:
         with:
           dotnet-version: "8.0.x"
 
-      - name: Publish Access app
-        run: dotnet publish Access/FirstReg.OnlineAccess.csproj -c Release -o publish
+      - name: Publish Admin app
+        run: dotnet publish Admin/FirstReg.Admin.csproj -c Release -o publish
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
         with:
-          app-name: "fr-access"
+          app-name: "fr-access-admin"
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
           package: publish
