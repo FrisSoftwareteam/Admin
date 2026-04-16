@@ -1,0 +1,1 @@
+/* Compatibility placeholder for missing chat app script. */

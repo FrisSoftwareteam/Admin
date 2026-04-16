@@ -82,6 +82,69 @@ namespace FirstReg.Admin.Controllers
             }
         }
 
+        [HttpPost("delete-account/{code}")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteAccount(string code)
+        {
+            try
+            {
+                var hs = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.Holdings)
+                    .Include(x => x.User)
+                    .Where(x => x.Code.ToLower() == code.ToLower())
+                    .ToListAsync();
+
+                if (!hs.Any())
+                    throw new InvalidOperationException("Shareholder was not found, please try again.");
+
+                var shareholder = hs.First();
+                var user = shareholder.User;
+                var email = user?.Email;
+                var fullName = user?.FullName ?? shareholder.FullName;
+
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    try
+                    {
+                        await _service.Email.SendAccountDeletedEmailAsync(email, fullName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Account deleted email could not be sent to {Email}", email);
+                        TempData["warning"] = "Account deleted, but the notification email could not be sent.";
+                    }
+                }
+
+                foreach (var holding in shareholder.Holdings.ToList())
+                    await _service.Data.DeleteAsync(holding);
+
+                await _service.Data.DeleteAsync(shareholder);
+
+                if (user != null)
+                {
+                    var hasOtherAccounts = await _service.Data.ExistsAsync<Shareholder>(x =>
+                        x.UserId == user.Id && x.Id != shareholder.Id);
+
+                    if (!hasOtherAccounts)
+                    {
+                        var result = await _userManager.DeleteAsync(user);
+
+                        if (!result.Succeeded)
+                            TempData["warning"] = "Shareholder account deleted, but the linked user record could not be removed.";
+                    }
+                }
+
+                TempData["success"] = $"Shareholder account {code} was deleted successfully.";
+                return RedirectToAction(nameof(Index));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                TempData["error"] = $"Could not delete shareholder account: {Clear.Tools.GetAllExceptionMessage(ex)}";
+                return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
+            }
+        }
+
         [Route("create-new")]
         public async Task<IActionResult> Create(ShareHolderModel model)
         {
@@ -433,13 +496,17 @@ namespace FirstReg.Admin.Controllers
             try
             {
                 IQueryable<Shareholder> query = _service.Data.GetAsQueryable<Shareholder>()
+                    .AsNoTracking()
                     .Include(x => x.User);
+
+                var draw = int.TryParse(Request.Query["draw"], out var drawValue) ? drawValue : 1;
+                var start = int.TryParse(Request.Query["start"], out var startValue) ? startValue : 0;
+                var length = int.TryParse(Request.Query["length"], out var lengthValue) ? lengthValue : 25;
+                var search = Request.Query["search[value]"].ToString().Trim();
 
                 if (v != null)
                 {
                     query = query.Where(x => x.Verified == v.Value);
-                    if (v.Value == false)
-                        query = query.Where(x => x.ActionRequired == true);
                 }
 
                 if (s == true)
@@ -447,14 +514,46 @@ namespace FirstReg.Admin.Controllers
                 else if (s == false)
                     query = query.Where(x => x.ExpiryDate == null || x.ExpiryDate < Tools.Now);
 
-                var shs = await query.OrderBy(x => x.FullName).ToListAsync();
+                var recordsTotal = await query.CountAsync();
+
+                if (!string.IsNullOrWhiteSpace(search))
+                {
+                    query = query.Where(x =>
+                        x.FullName.Contains(search) ||
+                        x.Code.Contains(search) ||
+                        x.User.Email.Contains(search) ||
+                        (x.PrimaryPhone != null && x.PrimaryPhone.Contains(search)) ||
+                        (x.SecondaryPhone != null && x.SecondaryPhone.Contains(search)));
+                }
+
+                var recordsFiltered = await query.CountAsync();
+
+                var shs = await query
+                    .OrderBy(x => x.FullName)
+                    .Skip(start)
+                    .Take(length)
+                    .Select(x => new
+                    {
+                        x.FullName,
+                        x.Code,
+                        Email = x.User.Email,
+                        x.PrimaryPhone,
+                        x.SecondaryPhone,
+                        x.Verified,
+                        IsSubscribed = x.ExpiryDate != null && x.ExpiryDate > Tools.Now,
+                        x.Id
+                    })
+                    .ToListAsync();
 
                 return Ok(new
                 {
+                    draw,
+                    recordsTotal,
+                    recordsFiltered,
                     data = shs.Select(x => new[]
                     {
                         $"{x.FullName}<br>{x.Code}",
-                        $"{x.User.Email}<br>{$"{x.PrimaryPhone} {x.SecondaryPhone}".Trim()}".Trim(),
+                        $"{x.Email}<br>{$"{x.PrimaryPhone} {x.SecondaryPhone}".Trim()}".Trim(),
                         x.Verified ? "verified" : "pending",
                         x.IsSubscribed ? "active" : "expired",
                         x.Id.ToString(),

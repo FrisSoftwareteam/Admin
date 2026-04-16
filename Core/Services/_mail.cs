@@ -18,6 +18,7 @@ namespace FirstReg.Services
         Task SendValidationEmailAsync(string email, string name, string code);
         Task<SendResponse> SendWelcomeEmailAsync(string email, string name);
         Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link);
+        Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name);
     }
 
     //=====================
@@ -32,9 +33,10 @@ namespace FirstReg.Services
     {
         private string GetTemplate(string name)
         {
-            var wrapper = File.ReadAllText(@"wwwroot\templates\_layout.html");
+            var templatesPath = Path.Combine("wwwroot", "templates");
+            var wrapper = File.ReadAllText(Path.Combine(templatesPath, "_layout.html"));
 
-            wrapper = wrapper.Replace("@RenderBody()", File.ReadAllText($@"wwwroot\templates\{name}.html"));
+            wrapper = wrapper.Replace("@RenderBody()", File.ReadAllText(Path.Combine(templatesPath, $"{name}.html")));
 
             wrapper = wrapper.Replace("[site_url]", "https://firstregistrarsnigeria.com");
             wrapper = wrapper.Replace("[year]", DateTime.Now.Year.ToString());
@@ -65,6 +67,9 @@ namespace FirstReg.Services
 
         public async Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link) =>
            await SendEmailAsync(new MailAddress(email, name), "Reset Password", "reset", new { name, link });
+
+        public async Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name) =>
+           await SendEmailAsync(new MailAddress(email, name), "Account Deleted", "accountdeleted", new { name });
 
         public async Task<SendResponse> SendPasswordEmailAsync(string email, string name, string link) =>
            await SendEmailAsync(new MailAddress(email, name), "Password Changed", "newpassword", new { name, link });

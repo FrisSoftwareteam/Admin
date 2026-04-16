@@ -10,7 +10,17 @@ var page = {
             const e = $(t).DataTable({
                 info: 1,
                 processing: true,
-                ajax: t.getAttribute('data-url'),
+                serverSide: true,
+                deferRender: true,
+                searchDelay: 350,
+                pageLength: 25,
+                ajax: {
+                    url: t.getAttribute('data-url'),
+                    data: function (d) {
+                        d.verified = $('#cb_verified').val();
+                        d.subscribed = $('#cb_subscribed').val();
+                    }
+                },
                 columnDefs: [{
                     targets: 4,
                     orderable: !1
@@ -62,34 +72,12 @@ var page = {
             var cb_verified = $('#cb_verified');
             var cb_subscribed = $('#cb_subscribed');
 
-            var verified = '-';
-            var subscribed = '-';
-
-            $.fn.dataTable.ext.search.push(
-                function (settings, data, dataIndex) {
-                    var v = data[0];
-                    var s = data[1];
-
-                    if (
-                        (verified === '-' && subscribed === '-') ||
-                        (verified === v && subscribed === s) ||
-                        (verified !== '-' && subscribed === '-' && verified === v) ||
-                        (subscribed !== '-' && verified === '-' && subscribed === s)
-                    ) {
-                        return true;
-                    }
-                    return false;
-                }
-            );
-
             cb_verified.on("change", function () {
-                verified = this.value;
-                e.draw();
+                e.ajax.reload();
             });
 
             cb_subscribed.on("change", function () {
-                subscribed = this.value;
-                e.draw();
+                e.ajax.reload();
             });
 
         }()

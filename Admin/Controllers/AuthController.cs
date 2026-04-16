@@ -40,7 +40,7 @@ namespace FirstReg.Admin.Controllers
             try
             {
                 if (User.Identity.IsAuthenticated)
-                    return RedirectToAction("Home", "Index");
+                    return RedirectToAction("Index", "Home");
 
                 returnurl ??= Url.Content("~/");
 

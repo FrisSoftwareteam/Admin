@@ -1,281 +1,450 @@
+@using System.Text.Json
 @model DashboardModel
 
 @{
     ViewData["Title"] = "Dashboard";
+
+    var totalAccounts = Model.Shareholders + Model.StockBrokers + Model.CompanySecs + Model.FRAdmins + Model.SystemAdmins;
+    var totalSubscribers = Model.Active + Model.Inactive + Model.Never;
+    var activeRate = totalSubscribers > 0 ? Math.Round(Model.Active * 100.0 / totalSubscribers) : 0;
+    var shareholderRate = totalAccounts > 0 ? Math.Round(Model.Shareholders * 100.0 / totalAccounts) : 0;
+    var monthlySalesJson = JsonSerializer.Serialize(Model.MonthlySales);
+    var chartLabelsJson = JsonSerializer.Serialize(new[] { "Nov", "Dec", "Jan", "Feb", "Mar", "Apr" });
+    int Pct(int value, int total) => total > 0 ? (int)Math.Round(value * 100.0 / total) : 0;
 }
 
 <div class="post d-flex flex-column-fluid" id="kt_post">
-    <div id="kt_content_container" class="container-xxl">
-
-        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3 mb-7">
-            <h1 class="page-heading d-flex text-dark fw-bolder fs-3 flex-column justify-content-center my-0">Dashboard</h1>
-            <span class="text-muted fw-semibold fs-7 my-1">Welcome back &mdash; here's what's happening today</span>
-        </div>
-
-        <div class="row g-5 g-xl-8 mb-5">
-            <div class="col-xl-3 col-md-6">
-                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#17C653; background-image: url('/admin/assets/media/patterns/vector-1.png')">
-                    <div class="card-header pt-5">
-                        <div class="card-title d-flex flex-column">
-                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.TotalUsers</span>
-                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Total Users</span>
+    <div id="kt_content_container" class="container-xxl dashboard-shell">
+        <div class="dashboard-hero card border-0 overflow-hidden mb-8">
+            <div class="card-body p-0">
+                <div class="row g-0 align-items-stretch">
+                    <div class="col-xl-8">
+                        <div class="dashboard-hero__content">
+                            <div class="dashboard-kicker">FR Admin Dashboard</div>
+                            <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-6">
+                                <div>
+                                    <h1 class="dashboard-hero__title">Clearer visibility into users, subscriptions, and requests.</h1>
+                                    <p class="dashboard-hero__text mb-0">
+                                        Welcome back. This snapshot gives you a quick read on account growth, subscription health, and items that may need attention today.
+                                    </p>
+                                </div>
+                                <div class="dashboard-hero__chips">
+                                    <span class="dashboard-chip">
+                                        <i class="bi bi-people-fill"></i>
+                                        @Model.TotalUsers accounts
+                                    </span>
+                                    <span class="dashboard-chip">
+                                        <i class="bi bi-patch-check-fill"></i>
+                                        @Model.Active active subscriptions
+                                    </span>
+                                    <span class="dashboard-chip">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                        +@Model.Percentage% this month
+                                    </span>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="card-footer d-flex align-items-center pt-0">
-                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">All registered accounts</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#009EF7; background-image: url('/admin/assets/media/patterns/vector-1.png')">
-                    <div class="card-header pt-5">
-                        <div class="card-title d-flex flex-column">
-                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.Shareholders</span>
-                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Shareholders</span>
+                    <div class="col-xl-4">
+                        <div class="dashboard-hero__aside">
+                            <div class="dashboard-hero__aside-card">
+                                <span class="dashboard-hero__aside-label">Today at a glance</span>
+                                <div class="dashboard-hero__aside-value">@shareholderRate%</div>
+                                <p class="dashboard-hero__aside-text mb-5">of registered accounts are shareholder accounts.</p>
+                                <div class="dashboard-hero__aside-meta">
+                                    <div>
+                                        <span class="dashboard-hero__mini-label">Subscribers</span>
+                                        <strong>@Model.TotalSubscribers</strong>
+                                    </div>
+                                    <div>
+                                        <span class="dashboard-hero__mini-label">Active rate</span>
+                                        <strong>@activeRate%</strong>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="dashboard-quick-actions">
+                                <a asp-controller="Users" asp-action="Index" class="btn btn-light-primary btn-sm">Manage Users</a>
+                                <a asp-controller="ShareHolders" asp-action="Pending" class="btn btn-light-dark btn-sm">Review Pending</a>
+                                <a asp-controller="ECertRequests" asp-action="Pending" class="btn btn-light-info btn-sm">Cert Requests</a>
+                            </div>
                         </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center pt-0">
-                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">Registered shareholder accounts</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#F1416C; background-image: url('/admin/assets/media/patterns/vector-1.png')">
-                    <div class="card-header pt-5">
-                        <div class="card-title d-flex flex-column">
-                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.Active</span>
-                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Active Subscribers</span>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center pt-0">
-                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">Valid subscriptions today</span>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-3 col-md-6">
-                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#7239EA; background-image: url('/admin/assets/media/patterns/vector-1.png')">
-                    <div class="card-header pt-5">
-                        <div class="card-title d-flex flex-column">
-                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">&#8358;@Model.ThisMonth</span>
-                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">This Month</span>
-                        </div>
-                    </div>
-                    <div class="card-footer d-flex align-items-center pt-0">
-                        <span class="text-success bg-white rounded px-2 py-1 fw-bolder fs-8 me-2">+@Model.Percentage%</span>
-                        <span class="text-white opacity-75 fw-semibold fs-7">vs last month</span>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-5 g-xl-8 mb-5">
+        <div class="row g-5 g-xl-8 mb-8">
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-stat dashboard-stat--green card border-0 h-100">
+                    <div class="card-body">
+                        <div class="dashboard-stat__icon"><i class="bi bi-people-fill"></i></div>
+                        <span class="dashboard-stat__label">Total User Accounts</span>
+                        <div class="dashboard-stat__value">@Model.TotalUsers</div>
+                        <p class="dashboard-stat__meta mb-0">All accounts registered on the platform.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-stat dashboard-stat--blue card border-0 h-100">
+                    <div class="card-body">
+                        <div class="dashboard-stat__icon"><i class="bi bi-person-badge-fill"></i></div>
+                        <span class="dashboard-stat__label">Shareholder Accounts</span>
+                        <div class="dashboard-stat__value">@Model.Shareholders</div>
+                        <p class="dashboard-stat__meta mb-0">Accounts registered as shareholders.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-stat dashboard-stat--rose card border-0 h-100">
+                    <div class="card-body">
+                        <div class="dashboard-stat__icon"><i class="bi bi-patch-check-fill"></i></div>
+                        <span class="dashboard-stat__label">Active Subscriptions</span>
+                        <div class="dashboard-stat__value">@Model.Active</div>
+                        <p class="dashboard-stat__meta mb-0">Subscriptions that are currently valid.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="dashboard-stat dashboard-stat--gold card border-0 h-100">
+                    <div class="card-body">
+                        <div class="dashboard-stat__icon"><i class="bi bi-cash-stack"></i></div>
+                        <span class="dashboard-stat__label">Revenue This Month</span>
+                        <div class="dashboard-stat__value">&#8358;@Model.ThisMonth</div>
+                        <div class="dashboard-stat__trend">
+                            <span class="dashboard-stat__trend-badge">+@Model.Percentage%</span>
+                            <span>Compared with last month</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5 g-xl-8 mb-8">
             <div class="col-xl-8">
-                <div class="card card-xl-stretch">
-                    <div class="card-header border-0 pt-5 pb-3">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">Monthly Sales</span>
-                            <span class="text-muted fw-bold fs-7">Revenue performance over the past 6 months</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <span class="fw-bolder fs-4 text-primary">&#8358;@Model.TotalSales</span>
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header border-0 pt-6 pb-2">
+                        <div>
+                            <div class="dashboard-section-kicker">Revenue trend</div>
+                            <h3 class="card-title fw-bolder fs-2 mb-1">Monthly Sales</h3>
+                            <div class="text-muted fw-semibold fs-7">Revenue performance over the past 6 months</div>
                         </div>
-                    </div>
-                    <div class="card-body pt-2 pb-0">
-                        <div class="mixed-widget-10-chart" data-kt-color="primary" style="height: 220px"></div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-xl-4">
-                <div class="card h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">User Breakdown</span>
-                            <span class="text-muted fw-bold fs-7">@Model.TotalUsers total accounts</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                        <div class="dashboard-highlight">
+                            <span class="dashboard-highlight__label">6-month total</span>
+                            <strong>&#8358;@Model.TotalSales</strong>
                         </div>
                     </div>
                     <div class="card-body pt-4">
-                        @{
-                            var totalCount = Model.Shareholders + Model.StockBrokers + Model.CompanySecs + Model.FRAdmins + Model.SystemAdmins;
-                            int Pct(int val) => totalCount > 0 ? (int)(val * 100.0 / totalCount) : 0;
-                        }
-                        <div class="d-flex flex-column gap-4">
-                            <div class="d-flex align-items-center">
-                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">SH</div>
-                                <div class="flex-grow-1">
-                                    <div class="progress h-8px rounded">
-                                        <div class="progress-bar bg-primary" style="width: @Pct(Model.Shareholders)%"></div>
-                                    </div>
-                                </div>
-                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.Shareholders</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">SB</div>
-                                <div class="flex-grow-1">
-                                    <div class="progress h-8px rounded">
-                                        <div class="progress-bar bg-success" style="width: @Pct(Model.StockBrokers)%"></div>
-                                    </div>
-                                </div>
-                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.StockBrokers</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">CS</div>
-                                <div class="flex-grow-1">
-                                    <div class="progress h-8px rounded">
-                                        <div class="progress-bar bg-warning" style="width: @Pct(Model.CompanySecs)%"></div>
-                                    </div>
-                                </div>
-                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.CompanySecs</span>
-                            </div>
-                            <div class="d-flex align-items-center">
-                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">FR</div>
-                                <div class="flex-grow-1">
-                                    <div class="progress h-8px rounded">
-                                        <div class="progress-bar bg-danger" style="width: @Pct(Model.FRAdmins)%"></div>
-                                    </div>
-                                </div>
-                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.FRAdmins</span>
-                            </div>
+                        <div id="dashboard_sales_chart" class="dashboard-chart"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header border-0 pt-6 pb-2">
+                        <div>
+                            <div class="dashboard-section-kicker">Account mix</div>
+                            <h3 class="card-title fw-bolder fs-2 mb-1">User Breakdown</h3>
+                            <div class="text-muted fw-semibold fs-7">@Model.TotalUsers total accounts</div>
                         </div>
-                        <div class="separator my-5"></div>
-                        <div class="d-flex flex-wrap gap-3 fs-7">
-                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-primary me-1"></span> Shareholders</span>
-                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-success me-1"></span> Stock Brokers</span>
-                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-warning me-1"></span> Company Secs</span>
-                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-danger me-1"></span> FR Admins</span>
+                        <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light-primary">View All</a>
+                    </div>
+                    <div class="card-body pt-4">
+                        <div class="dashboard-list">
+                            <div class="dashboard-breakdown">
+                                <div class="dashboard-breakdown__row">
+                                    <div class="dashboard-breakdown__meta">
+                                        <span class="dashboard-breakdown__abbr bg-light-primary text-primary">SH</span>
+                                        <div>
+                                            <div class="fw-bolder text-dark">Shareholders</div>
+                                            <div class="text-muted fs-7">@Pct(Model.Shareholders, totalAccounts)% of all users</div>
+                                        </div>
+                                    </div>
+                                    <div class="text-end">
+                                        <div class="fw-bolder fs-4 text-dark">@Model.Shareholders</div>
+                                    </div>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-primary" style="width: @Pct(Model.Shareholders, totalAccounts)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-breakdown">
+                                <div class="dashboard-breakdown__row">
+                                    <div class="dashboard-breakdown__meta">
+                                        <span class="dashboard-breakdown__abbr bg-light-success text-success">SB</span>
+                                        <div>
+                                            <div class="fw-bolder text-dark">Stock Brokers</div>
+                                            <div class="text-muted fs-7">@Pct(Model.StockBrokers, totalAccounts)% of all users</div>
+                                        </div>
+                                    </div>
+                                    <div class="fw-bolder fs-4 text-dark">@Model.StockBrokers</div>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-success" style="width: @Pct(Model.StockBrokers, totalAccounts)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-breakdown">
+                                <div class="dashboard-breakdown__row">
+                                    <div class="dashboard-breakdown__meta">
+                                        <span class="dashboard-breakdown__abbr bg-light-warning text-warning">CS</span>
+                                        <div>
+                                            <div class="fw-bolder text-dark">Company Secs</div>
+                                            <div class="text-muted fs-7">@Pct(Model.CompanySecs, totalAccounts)% of all users</div>
+                                        </div>
+                                    </div>
+                                    <div class="fw-bolder fs-4 text-dark">@Model.CompanySecs</div>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-warning" style="width: @Pct(Model.CompanySecs, totalAccounts)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="dashboard-breakdown">
+                                <div class="dashboard-breakdown__row">
+                                    <div class="dashboard-breakdown__meta">
+                                        <span class="dashboard-breakdown__abbr bg-light-danger text-danger">FR</span>
+                                        <div>
+                                            <div class="fw-bolder text-dark">FR Admins</div>
+                                            <div class="text-muted fs-7">@Pct(Model.FRAdmins, totalAccounts)% of all users</div>
+                                        </div>
+                                    </div>
+                                    <div class="fw-bolder fs-4 text-dark">@Model.FRAdmins</div>
+                                </div>
+                                <div class="progress dashboard-progress">
+                                    <div class="progress-bar bg-danger" style="width: @Pct(Model.FRAdmins, totalAccounts)%"></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="row g-5 g-xl-8 mb-5">
+        <div class="row g-5 g-xl-8">
             <div class="col-xl-4">
-                <div class="card h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">Subscription Status</span>
-                            <span class="text-muted fw-bold fs-7">@Model.TotalSubscribers total subscribers</span>
-                        </h3>
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header border-0 pt-6 pb-2">
+                        <div>
+                            <div class="dashboard-section-kicker">Subscription health</div>
+                            <h3 class="card-title fw-bolder fs-2 mb-1">Subscription Status</h3>
+                            <div class="text-muted fw-semibold fs-7">@Model.TotalSubscribers total subscribers</div>
+                        </div>
                     </div>
-                    <div class="card-body pt-4 d-flex flex-column justify-content-center">
-                        <div class="d-flex align-items-center mb-5">
-                            <div class="d-flex align-items-center flex-grow-1 me-5">
-                                <div class="symbol symbol-40px me-4">
-                                    <span class="symbol-label bg-light-success">
-                                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
-                                    </span>
+                    <div class="card-body pt-4">
+                        <div class="dashboard-status-grid">
+                            <div class="dashboard-status-card">
+                                <div class="dashboard-status-card__icon bg-light-success text-success">
+                                    <i class="bi bi-check-circle-fill"></i>
                                 </div>
                                 <div>
-                                    <span class="fw-bolder fs-6 text-dark d-block">Active</span>
-                                    <span class="fw-bold fs-7 text-muted">Valid subscription</span>
+                                    <div class="fw-bolder fs-6 text-dark">Active</div>
+                                    <div class="text-muted fs-7">Valid subscription</div>
                                 </div>
+                                <span class="badge badge-light-success fw-bolder fs-6 px-4 py-3">@Model.Active</span>
                             </div>
-                            <span class="badge badge-light-success fw-bolder fs-6 px-4 py-3">@Model.Active</span>
-                        </div>
-                        <div class="d-flex align-items-center mb-5">
-                            <div class="d-flex align-items-center flex-grow-1 me-5">
-                                <div class="symbol symbol-40px me-4">
-                                    <span class="symbol-label bg-light-warning">
-                                        <i class="bi bi-clock-fill text-warning fs-4"></i>
-                                    </span>
+
+                            <div class="dashboard-status-card">
+                                <div class="dashboard-status-card__icon bg-light-warning text-warning">
+                                    <i class="bi bi-clock-fill"></i>
                                 </div>
                                 <div>
-                                    <span class="fw-bolder fs-6 text-dark d-block">Inactive</span>
-                                    <span class="fw-bold fs-7 text-muted">Expired subscription</span>
+                                    <div class="fw-bolder fs-6 text-dark">Inactive</div>
+                                    <div class="text-muted fs-7">Expired subscription</div>
                                 </div>
+                                <span class="badge badge-light-warning fw-bolder fs-6 px-4 py-3">@Model.Inactive</span>
                             </div>
-                            <span class="badge badge-light-warning fw-bolder fs-6 px-4 py-3">@Model.Inactive</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <div class="d-flex align-items-center flex-grow-1 me-5">
-                                <div class="symbol symbol-40px me-4">
-                                    <span class="symbol-label bg-light-danger">
-                                        <i class="bi bi-dash-circle-fill text-danger fs-4"></i>
-                                    </span>
+
+                            <div class="dashboard-status-card">
+                                <div class="dashboard-status-card__icon bg-light-danger text-danger">
+                                    <i class="bi bi-dash-circle-fill"></i>
                                 </div>
                                 <div>
-                                    <span class="fw-bolder fs-6 text-dark d-block">Never Subscribed</span>
-                                    <span class="fw-bold fs-7 text-muted">No subscription history</span>
+                                    <div class="fw-bolder fs-6 text-dark">Never Subscribed</div>
+                                    <div class="text-muted fs-7">No subscription history</div>
                                 </div>
+                                <span class="badge badge-light-danger fw-bolder fs-6 px-4 py-3">@Model.Never</span>
                             </div>
-                            <span class="badge badge-light-danger fw-bolder fs-6 px-4 py-3">@Model.Never</span>
                         </div>
                     </div>
                 </div>
             </div>
 
             <div class="col-xl-4">
-                <div class="card h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">New Users</span>
-                            <span class="text-muted fw-bold fs-7">Most recently registered</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header border-0 pt-6 pb-2">
+                        <div>
+                            <div class="dashboard-section-kicker">Recent signups</div>
+                            <h3 class="card-title fw-bolder fs-2 mb-1">New Users</h3>
+                            <div class="text-muted fw-semibold fs-7">Most recently registered</div>
                         </div>
+                        <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light-primary">View All</a>
                     </div>
                     <div class="card-body pt-4">
-                        @foreach (var user in Model.Users)
+                        @if (!Model.Users.Any())
                         {
-                            <div class="d-flex align-items-center mb-5">
-                                <div class="symbol symbol-40px symbol-circle me-4">
-                                    <span class="symbol-label bg-light-primary text-primary fw-bolder fs-6">@user.Initial</span>
-                                </div>
-                                <div class="flex-grow-1">
-                                    <span class="fs-6 fw-bolder text-dark d-block text-truncate" style="max-width:160px">@user.Name</span>
-                                    <span class="fs-7 text-muted text-truncate d-block" style="max-width:160px">@user.Email</span>
-                                </div>
-                                <span class="badge badge-light fw-bold ms-2">@user.Type</span>
-                            </div>
-                        }
-                    </div>
-                </div>
-            </div>
-
-            <div class="col-xl-4">
-                <div class="card h-100">
-                    <div class="card-header border-0 pt-5">
-                        <h3 class="card-title align-items-start flex-column">
-                            <span class="card-label fw-bolder fs-3 mb-1">Recent Cert Requests</span>
-                            <span class="text-muted fw-bold fs-7">Latest e-certificate requests</span>
-                        </h3>
-                        <div class="card-toolbar">
-                            <a asp-controller="ECertRequests" asp-action="Pending" class="btn btn-sm btn-light-primary">Pending</a>
-                        </div>
-                    </div>
-                    <div class="card-body pt-4">
-                        @if (!Model.CertRequests.Any())
-                        {
-                            <div class="text-center text-muted py-10">
-                                <i class="bi bi-inbox fs-2x d-block mb-2"></i>
-                                No recent requests
+                            <div class="dashboard-empty-state">
+                                <i class="bi bi-person-plus"></i>
+                                <span>No recent users</span>
                             </div>
                         }
                         else
                         {
-                            @foreach (var file in Model.CertRequests)
-                            {
-                                <div class="d-flex align-items-center mb-5">
-                                    <div class="symbol symbol-40px me-4">
-                                        <span class="symbol-label bg-light-info">
-                                            <i class="bi bi-file-earmark-text text-info fs-5"></i>
-                                        </span>
+                            <div class="dashboard-list">
+                                @foreach (var user in Model.Users)
+                                {
+                                    <div class="dashboard-user-row">
+                                        <div class="symbol symbol-50px symbol-circle flex-shrink-0">
+                                            <span class="symbol-label bg-light-primary text-primary fw-bolder fs-5">@user.Initial</span>
+                                        </div>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <div class="fw-bolder text-dark text-truncate">@user.Name</div>
+                                            <div class="text-muted fs-7 text-truncate">@user.Email</div>
+                                        </div>
+                                        <span class="badge badge-light-dark">@user.Type</span>
                                     </div>
-                                    <div class="flex-grow-1">
-                                        <span class="fs-6 fw-bolder text-dark d-block text-truncate" style="max-width:140px">@file.Description</span>
-                                        <span class="fs-7 text-muted">@file.Time &bull; <span class="text-primary">@file.Name</span></span>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-header border-0 pt-6 pb-2">
+                        <div>
+                            <div class="dashboard-section-kicker">Certificate activity</div>
+                            <h3 class="card-title fw-bolder fs-2 mb-1">Recent Cert Requests</h3>
+                            <div class="text-muted fw-semibold fs-7">Latest e-certificate requests</div>
+                        </div>
+                        <a asp-controller="ECertRequests" asp-action="Pending" class="btn btn-sm btn-light-info">Pending</a>
+                    </div>
+                    <div class="card-body pt-4">
+                        @if (!Model.CertRequests.Any())
+                        {
+                            <div class="dashboard-empty-state">
+                                <i class="bi bi-inbox"></i>
+                                <span>No recent requests</span>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="dashboard-list">
+                                @foreach (var file in Model.CertRequests)
+                                {
+                                    <div class="dashboard-cert-row">
+                                        <div class="dashboard-cert-row__icon">
+                                            <i class="bi bi-file-earmark-text"></i>
+                                        </div>
+                                        <div class="min-w-0 flex-grow-1">
+                                            <div class="fw-bolder text-dark text-truncate">@file.Description</div>
+                                            <div class="text-muted fs-7 text-truncate">@file.Name</div>
+                                        </div>
+                                        <span class="dashboard-cert-row__time">@file.Time</span>
                                     </div>
-                                </div>
-                            }
+                                }
+                            </div>
                         }
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
 </div>
+
+@section scripts {
+    <script>
+        KTUtil.onDOMContentLoaded(function () {
+            var chartElement = document.getElementById("dashboard_sales_chart");
+            if (!chartElement || typeof ApexCharts === "undefined") {
+                return;
+            }
+
+            if (chartElement.apexChartInstance) {
+                chartElement.apexChartInstance.destroy();
+            }
+
+            var salesSeries = @Html.Raw(monthlySalesJson);
+            var salesLabels = @Html.Raw(chartLabelsJson);
+
+            var options = {
+                series: [{
+                    name: "Revenue",
+                    data: salesSeries
+                }],
+                chart: {
+                    type: "area",
+                    height: 300,
+                    toolbar: { show: false },
+                    zoom: { enabled: false },
+                    fontFamily: "Poppins, sans-serif"
+                },
+                colors: ["#12416f"],
+                stroke: {
+                    curve: "smooth",
+                    width: 3
+                },
+                fill: {
+                    type: "gradient",
+                    gradient: {
+                        shadeIntensity: 1,
+                        opacityFrom: 0.35,
+                        opacityTo: 0.04,
+                        stops: [0, 90, 100]
+                    }
+                },
+                dataLabels: { enabled: false },
+                grid: {
+                    borderColor: "#E5E7EB",
+                    strokeDashArray: 5,
+                    padding: {
+                        left: 10,
+                        right: 10
+                    }
+                },
+                xaxis: {
+                    categories: salesLabels,
+                    axisBorder: { show: false },
+                    axisTicks: { show: false },
+                    labels: {
+                        style: {
+                            colors: "#6B7280",
+                            fontSize: "12px"
+                        }
+                    }
+                },
+                yaxis: {
+                    labels: {
+                        style: {
+                            colors: "#6B7280",
+                            fontSize: "12px"
+                        },
+                        formatter: function (value) {
+                            return "₦" + (value / 1000).toFixed(0) + "K";
+                        }
+                    }
+                },
+                markers: {
+                    size: 0,
+                    strokeWidth: 0,
+                    hover: {
+                        size: 6
+                    }
+                },
+                tooltip: {
+                    theme: "light",
+                    y: {
+                        formatter: function (value) {
+                            return "₦" + value.toLocaleString();
+                        }
+                    }
+                }
+            };
+
+            chartElement.apexChartInstance = new ApexCharts(chartElement, options);
+            chartElement.apexChartInstance.render();
+        });
+    </script>
+}
