@@ -1,0 +1,23 @@
+﻿@inject FirstReg.Service service
+
+@{
+    Layout = "_Layout";
+
+    var user = await service.Data.Get<User>(x => x.UserName == User.Identity.Name);
+    if (user.Type != UserType.Shareholder)
+    {
+        Context.Response.Redirect("/");
+    }
+}
+
+<div class="container" id="kt_content_container">
+    @RenderBody()
+</div>
+
+@section styles {
+    @RenderSection("styles", required: false)
+}
+
+@section scripts {
+    @RenderSection("scripts", required: false)
+}

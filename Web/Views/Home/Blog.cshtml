@@ -1,0 +1,135 @@
+﻿@model IEnumerable<Post>
+
+@{
+    ViewBag.Title = "Blog";
+}
+
+@if (Model.Count() > 0)
+{
+
+    <section class="home-blog-section ptb-120 bg-light">
+        <div class="container">
+            <div class="row">
+                <div class="blog-grid">
+                    <div class="featured-post-wrapper">
+                        <div class="blog-item">
+                            <div class="blog-content">
+                                <div class="blog-media">
+                                    <img src="@FirstReg.Tools.GetBlobFilePath(FirstReg.blobfolder.posts, Model.First().Thumb)" alt="@Model.First().Title" class="img-fluid">
+                                </div>
+                                <div class="blog-text p-4 p-lg-5">
+                                    <span class="featured-badge"><i class="fas fa-bookmark text-warning" data-toggle="tooltip" data-placement="top" title="" data-original-title="Featured"></i></span>
+                                    <a href="/post/@Model.First().Code">
+                                        <h3 class="h5">
+                                            @Model.First().Title
+                                        </h3>
+                                    </a>
+                                    <p>
+                                        @Model.First().Brief
+                                    </p>
+                                    <div class="read-more-link">
+                                        <a href="/post/@Model.First().Code" class="mt-2 d-inline-flex align-items-center btn btn-sm btn-pill font-weight-bold">
+                                            <span>Read More</span>
+                                            <i class="far fa-arrow-right ms-2"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (Model.Count() > 1)
+                    {
+
+                        <div class="posts-wrapper">
+
+                            @foreach (var post in Model.Skip(1).Take(2))
+                            {
+
+                                <div class="blog-item">
+                                    <div class="blog-content">
+                                        <div class="blog-media">
+                                            <img src="@FirstReg.Tools.GetBlobFilePath(FirstReg.blobfolder.posts, post.Thumb)" alt="@post.Title" class="img-fluid">
+                                        </div>
+                                        <div class="blog-text p-4 p-lg-5">
+                                            <a href="/post/@post.Code">
+                                                <h3 class="h5">
+                                                    @post.Title
+                                                </h3>
+                                            </a>
+                                            <p>
+                                                @post.Brief
+                                            </p>
+                                            <div class="read-more-link">
+                                                <a href="/post/@post.Code" class="mt-2 d-inline-flex align-items-center btn btn-sm btn-pill font-weight-bold">
+                                                    <span>Read More</span>
+                                                    <i class="far fa-arrow-right ms-2"></i>
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            }
+                        </div>
+
+                    }
+                </div>
+            </div>
+        </div>
+    </section>
+
+    if (Model.Count() > 3)
+    {
+
+        <section class="masonary-blog-section ptb-120">
+            <div class="container">
+                <div class="row">
+
+                    @foreach (var post in Model.Skip(3))
+                    {
+
+                        <div class="col-lg-4 col-md-6">
+                            <div class="single-article rounded-custom my-3">
+                                <a href="/post/@post.Code" class="article-img">
+                                    <img src="@FirstReg.Tools.GetBlobFilePath(FirstReg.blobfolder.posts, post.Thumb)" alt="@post.Title" class="img-fluid">
+                                </a>
+                                <div class="article-content p-4">
+                                    <div class="article-category mb-4 d-block">
+                                        <a href="/blog/@post.Category.Code" class="d-inline-block text-dark badge bg-warning-soft">@post.Category.Description</a>
+                                    </div>
+                                    <a href="/post/@post.Code">
+                                        <h2 class="h5 article-title limit-2-line-text">
+                                            @post.Title
+                                        </h2>
+                                    </a>
+                                    <p class="limit-2-line-text">
+                                        @post.Brief
+                                    </p>
+
+                                    <a href="javascript:;">
+                                        <div class="d-flex align-items-center pt-4">
+                                            <div class="avatar">
+                                                <img src="/img/a.png" alt="avatar" width="40" class="img-fluid rounded-circle me-3">
+                                            </div>
+                                            <div class="avatar-info">
+                                                <h6 class="mb-0 avatar-name">@post.Author.Name</h6>
+                                                <span class="small fw-medium text-muted">@post.Date.ToString("MMMM dd, yyy")</span>
+                                            </div>
+                                        </div>
+                                    </a>
+
+                                </div>
+                            </div>
+                        </div>
+
+                    }
+
+                </div>
+
+            </div>
+        </section>
+
+    }
+
+}

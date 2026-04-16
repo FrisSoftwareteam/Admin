@@ -1,0 +1,30 @@
+{
+    "time" : 1616598950295,
+    "blocks" : [
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "Olukorede Titilolu holds a B.sc degree in Public Administration from Ambrose Alli University, Ekpoma, Bachelor of Law Degree, Olabisi Onabanjo University, Ago Iwoye and a Master of Business Administration specializing in Human Resources Management from Lagos State University, Ojo, Lagos. He is an Associate, Institute of Chartered Mediators and Conciliator (ACMC) a Fellow of the Institute of Capital Market Registrars (ICMR), a member of the Chartered Institute of Stockbrokers and Chartered Institute of Personnel Management of Nigeria (CIPM)."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "His working career cuts across the manufacturing, shipping, construction, consultancy and financial sectors of the Nigerian economy. He joined the services of First Registrars in 2002 and he has actively participated in so many successful public offers and right issues of many quoted companies in the Nigeria Capital Market, such as FirstBank, Zenith Bank, ETI Transnational, Accra, Bank PHB, Vono Plc, Prestige Assurance Plc, IBTC Plc, etc."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "Olukorede has attended several courses on Leadership, Management and Corporate Governance both locally and internationally. He is at present the Head of Corporate Office in First Registrars and Investor Services Limited."
+          }
+        },
+        {
+            "type" : "paragraph",
+            "data" : {
+                "text" : "He is happily married with children"
+            }
+        }
+    ],
+    "version" : "2.19.3"
+}

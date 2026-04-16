@@ -1,0 +1,64 @@
+﻿@{
+    ViewData["Title"] = "Oando Shareholder Information Update";
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">@ViewData["Title"]</h1>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>
+                                Please follow these instructions to update your Clearing House Number (CHN), 
+                                Preferred Stockbroker, Email Address, and Phone Number (Mobile) on the 
+                                Information Update Portal:
+                            </span>
+                            <span class="me-0">Search your account with your name</span>
+                            <span class="mx-2">●</span>
+                            <span class="me-0">Verify account & address and then click to select your account</span>
+                            <span class="mx-2">●</span>
+                            <span class="me-0">Update your info using the update form and submit</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    @* <a asp-action="Index" asp-route-code="@ViewBag.Code" class="btn btn-info">Cancel</a> *@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-body py-10">
+        <div id="dv_canvas">
+            <form class="form form-loader" hx-post="/forms/fidelity-update/search" hx-target="#dv_canvas" hx-swap="outerHTML">
+                <div class="card-body">
+                    <div class="row justify-content-center py-5">
+                        <div class="col-lg-9 col-md-10">
+
+                            <h3 class="pb-5 mt-10 mb-9 border-bottom">Enter your name</h3>
+                            <div class="form-group row">
+                                <div class="col-8 mb-8" data-option-view="personal-only">
+                                    <input name="name" type="text" class="form-control form-control-solid h-auto px-7" placeholder="Enter your full name" required />
+                                </div>
+                                <div class="col-4">
+                                    <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                        <span class="indicator-label">Search</span>
+                                        <span class="indicator-progress">
+                                            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

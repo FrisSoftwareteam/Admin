@@ -1,0 +1,70 @@
+﻿@model Post
+
+@{
+    ViewData["Title"] = "Post Details";
+}
+
+<div class="d-flex flex-column-fluid post" id=kt_post>
+    <div class=container-xxl id=kt_content_container>
+        <div class=card>
+            <div class="card-body p-lg-20 pb-lg-0">
+                <div class="d-flex flex-column flex-xl-row">
+                    <div class="flex-lg-row-fluid me-xl-15">
+                        <div class=mb-17>
+                            <div class=mb-8>
+                                <div class="d-flex flex-wrap mb-6">
+                                    <div class="my-1 me-9">
+                                        <span class="svg-icon me-1 svg-icon-2 svg-icon-primary"><svg fill=none height=24 viewBox="0 0 24 24" width=24 xmlns=http://www.w3.org/2000/svg><rect fill=black height=9 rx=2 width=9 x=2 y=2 /><rect fill=black height=9 rx=2 width=9 x=13 y=2 opacity=0.3 /><rect fill=black height=9 rx=2 width=9 x=13 y=13 opacity=0.3 /><rect fill=black height=9 rx=2 width=9 x=2 y=13 opacity=0.3 /></svg> </span><span class="fw-bolder text-gray-400">@Model.Date.ToString("dd MMM yyy")</span>
+                                    </div>
+                                    <div class="my-1 me-9">
+                                        <span class="fw-bolder text-gray-400">@Model.Category.Description</span>
+                                    </div>
+                                    <div class=my-1>
+                                        <span class="svg-icon me-1 svg-icon-2 svg-icon-primary"><svg fill=none height=24 viewBox="0 0 24 24" width=24 xmlns=http://www.w3.org/2000/svg><path d="M2 4V16C2 16.6 2.4 17 3 17H13L16.6 20.6C17.1 21.1 18 20.8 18 20V17H21C21.6 17 22 16.6 22 16V4C22 3.4 21.6 3 21 3H3C2.4 3 2 3.4 2 4Z" fill=black opacity=0.3 /><path d="M18 9H6C5.4 9 5 8.6 5 8C5 7.4 5.4 7 6 7H18C18.6 7 19 7.4 19 8C19 8.6 18.6 9 18 9ZM16 12C16 11.4 15.6 11 15 11H6C5.4 11 5 11.4 5 12C5 12.6 5.4 13 6 13H15C15.6 13 16 12.6 16 12Z" fill=black /></svg> </span><span class="fw-bolder text-gray-400">@Model.Author.Name</span>
+                                    </div>
+                                </div>
+                                <div class="text-dark fw-bolder text-hover-primary fs-1">
+                                    @Model.Title
+                                </div>
+                                <div class="overlay mt-8">
+                                    <div class="card-rounded bgi-no-repeat bgi-position-center bgi-size-cover min-h-350px" style=background-image:url(@Tools.GetBlobFilePath(blobfolder.posts, Model.Thumb))></div>
+                                    <div class="card-rounded bg-dark bg-opacity-25 overlay-layer">
+                                        <a class="btn btn-primary" asp-action="Update" asp-route-type="@Model.Type" asp-route-code="@Model.Code">Edit Details</a>
+                                        <a class="btn btn-light-primary ms-3" asp-action="Index" asp-route-type="@Model.Type">Back</a>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="fw-bold fs-5 text-gray-900">
+                                <div class="text-dark fs-4 mb-4 pb-4 border-bottom mb-5">@Model.Brief</div>
+                                @Html.Raw(Model.Content)
+                            </div>
+                            <div class="d-flex flex-center">
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/facebook-4.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/instagram-2-1.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/github.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/behance.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/pinterest-p.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/twitter.svg class="h-20px my-2">
+                                </a>
+                                <a class=mx-4 href=#>
+                                    <img alt="" src=assets/media/svg/brand-logos/dribbble-icon-1.svg class="h-20px my-2">
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

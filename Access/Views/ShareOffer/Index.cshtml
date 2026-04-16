@@ -1,0 +1,71 @@
+﻿@model IEnumerable<ShareOffer>
+
+@{
+    ViewData["Title"] = $"Share Offers";
+}
+
+<div class="mt-lg-10">
+    <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">@ViewBag.Title</h1>
+    @if (Model.Any())
+    {
+        <div class="fw-bold fs-3 text-gray-800 mb-15">
+            <h4>Explore Investment Opportunities!</h4>
+            <p>
+                Welcome to our offer page, here's a curated list of open offers waiting for your attention. These opportunities allow you to participate in the growth of the respective companies. Choose between public offers, which grant you direct access to company shares, or rights issues, special opportunities for existing shareholders to acquire additional shares.
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="fw-bold fs-3 text-gray-800 mb-15">
+            <h4>Stay Tuned for Future Opportunities!</h4>
+            <p>
+                While there are no active offers right now, keep an eye on this space. We’ll update it as soon as new investment opportunities arise. Whether it’s a public offer or a rights issue, we’ll make sure you’re the first to know.
+            </p>
+        </div>
+    }
+    <div class="d-block pt-0 pb-15">
+        @foreach (var offer in Model)
+        {
+            <div class="card mb-6 mb-xl-9">
+                <div class="card-body">
+                    <div class="d-flex flex-stack mb-3">
+                        <div class="badge badge-light">@offer.Register.Name</div>
+                    </div>
+                    <div class="mb-2">
+                        <span class="fs-4 fw-bold mb-1 text-gray-900 text-hover-primary">@offer.Description</span>
+                    </div>
+                    <div class="fs-6 fw-semibold text-gray-600 mb-5">
+                        @offer.Register.Name is offering 
+                        @(offer.AllowPublicOffer ? $"public offer (minimum shares {offer.PublicOffer.Minimum} in multiples of {offer.PublicOffer.Factor}) at {offer.PublicOffer.Price:N2}" : "")
+                        @(offer.AllowRightIssue ? $"right issue {offer.RightIssue.Rights} for every {offer.RightIssue.NoOfShares} units at {offer.RightIssue.Price:N2}" : ""), 
+                        from @offer.StartDate.ToString("dddd dd MMMM yyy") till @offer.EndDate.ToString("dddd dd MMMM yyy").
+                        Use the buttons to register your interest.
+                    </div>
+                    <div class="d-flex flex-stack flex-wrapr">
+                        <div class="d-block">
+                            <ul>
+                                @if (offer.AllowPublicOffer)
+                                {
+                                    <li class="mb-1">
+                                        <a asp-action="PublicOffer" asp-route-code="@offer.UniqueKey" class="fs-6 fw-bold mb-1 text-gray-900 text-hover-primary">Subscribe for Public offer</a>
+                                    </li>
+                                }
+                                @if (offer.AllowRightIssue)
+                                {
+                                    <li class="mb-2">
+                                        <a asp-action="RightIssue" asp-route-code="@offer.UniqueKey" class="fs-6 fw-bold mb-1 text-gray-900 text-hover-primary">Subscribe for Right issue</a>
+                                    </li>
+                                }
+                                <li class="mb-2">
+                                    <a asp-action="Subscription" class="fs-6 fw-bold mb-1 text-gray-900 text-hover-primary">Continue my Application</a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+    </div>
+</div>

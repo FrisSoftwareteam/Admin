@@ -1,0 +1,49 @@
+﻿@model FaqSection
+
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Update Section" : "Create Section";
+}
+
+<div class="d-flex flex-column-fluid">
+    <!--begin::Container-->
+    <div class="container">
+        <!--begin::Card-->
+        <div class="card card-custom gutter-b example example-compact">
+            <div class="card-header">
+                <div class="card-title">
+                    <h3 class="card-label">
+                        @ViewBag.Title
+                    </h3>
+                </div>
+
+            </div>
+            <!--begin::Form-->
+            <form id="frm" class="form" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="card-body">
+                    <div class="my-5 mx-8">
+                        <h3 class="text-dark font-weight-bold mb-10">Section Details:</h3>
+                        <div class="form-group mb-6">
+                            <label>Description:</label>
+                            <input type="text" asp-for="Description" class="form-control form-control-solid" placeholder="Enter Description" required />
+                        </div>
+
+                    </div>
+                    <div class="card-footer">
+                        <div class="row">
+                            <div class="col-lg-6 mt-5">
+                                <button type="submit" id="save-button" class="btn btn-primary mr-2">Save</button>
+                                <button type="reset" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!--end::Form-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::Entry-->

@@ -1,0 +1,35 @@
+﻿@model IEnumerable<AccountNameModel>
+
+@{
+    Layout = null;
+}
+
+<div id="dv_form">
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-9 col-md-10">
+
+            <h3 class="pb-5 mt-10 mb-9 border-bottom">Please select your account:</h3>
+
+            @foreach (var item in Model)
+            {
+                <div class="d-flex flex-stack mb-3">
+                    <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                        <div class="flex-grow-1 me-2">
+                            <h3 class="text-gray-800 fs-6 fw-bold mb-0">@item.Name - @item.AccountNo </h3>
+                            <span class="text-muted fw-semibold d-block fs-7">@item.Address - @item.PhoneNo</span>
+                        </div>
+                        <button type="button" class="btn btn-primary btn-sm me-2 bt-submit" hx-get="/forms/fidelity-update/form/@item.AccountNo" hx-target="#dv_form" hx-swap="outerHTML">
+                            <span class="indicator-label">Select</span>
+                            <span class="indicator-progress htmx-indicator">
+                                Loading... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="separator separator-dashed my-4"></div>
+            }
+
+        </div>
+    </div>
+</div>

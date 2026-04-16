@@ -1,0 +1,154 @@
+﻿@model Ticket
+
+@{
+    ViewData["Title"] = $"Ticket - {Model.Code}";
+}
+
+<div class="container">
+    <div class="page-header mb-10">
+        <div class="media mb-3">
+            <div class="media-body">
+                <div class="row">
+                    <div class="col-lg pt-3 mb-3 mb-lg-0">
+                        <h1 class="page-header-title">Support Ticket #@Model.Code</h1>
+                    </div>
+
+                    <div class="col-lg-auto">
+                        <a href="javascript:;" class="btn btn-primary ps-7" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end" data-kt-menu-flip="bottom">
+                            Actions
+                            <span class="svg-icon svg-icon-2 me-0">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                                        <path d="M6.70710678,15.7071068 C6.31658249,16.0976311 5.68341751,16.0976311 5.29289322,15.7071068 C4.90236893,15.3165825 4.90236893,14.6834175 5.29289322,14.2928932 L11.2928932,8.29289322 C11.6714722,7.91431428 12.2810586,7.90106866 12.6757246,8.26284586 L18.6757246,13.7628459 C19.0828436,14.1360383 19.1103465,14.7686056 18.7371541,15.1757246 C18.3639617,15.5828436 17.7313944,15.6103465 17.3242754,15.2371541 L12.0300757,10.3841378 L6.70710678,15.7071068 Z" fill="#000000" fill-rule="nonzero" transform="translate(12.000003, 11.999999) rotate(-180.000000) translate(-12.000003, -11.999999)"></path>
+                                    </g>
+                                </svg>
+                            </span>
+                        </a>
+                        <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-bold py-4 w-250px fs-6" data-kt-menu="true">
+                            <div class="menu-item px-5">
+                                <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Tickets</div>
+                            </div>
+                            <div class="menu-item px-5">
+                                <a asp-action="CloseTicket" asp-route-code="@Model.Code" class="menu-link text-danger px-5">Close Ticket</a>
+                            </div>
+                            <div class="menu-item px-5">
+                                <a href="javascript:;" data-bs-toggle="modal" data-bs-target="#new_ticket_diag" class="menu-link px-5">Create Ticket</a>
+                            </div>
+                            <div class="separator my-3"></div>
+                            <div class="menu-item px-5">
+                                <a asp-action="Tickets" class="menu-link px-5">Back</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="d-flex flex-column flex-xl-row p-5">
+                <div class="flex-lg-row-fluid mb-20 mb-xl-0">
+                    <div class="mb-0">
+                        <div class="d-flex justify-content-between mb-10">
+
+                            <h2 class="text-dark pt-2">@Model.Subject</h2>
+
+                            <div class="my-0">
+                                @if (Model.Resolved)
+                                {
+                                    <span class="svg-icon svg-icon-2tx svg-icon-secondary me-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <path d="M4.875,20.75 C4.63541667,20.75 4.39583333,20.6541667 4.20416667,20.4625 L2.2875,18.5458333 C1.90416667,18.1625 1.90416667,17.5875 2.2875,17.2041667 C2.67083333,16.8208333 3.29375,16.8208333 3.62916667,17.2041667 L4.875,18.45 L8.0375,15.2875 C8.42083333,14.9041667 8.99583333,14.9041667 9.37916667,15.2875 C9.7625,15.6708333 9.7625,16.2458333 9.37916667,16.6291667 L5.54583333,20.4625 C5.35416667,20.6541667 5.11458333,20.75 4.875,20.75 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                                            <path d="M12.9835977,18 C12.7263047,14.0909841 9.47412135,11 5.5,11 C4.98630124,11 4.48466491,11.0516454 4,11.1500272 L4,7 C4,5.8954305 4.8954305,5 6,5 L20,5 C21.1045695,5 22,5.8954305 22,7 L22,16 C22,17.1045695 21.1045695,18 20,18 L12.9835977,18 Z M19.1444251,6.83964668 L13,10.1481833 L6.85557487,6.83964668 C6.4908718,6.6432681 6.03602525,6.77972206 5.83964668,7.14442513 C5.6432681,7.5091282 5.77972206,7.96397475 6.14442513,8.16035332 L12.6444251,11.6603533 C12.8664074,11.7798822 13.1335926,11.7798822 13.3555749,11.6603533 L19.8555749,8.16035332 C20.2202779,7.96397475 20.3567319,7.5091282 20.1603533,7.14442513 C19.9639747,6.77972206 19.5091282,6.6432681 19.1444251,6.83964668 Z" fill="#000000" />
+                                        </svg>
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="svg-icon svg-icon-2tx svg-icon-primary me-4">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                            <path d="M6,2 L18,2 C18.5522847,2 19,2.44771525 19,3 L19,12 C19,12.5522847 18.5522847,13 18,13 L6,13 C5.44771525,13 5,12.5522847 5,12 L5,3 C5,2.44771525 5.44771525,2 6,2 Z M7.5,5 C7.22385763,5 7,5.22385763 7,5.5 C7,5.77614237 7.22385763,6 7.5,6 L13.5,6 C13.7761424,6 14,5.77614237 14,5.5 C14,5.22385763 13.7761424,5 13.5,5 L7.5,5 Z M7.5,7 C7.22385763,7 7,7.22385763 7,7.5 C7,7.77614237 7.22385763,8 7.5,8 L10.5,8 C10.7761424,8 11,7.77614237 11,7.5 C11,7.22385763 10.7761424,7 10.5,7 L7.5,7 Z" fill="#000000" opacity="0.3" />
+                                            <path d="M3.79274528,6.57253826 L12,12.5 L20.2072547,6.57253826 C20.4311176,6.4108595 20.7436609,6.46126971 20.9053396,6.68513259 C20.9668779,6.77033951 21,6.87277228 21,6.97787787 L21,17 C21,18.1045695 20.1045695,19 19,19 L5,19 C3.8954305,19 3,18.1045695 3,17 L3,6.97787787 C3,6.70173549 3.22385763,6.47787787 3.5,6.47787787 C3.60510559,6.47787787 3.70753836,6.51099993 3.79274528,6.57253826 Z" fill="#000000" />
+                                        </svg>
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                        <div class="pb-0">
+                            <div class="p-5 rounded bg-light mb-7">
+                                <div class="d-flex align-items-center mb-3">
+                                    <div class="d-flex align-items-center flex-grow-1">
+                                        <div class="d-flex flex-column">
+                                            <a href="#" class="text-gray-900 text-hover-primary fs-6 fw-bolder">@Model.User.FullName</a>
+                                            <span class="text-gray-400 fw-bold">@Clear.Tools.StringUtility.TimeAgo(Model.Date)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="fs-6 text-gray-700 pe-7">
+                                        @Html.Raw(Model.Message)
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-7 ps-10">
+                                @foreach (var message in Model.Messages.Skip(1))
+                                {
+                                    <div class="d-flex p-5 rounded bg-light mb-5">
+                                        <div class="d-flex flex-column flex-row-fluid">
+                                            <div class="d-flex flex-column mb-2">
+                                                <a href="#" class="text-gray-900 text-hover-primary fs-6 fw-bolder">@message.Sender.FullName</a>
+                                                <span class="text-gray-400 fw-bold">@Clear.Tools.StringUtility.TimeAgo(message.Date)</span>
+                                            </div>
+                                            <div class="fs-6 text-gray-700 pe-7">
+                                                @Html.Raw(message.Body)
+                                            </div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <div class="separator mb-5"></div>
+
+                            @if (Model.Resolved)
+                            {
+                                <div class="text-center">
+                                    <span class="badge badge-light-primary fw-bolder me-auto px-4 py-3">
+                                        This ticket is closed and therefore cannot receive any more messages.
+                                    </span>
+                                </div>
+                            }
+                            else
+                            {
+                                <form class="position-relative mb-6 form-loader" asp-action="AddMessage">
+                                    <input type="hidden" name="UserId" value="@Model.UserId" />
+                                    <input type="hidden" name="TicketId" value="@Model.Id" />
+                                    <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center flex-grow-1">
+                                            <textarea name="Message" class="form-control border-0 p-0 pe-10 resize-none min-h-25px" data-kt-autosize="true" rows="1" placeholder="Reply.." style="overflow: hidden; overflow-wrap: break-word; height: 25px;" required></textarea>
+                                        </div>
+                                        <div class="my-0">
+                                            @*<button type="submit" class="btn btn-primary fw-bolder fs-8 fs-lg-base">Reply</button>*@
+                                            <button type="submit" class="btn btn-primary bt-submit">
+                                                <span class="indicator-label">Reply</span>
+                                                <span class="indicator-progress">
+                                                    Please wait...
+                                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_NewTicket" />

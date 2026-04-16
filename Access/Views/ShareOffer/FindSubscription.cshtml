@@ -1,0 +1,87 @@
+﻿@model FindShareSubscriptionModel
+
+@{
+    ViewData["Title"] = $"Find my Application";
+}
+
+<div class="mt-lg-10">
+    <div class="row justify-content-center">
+        <div class="col-sm-10 col-md-8">
+            <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">@ViewBag.Title</h1>
+            <div class="fw-bold fs-5 text-gray-800 mb-15">
+                Please enter any information about your application below,
+                <span class="fw-bolder">application reference</span>,
+                <span class="fw-bolder">email</span> or
+                <span class="fw-bolder">phone number</span>.
+                We'd do our best to find your application. Please check the email we sent to you for details regarding your application
+            </div>
+
+            <div>
+                @if (TempData["error"] != null)
+                {
+                    <div class="alert alert-dismissible bg-light-danger d-flex flex-column flex-sm-row p-5 mb-10">
+                        <i class="ki-duotone ki-notification-bing fs-2hx text-primary me-4 mb-5 mb-sm-0"><span class="path1"></span><span class="path2"></span><span class="path3"></span></i>
+                        <div class="d-flex flex-column pe-0 pe-sm-10">
+                            <h4 class="fw-semibold">Error!</h4>
+                            <span>@TempData["error"]</span>
+                        </div>
+                        <button type="button" class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 btn btn-icon ms-sm-auto" data-bs-dismiss="alert">
+                            <i class="ki-duotone ki-cross fs-1 text-primary"><span class="path1"></span><span class="path2"></span></i>
+                        </button>
+                    </div>
+                }
+            </div>
+
+            <div class="card mb-5 mb-xl-10">
+                <div class="card-body px-15">
+                    <form class="form form-loader" method="post" asp-action="FindSubscription">
+                        <div class="row justify-content-center py-5">
+                            <div class="col-lg-12">
+
+                                <h3 class="pb-5 mt-0 mb-9 border-bottom">Application Information</h3>
+
+                                <div class="form-group row">
+                                    <div class="col-lg-12 mb-8">
+                                        <label class="fs-6 fw-bold mb-2 required" asp-for="Query">Reference or email or phone number:</label>
+                                        <input type="text" class="form-control form-control-solid h-auto py-4 px-7" asp-for="Query" placeholder="Application reference" required />
+                                    </div>
+                                </div>
+
+                                @* <div class="form-group row">
+                                    <div class="col-lg-6 mb-8">
+                                        <label class="fs-6 fw-bold mb-2" asp-for="Phone">Phone Number:</label>
+                                        <input asp-for="Phone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                                    </div>
+                                    <div class="col-lg-6 mb-8">
+                                        <label class="fs-6 fw-bold mb-2" asp-for="Email">Email address:</label>
+                                        <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" />
+                                    </div>
+                                </div> *@
+
+                                <div class="mt-10">
+                                    <div class="row">
+                                        <div class="col-lg-6">
+                                            <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                                <span class="indicator-label">Submit</span>
+                                                <span class="indicator-progress">
+                                                    Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                </span>
+                                            </button>
+                                            <a asp-action="Index" asp-route-code="@ViewBag.Code" class="btn btn-secondary">Cancel</a>
+                                        </div>
+                                        <div class="col-lg-6 text-lg-end">
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mw-700px scroll-y mt-5 mx-auto pt-0 pb-15">
+
+    </div>
+</div>

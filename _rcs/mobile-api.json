@@ -1,0 +1,495 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "FirstReg.API",
+    "version": "1.0"
+  },
+  "paths": {
+    "/": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mobile/stock-balance/{regcode}/{accno}": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "operationId": "GetMobileStockBalance",
+        "parameters": [
+          {
+            "name": "regcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "accno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockBalanceGenericResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mobile/stock-balance/{clearingno}": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "operationId": "GetMobileStockBalanceByClearingNo",
+        "parameters": [
+          {
+            "name": "clearingno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StockBalanceGenericResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mobile/account/{regcode}/{accno}": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "operationId": "GetMobileHolding",
+        "parameters": [
+          {
+            "name": "regcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "accno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HoldingGenericResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mobile/dividends/{regcode}/{accno}": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "operationId": "GetMobileDividends",
+        "parameters": [
+          {
+            "name": "regcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "accno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DividendListGenericResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/mobile/units/{regcode}/{accno}": {
+      "get": {
+        "tags": [
+          "FirstReg.API"
+        ],
+        "operationId": "GetMobileUnits",
+        "parameters": [
+          {
+            "name": "regcode",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "format": "int32"
+            }
+          },
+          {
+            "name": "accno",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnitListGenericResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Dividend": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accountNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "regCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "gross": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "total": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "net": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "dividendNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "tax": {
+            "type": "number",
+            "format": "double",
+            "nullable": true
+          },
+          "warrantNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "type": {
+            "type": "string",
+            "nullable": true
+          },
+          "date": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "DividendListGenericResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dividend"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "Holding": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accountNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "regCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "address1": {
+            "type": "string",
+            "nullable": true
+          },
+          "address2": {
+            "type": "string",
+            "nullable": true
+          },
+          "clearingNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "middleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "units": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Unit"
+            },
+            "nullable": true
+          },
+          "dividends": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Dividend"
+            },
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "HoldingGenericResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/Holding"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StockBalance": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "regCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "accountNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "clearingNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "firstName": {
+            "type": "string",
+            "nullable": true
+          },
+          "lastName": {
+            "type": "string",
+            "nullable": true
+          },
+          "middleName": {
+            "type": "string",
+            "nullable": true
+          },
+          "balance": {
+            "type": "number",
+            "format": "double"
+          }
+        },
+        "additionalProperties": false
+      },
+      "StockBalanceGenericResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StockBalance"
+          }
+        },
+        "additionalProperties": false
+      },
+      "Unit": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "accountNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "regCode": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "certNo": {
+            "type": "integer",
+            "format": "int32"
+          },
+          "date": {
+            "type": "string",
+            "nullable": true
+          },
+          "oldCertNo": {
+            "type": "string",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "narration": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalUnits": {
+            "type": "number",
+            "format": "double"
+          },
+          "status": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "UnitListGenericResponse": {
+        "type": "object",
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "readOnly": true
+          },
+          "message": {
+            "type": "string",
+            "nullable": true,
+            "readOnly": true
+          },
+          "data": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Unit"
+            },
+            "nullable": true,
+            "readOnly": true
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  }
+}

@@ -1,0 +1,575 @@
+﻿@model Shareholder
+
+@{
+    ViewBag.Title = "Shareholder Details";
+}
+
+<div class="post d-flex flex-column-fluid" id="kt_post">
+    <div id="kt_content_container" class="container">
+        <div class="d-flex flex-column flex-xl-row">
+            <div class="flex-column flex-lg-row-auto w-100 w-xl-400px mb-10">
+                <div class="card mb-5 mb-xl-8">
+                    <div class="card-body pt-15 pb-3">
+                        <div class="d-flex flex-center flex-column mb-5">
+                            <div class="symbol symbol-100px symbol-circle mb-7">
+                                <img src="~/assets/media/avatars/blank.png" alt="image" />
+                            </div>
+                            <a href="#" class="fs-3 text-gray-800 text-hover-primary fw-bolder mb-1">@Model.User.FullName</a>
+                            <div class="fs-5 fw-bold text-gray-400 mb-2">@Model.User.Email</div>
+                            @if (Model.IsSubscribed)
+                            {
+                                <div class="badge badge-light-info d-inline">Premium user</div>
+                            }
+                        </div>
+                        <div class="d-flex flex-stack fs-4 py-3">
+                            <div class="fw-bolder rotate collapsible" data-bs-toggle="collapse" href="#kt_customer_view_details" role="button" aria-expanded="false" aria-controls="kt_customer_view_details">
+                                Details
+                                <span class="ms-2 rotate-180"> <span class="svg-icon svg-icon-3"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <path d="M6.70710678,15.7071068 C6.31658249,16.0976311 5.68341751,16.0976311 5.29289322,15.7071068 C4.90236893,15.3165825 4.90236893,14.6834175 5.29289322,14.2928932 L11.2928932,8.29289322 C11.6714722,7.91431428 12.2810586,7.90106866 12.6757246,8.26284586 L18.6757246,13.7628459 C19.0828436,14.1360383 19.1103465,14.7686056 18.7371541,15.1757246 C18.3639617,15.5828436 17.7313944,15.6103465 17.3242754,15.2371541 L12.0300757,10.3841378 L6.70710678,15.7071068 Z" fill="#000000" fill-rule="nonzero" transform="translate(12.000003, 11.999999) rotate(-180.000000) translate(-12.000003, -11.999999)" /> </g> </svg> </span> </span>
+                            </div>
+                        </div>
+                        <div class="separator separator-dashed my-3"></div>
+                        <div id="kt_customer_view_details" class="collapse show">
+                            <div class="py-5 fs-6">
+
+                                <div class="fw-bolder mt-5">Clearing No</div>
+                                <div class="text-gray-600">
+                                    @Model.ClearingNo
+                                    <a href="javascript:void;" data-bs-toggle="modal" data-bs-target="#diag_update_chn" class="text-gray-600 text-primary text-hover-primary">update..</a>
+                                </div>
+
+                                <div class="fw-bolder mt-5">Contact</div>
+                                <div class="text-gray-600">
+                                    <a href="mailto:@Model.User.Email" class="text-gray-600 text-hover-primary">@Model.User.Email</a>
+                                </div>
+                                <div class="text-gray-600">@Model.User.PhoneNumber</div>
+
+                                <div class="fw-bolder mt-5">Address</div>
+                                <div class="text-gray-600">
+                                    @Model.Street,
+                                    <br />@Model.City, @Model.State
+                                    <br />@Model.Country @Model.PostCode
+                                </div>
+
+                                <div class="fw-bolder mt-5">Validation</div>
+                                <div class="text-gray-600">
+                                    Email Address: <span>@(Model.User.EmailConfirmed ? "Completed" : "Pending")</span>
+                                    <br />Phone Number: <span>@(Model.User.PhoneNumberConfirmed ? "Completed" : "Pending")</span>
+                                </div>
+                            </div>
+                            <div class="separator separator-dashed my-5"></div>
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+                        <div class="py-2">
+                            <div class="d-flex flex-stack">
+                                <div class="d-flex">
+                                    <div class="d-flex flex-column">
+                                        <a href="#" class="fs-5 text-dark text-hover-primary text-success fw-bolder">Allow Group</a>
+                                        <div class="fs-6 fw-bold text-muted">Allow this shareholder to group multiple accounts</div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end">
+                                    <label class="form-check form-switch form-switch-sm form-check-custom form-check-solid">
+                                        <input class="form-check-input" name="AllowGroup" type="checkbox" id="chk_allow_group" data-id="@Model.Id" data-name="@Model.User.FullName" asp-for="@Model.User.AllowGroup" />
+                                        <span class="form-check-label fw-bold text-muted" for="chk_allow_group"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card mb-5 mb-xl-8">
+                    <div class="card-header border-0">
+                        <div class="card-title">
+                            <h3 class="fw-bolder m-0">Signature</h3>
+                        </div>
+                    </div>
+                    <div class="card-body pt-2">
+                        <div class="py-5">
+                            <img src="@Model.Signature" class="w-100" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex-lg-row-fluid ms-lg-10">
+
+                <div class="card mb-5 mb-xl-10">
+                    <div class="card-body">
+
+                        @if (Model.Verified)
+                        {
+                            if (Model.IsSubscribed)
+                            {
+                                <div class="row">
+                                    <div class="col-lg-12">
+                                        <h3 class="mb-2">Subscription active until @Model.ExpiryDate?.ToString("MMM dd, yyy")</h3>
+                                        <p class="fs-6 text-gray-600 fw-bold mb-6 mb-lg-10">User has been subscribed since @*@sub.StartDate.ToString("MMM dd, yyy")*@</p>
+                                    </div>
+                                    <div class="col-lg-12">
+                                        <div class="d-flex text-muted fw-bolder fs-5 mb-3">
+                                            <span class="flex-grow-1 text-gray-800">Users</span>
+                                            <span class="text-gray-800">@Model.DaysSpent of @Model.TotalDays Used</span>
+                                        </div>
+                                        <div class="progress h-8px bg-light-primary mb-2">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: @Model.Percentage%" aria-valuenow="@Model.Percentage" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="fs-6 text-gray-600 fw-bold mb-10">@Model.DaysLeft days remaining until the next renewal</div>
+                                    </div>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="notice d-flex bg-light-warning rounded border-warning border border-dashed p-6">
+                                    <span class="svg-icon svg-icon-2tx svg-icon-warning me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-bold">
+                                            <h4 class="text-gray-800 fw-bolder">No Active Subscription!</h4>
+                                            @if (Model.ExpiryDate != null)
+                                            {
+                                                <div class="fs-6 text-gray-600">
+                                                    The last subscription expired on @Model.ExpiryDate?.ToString("MMM dd, yyy"). To send a renewal notice
+                                                    or add a new subscription, use the buttons below.
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="fs-6 text-gray-600">
+                                                    This user has not subscribe to any service. To send them a message about subscription
+                                                    or add a new subscription, use the buttons below.
+                                                </div>
+                                            }
+                                            <div class="d-flex flex-start flex-wrap mt-4">
+                                                <button class="btn btn-sm btn-outline btn-outline-danger btn-active-danger m-2">Notify</button>
+                                                <button class="btn btn-sm btn-danger m-2" data-bs-toggle="modal" data-bs-target="#diag_subscribe">Subscribe</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="notice d-flex bg-light-danger rounded border-danger border border-dashed p-6">
+                                <span class="svg-icon svg-icon-2tx svg-icon-danger me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                <div class="d-flex flex-stack flex-grow-1">
+                                    <div class="fw-bold">
+                                        <h4 class="text-gray-800 fw-bolder">Account not Verified!</h4>
+                                        <div class="fs-6 text-gray-600">
+                                            This account is waiting to be verified. Click the button to begin the verification process,
+                                            for any irregularity, use the resolve button to notify the shareholder.
+                                        </div>
+                                        @if (!Model.ActionRequired)
+                                        {
+                                            <div class="mt-3">
+                                                <a href="javascript:;" class="btn btn-outline btn-outline-danger px-6 align-self-center text-nowrap me-5"
+                                           data-bs-toggle="modal" data-bs-target="#diag_activate">Activate</a>
+                                                <a href="javascript:;" class="btn btn-outline btn-outline-warning px-6 align-self-center text-nowrap me-5"
+                                           data-bs-toggle="modal" data-bs-target="#diag_reject">Reject</a>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+
+                <div class="card pt-4 mb-6 mb-xl-9">
+                    <div class="card-header border-0">
+                        <div class="card-title">
+                            <h2 class="fw-bolder mb-0">@Model.Holdings.Count() Investments</h2>
+                        </div>
+                        <div class="card-toolbar">
+                            @*<a href="#" class="btn btn-sm btn-flex btn-light-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_new_card"> <span class="svg-icon svg-icon-3"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M6.54184 2.36899C4.34504 2.65912 2.65912 4.34504 2.36899 6.54184C2.16953 8.05208 2 9.94127 2 12C2 14.0587 2.16953 15.9479 2.36899 17.4582C2.65912 19.655 4.34504 21.3409 6.54184 21.631C8.05208 21.8305 9.94127 22 12 22C14.0587 22 15.9479 21.8305 17.4582 21.631C19.655 21.3409 21.3409 19.655 21.631 17.4582C21.8305 15.9479 22 14.0587 22 12C22 9.94127 21.8305 8.05208 21.631 6.54184C21.3409 4.34504 19.655 2.65912 17.4582 2.36899C15.9479 2.16953 14.0587 2 12 2C9.94127 2 8.05208 2.16953 6.54184 2.36899Z" fill="#12131A" /> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 17C12.5523 17 13 16.5523 13 16V13H16C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11H13V8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8V11H8C7.44772 11 7 11.4477 7 12C7 12.5523 7.44771 13 8 13H11V16C11 16.5523 11.4477 17 12 17Z" fill="#12131A" /> </svg> </span> Add new method </a>*@
+                        </div>
+                    </div>
+                    <div class="card-body">
+
+                        @foreach (var h in Model.Holdings)
+                        {
+
+                            <div>
+                                <div class="d-flex flex-stack">
+                                    <div class="d-flex align-items-center me-3">
+                                        <div class="flex-grow-1">
+                                            <a href="#" class="text-gray-800 text-hover-primary fs-5 fw-bolder lh-0">
+                                                @h.Register.Name.ToUpper()
+                                            </a>
+                                            <span class="text-gray-400 fw-bold d-block fs-6">
+                                                @h.AccountNo - @h.AccountName
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center w-100 mw-200px">
+                                        <span class="text-gray-400 fw-bold me-5">
+                                            @if (h.Status == ShareHoldingStatus.Pending)
+                                            {
+                                                <button type="button" class="btn btn-sm btn-info bt_h_review"
+                                                data-id="@h.Id" data-reg="@h.Register.Name" data-accno="@h.AccountNo"
+                                                data-bs-toggle="modal" data-bs-target="#diag_verify_holding">
+                                                    Review
+                                                </button>
+                                            }
+                                            else if (h.Status == ShareHoldingStatus.Verified)
+                                            {
+                                                <span class="badge badge-light-success">@h.Status</span>
+                                            }
+                                        </span>
+                                        <div class="w-100 me-2 fs-2 fw-bolder text-right">
+                                            @h.Units
+                                        </div>
+
+                                        <div class="d-flex justify-content-end flex-shrink-0">
+                                            <a asp-action="DeleteHolding" asp-route-id="@h.Id" class="btn btn-icon btn-bg-light btn-active-color-danger btn-sm">
+                                                <span class="svg-icon svg-icon-3">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M5 9C5 8.44772 5.44772 8 6 8H18C18.5523 8 19 8.44772 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z" fill="currentColor"></path>
+                                                        <path opacity="0.5" d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V5C19 5.55228 18.5523 6 18 6H6C5.44772 6 5 5.55228 5 5V5Z" fill="currentColor"></path>
+                                                        <path opacity="0.5" d="M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V4H9V4Z" fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </a>
+                                        </div>
+
+                                    </div>
+                                </div>
+                                <div class="separator separator-dashed my-4">
+                                </div>
+                            </div>
+
+                        }
+                    </div>
+                </div>
+
+                <div class="card pt-4 mb-6 mb-xl-9">
+                    <div class="card-header border-0">
+                        <div class="card-title">
+                            <h2 class="fw-bolder mb-0">Payment History</h2>
+                        </div>
+                        <div class="card-toolbar">
+                        </div>
+                    </div>
+                    <div class="card-body pt-0">
+
+                        @foreach (var item in Model.User.Payments)
+                        {
+
+                            <div class="py-0" data-kt-customer-payment-method="row">
+                                <div class="py-3 d-flex flex-stack flex-wrap">
+                                    <div class="d-flex align-items-center">
+                                        <div class="symbol symbol-40px me-3">
+                                            <div class="symbol-label bg-light">
+                                                <img src="assets/media/svg/card-logos/mastercard.svg" class="w-35px" alt="" />
+                                            </div>
+                                        </div>
+                                        <div class="me-3">
+                                            <div class="d-flex align-items-center">
+                                                <div class="text-gray-800 fw-bolder">@item.Description</div>
+                                            </div>
+                                            <div class="text-gray-400">@item.Date.ToString("dd MMM, yyy")</div>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex my-3 ms-9">
+                                        <div class="badge badge-light-@item.CssColorClass ms-5">@item.Status</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="separator separator-dashed"></div>
+
+                        }
+
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="modal fade" id="diag_reject" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
+                <div class="modal-content">
+                    <form class="form form-loader" asp-action="Reject" asp-route-code="@Model.Code" id="diag_reject_form">
+                        <input type="hidden" name="Id" value="@Model.Id" />
+                        <div class="modal-header" id="diag_reject_header">
+                            <h2 class="fw-bolder">Activate Shareholder Account</h2>
+                            <div id="diag_reject_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                                <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                            </div>
+                        </div>
+                        <div class="modal-body py-10 px-lg-17">
+                            <div class="d-flex flex-column">
+                                <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6">
+                                    <span class="svg-icon svg-icon-2tx svg-icon-primary me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-bold">
+                                            <div class="fs-6 text-gray-600">
+                                                To reject this account for @Model.User.FullName, please select
+                                                the required action from the list and enter some comments.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="fv-row mb-5">
+                                        <label class="fs-6 fw-bold mb-2">Select Issue</label>
+                                        <select class="form-control form-control-solid" name="@nameof(ShareholdersRejectModel.Issue)" required>
+                                            <option></option>
+                                            <option value="@ShareholderActivationIssue.Signature">Irregular Signature</option>
+                                            <option value="@ShareholderActivationIssue.ClearingNo">Wrong Clearing Number</option>
+                                        </select>
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="fs-6 fw-bold mb-2">Comments</label>
+                                        <textarea type="text" class="form-control form-control-solid" name="@nameof(ShareholdersRejectModel.Comments)" placeholder="Add some comments" rows="4" required></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer flex-center">
+                            <button type="button" class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-danger bt-submit"> <span class="indicator-label">Reject</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="diag_activate" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
+                <div class="modal-content">
+                    <form class="form form-loader" asp-action="Activate" asp-route-code="@Model.Code" id="diag_activate_form">
+                        <input type="hidden" name="username" value="@Model.User.UserName" />
+                        <div class="modal-header" id="diag_activate_header">
+                            <h2 class="fw-bolder">Activate Shareholder Account</h2>
+                            <div id="diag_activate_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                                <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                            </div>
+                        </div>
+                        <div class="modal-body py-10 px-lg-17">
+                            <div class="d-flex flex-column">
+                                <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6">
+                                    <span class="svg-icon svg-icon-2tx svg-icon-primary me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-bold">
+                                            <div class="fs-6 text-gray-600">
+                                                To activate this account for @Model.User.FullName, please ensure that
+                                                the details of the account has been verified.
+                                                @*<a href="#">Privacy Policy</a>*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-8">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Name</label>
+                                                <input type="text" class="form-control form-control-solid" value="@Model.User.FullName" readonly />
+                                            </div>
+                                        </div>
+                                        <div class="col-4">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Clearing No</label>
+                                                <input type="text" class="form-control form-control-solid" placeholder="" asp-for="ClearingNo" readonly />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="fs-6 fw-bold mb-2">Address</label>
+                                        <input type="text" class="form-control form-control-solid" placeholder="" value="@($"{Model.Street}, {Model.City}, {Model.State}.")" readonly />
+                                    </div>
+                                    <div class="fv-row mb-5">
+                                        <label class="form-check form-check-inline form-check-solid me-5 is-invalid">
+                                            <input class="form-check-input" asp-for="IsCompany" type="checkbox" />
+                                            <span class="fw-bold ps-2 fs-6">This is a corporate shareholder</span>
+                                        </label>
+                                    </div>
+                                    <div class="mt-3 bg-gray-200">
+                                        <img src="@Model.Signature" class="w-100" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer flex-center">
+                            <button type="button" class="btn btn-white me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary bt-submit"> <span class="indicator-label">Activate</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="diag_subscribe" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
+                <div class="modal-content">
+                    <form class="form form-loader" asp-action="Subscribe" id="diag_subscribe_form">
+                        <input type="hidden" name="@nameof(SubscribeModel.ShareholderId)" value="@Model.Id" />
+                        <div class="modal-header" id="diag_subscribe_header">
+                            <h2 class="fw-bolder">Add New Subscription</h2>
+                            <div id="diag_subscribe_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                                <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                            </div>
+                        </div>
+                        <div class="modal-body py-10 px-lg-17">
+                            <div class="d-flex flex-column">
+                                <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6">
+                                    <span class="svg-icon svg-icon-2tx svg-icon-primary me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                    <div class="d-flex flex-stack flex-grow-1">
+                                        <div class="fw-bold">
+                                            <div class="fs-6 text-gray-600">
+                                                Use this form to create a new subscription for @Model.User.FullName,
+                                                adding a subscription means they have already paid for the service.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Start date</label>
+                                                <input type="date" class="form-control form-control-solid" name="@nameof(SubscribeModel.StartDate)" required />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">No of Years</label>
+                                                <input type="number" class="form-control form-control-solid" placeholder="" name="@nameof(SubscribeModel.Years)" required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-6">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Amount Paid</label>
+                                                <input type="text" class="form-control form-control-solid" placeholder="" name="@nameof(SubscribeModel.AmountPaid)" required />
+                                            </div>
+                                        </div>
+                                        <div class="col-6">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Paid on</label>
+                                                <input type="date" class="form-control form-control-solid" placeholder="" name="@nameof(SubscribeModel.PaymentDate)" required />
+                                            </div>
+                                        </div>
+                                        <div class="col-12">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Payment Ref</label>
+                                                <input type="text" class="form-control form-control-solid" placeholder="" name="@nameof(SubscribeModel.PayRef)" required />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer flex-center">
+                            <button type="button" class="btn btn-white me-3" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary bt-submit"> <span class="indicator-label">Subscribe</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="diag_verify_holding" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
+                <div class="modal-content">
+                    <div class="modal-header" id="diag_verify_holding_header">
+                        <h2 class="fw-bolder">Verify Shareholding</h2>
+                        <div id="diag_verify_holding_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                            <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                        </div>
+                    </div>
+                    <div class="modal-body py-10 px-lg-17">
+                        <div class="d-flex flex-column">
+                            <div class="notice d-flex bg-light-primary rounded border-primary border border-dashed mb-9 p-6">
+                                <span class="svg-icon svg-icon-2tx svg-icon-primary me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
+                                <div class="d-flex flex-stack flex-grow-1">
+                                    <div class="fw-bold">
+                                        <div class="fs-6 text-gray-800">
+                                            You are about to verify that <span class="fw-bolder" id="sp_h_accno"></span>
+                                            in <span class="fw-bolder" id="sp_h_register"></span>
+                                            belongs to @Model.User.FullName, please confirm this on estock before you continue.
+                                            @*<a href="#">Privacy Policy</a>*@
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                @* <div class="fv-row mb-5">
+                                <label class="fs-6 fw-bold mb-2">Name</label>
+                                <input id="tx_h_name" type="text" class="form-control form-control-solid" placeholder="Shareholder" readonly />
+                                </div>*@
+                                <div class="row">
+                                    <div class="col-8">
+                                        <div class="fv-row mb-5">
+                                            <label class="fs-6 fw-bold mb-2">Register</label>
+                                            <input id="tx_h_register" type="text" class="form-control form-control-solid" placeholder="Register" readonly />
+                                        </div>
+                                    </div>
+                                    <div class="col-4">
+                                        <div class="fv-row mb-5">
+                                            <label class="fs-6 fw-bold mb-2">Account No</label>
+                                            <input id="tx_h_accno" type="text" class="form-control form-control-solid" placeholder="Account no" readonly />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer flex-center">
+                        <button class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                        <form method="post" asp-action="DeleteHolding" class="form-loader">
+                            <input class="tx_h_id" type="hidden" name="Id" />
+                            <button type="submit" class="btn btn-danger bt-submit"> <span class="indicator-label">Delete</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </form>
+                        <form method="post" asp-action="VerifyHolding" class="form-loader">
+                            <input class="tx_h_id" type="hidden" name="Id" />
+                            <button type="submit" class="btn btn-success bt-submit"> <span class="indicator-label">Verify</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="diag_update_chn" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered mw-500px">
+                <div class="modal-content">
+                    <form method="post" asp-action="UpdateCHN" asp-route-code="@Model.Code" class="form-loader">
+                        <div class="modal-header" id="diag_update_chn_header">
+                            <h2 class="fw-bolder">Uodate Clearing No</h2>
+                            <div id="diag_update_chn_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                                <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                            </div>
+                        </div>
+                        <div class="modal-body py-10 px-lg-17">
+                            <div class="d-flex flex-column">
+                                <div>
+                                    <div class="row">
+                                        <div class="col">
+                                            <div class="fv-row mb-5">
+                                                <label class="fs-6 fw-bold mb-2">Clearing No</label>
+                                                <input id="tx_chn" type="text" class="form-control form-control-solid" name="chn" placeholder="Clearing No" value="@Model.ClearingNo" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer flex-center">
+                            <button class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                            <input class="tx_h_id" type="hidden" name="Id" />
+                            <button type="submit" class="btn btn-success bt-submit"> <span class="indicator-label">Submit</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/pages/shs.js" asp-append-version="true"></script>
+} 

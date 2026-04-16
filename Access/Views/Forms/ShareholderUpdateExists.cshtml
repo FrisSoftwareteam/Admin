@@ -1,0 +1,69 @@
+﻿@model ShareholderUpdateModel
+
+@{
+    Layout = null;
+}
+
+<div id="dv_form">
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-9 col-md-10">
+
+            <h1 class="pb-5 mt-10 mb-3">@Model.FullName</h1>
+            <h4 class="pb-5 mb-9">You have already submitted your information:</h4>
+
+            <div class="d-flex flex-stack mb-3">
+                <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                    <div class="flex-grow-1 me-2">
+                        <h3 class="text-gray-500 fs-6 fw-semibold mb-0">Account No:</h3>
+                    </div>
+                    <h2 class="text-gray-900 fw-bold d-block fs-4">@Model.AccountNo</h2>
+                </div>
+            </div>
+
+            <div class="separator separator-dashed my-4"></div>
+
+            <div class="d-flex flex-stack mb-3">
+                <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                    <div class="flex-grow-1 me-2">
+                        <h3 class="text-gray-500 fs-6 fw-semibold mb-0">Phone No:</h3>
+                    </div>
+                    <h2 class="text-gray-900 fw-bold d-block fs-4">@Model.Phone</h2>
+                </div>
+            </div>
+
+            <div class="separator separator-dashed my-4"></div>
+
+            <div class="d-flex flex-stack mb-3">
+                <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                    <div class="flex-grow-1 me-2">
+                        <h3 class="text-gray-500 fs-6 fw-semibold mb-0">Email Address:</h3>
+                    </div>
+                    <h2 class="text-gray-900 fw-bold d-block fs-4">@Model.Email</h2>
+                </div>
+            </div>
+
+            <div class="separator separator-dashed my-4"></div>
+
+            <div class="d-flex flex-stack mb-3">
+                <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                    <div class="flex-grow-1 me-2">
+                        <h3 class="text-gray-500 fs-6 fw-semibold mb-0">Clearing No:</h3>
+                    </div>
+                    <h2 class="text-gray-900 fw-bold d-block fs-4">@Model.ClearingNo</h2>
+                </div>
+            </div>
+
+            <div class="separator separator-dashed my-4"></div>
+
+            <div class="d-flex flex-stack mb-3">
+                <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                    <div class="flex-grow-1 me-2">
+                        <h3 class="text-gray-500 fs-6 fw-semibold mb-0">Stock Broker:</h3>
+                    </div>
+                    <h2 class="text-gray-900 fw-bold d-block fs-4">@Model.StockBroker</h2>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

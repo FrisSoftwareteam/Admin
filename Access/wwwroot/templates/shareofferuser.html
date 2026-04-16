@@ -1,0 +1,45 @@
+﻿<h2 style="color: #253745; font-size: 24px; font-weight: normal; margin: 0; margin-bottom: 30px;">
+    Hi @Model.FullName,
+</h2>
+
+<p style="margin: 0px 0px 30px; line-height: 22px;">
+    <span class="colour" style="color:rgb(37, 55, 69)">
+        <span class="size" style="font-size: 17px; margin: 0px 0px 30px; line-height: 28px;">
+            We are notifying you of your @Model.Type.ToLower() subscription,
+            please review the details below;
+        </span>
+    </span>
+</p>
+
+<p style="margin: 0px 0px 30px; line-height: 22px;">
+    <span class="colour" style="color:rgb(37, 55, 69)">
+        <span class="size" style="font-size: 17px; margin: 0px 0px 30px; line-height: 28px;">
+            Subscription Reference: @Model.Id<br />
+            No of shares: @Model.NoOfShares<br />
+            Name: @Model.FullName<br />
+            Email address: @Model.Email<br />
+            Phone number: @Model.Phone<br />
+            Payment date: @Model.Date<br />
+        </span>
+    </span>
+</p>
+
+<div>
+    <a style="border: none; border-radius: 4px; color: #fff; cursor: pointer; display: inline-block; font-size: 16px; padding: 15px 30px; background-color: #12406e; text-decoration: none; margin: 25px 0;" href="https://firstregistrarsnigeria.com/access//share-offer/subscription/@Model.Id" target="null">View Details</a>
+</div>
+
+<p style="margin: 0px 0px 30px; line-height: 22px;">
+    <span class="colour" style="color:rgb(37, 55, 69)">
+        <span class="size" style="font-size: 17px; margin: 0px 0px 30px; line-height: 28px;">
+            If you need help with your account, please reach out to our support team.
+        </span>
+    </span>
+</p>
+
+<p style="margin: 0px; line-height: 22px;">
+    <span class="colour" style="color:rgb(37, 55, 69)">
+        <span class="size" style="font-size: 17px; margin: 0px; line-height: 28px;">
+            Thank you.
+        </span>
+    </span>
+</p>

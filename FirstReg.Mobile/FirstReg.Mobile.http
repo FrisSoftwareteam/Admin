@@ -1,0 +1,6 @@
+@FirstReg.Mobile_HostAddress = http://localhost:5123
+
+GET {{FirstReg.Mobile_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

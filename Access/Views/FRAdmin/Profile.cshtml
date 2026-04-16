@@ -1,0 +1,72 @@
+﻿@model UserModel
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="d-flex flex-column-fluid pt-5 pt-lg-10">
+    <div class="container">
+
+        <div class="card card-custom">
+            <div class="card-header py-3">
+                <div class="card-title align-items-start flex-column">
+                    <h3 class="card-label font-weight-bolder text-dark">Personal Information</h3>
+                    <span class="text-muted font-weight-bold font-size-sm mt-1">Update your personal informaiton</span>
+                </div>
+                <div class="card-toolbar">
+                    <a asp-action="Index" type="reset" class="btn btn-secondary">Cancel</a>
+                </div>
+            </div>
+            <form class="form" asp-action="UpdateProfile">
+                <div class="card-body">
+                    <input type="hidden" asp-for="Id" />
+                    <div class="row justify-content-center py-5">
+                        <div class="col-lg-9 col-md-10">
+                            <div class="form-group row">
+                                <div class="col-lg-6 mb-5">
+                                    <label asp-for="LastName">Surname:</label>
+                                    <input type="text" asp-for="LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter surname" required />
+                                </div>
+                                <div class="col-lg-6 mb-5">
+                                    <label asp-for="FirstName">Other names:</label>
+                                    <input asp-for="FirstName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" required />
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-lg-6 mb-5">
+                                    <label asp-for="Email">Email address:</label>
+                                    <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" readonly required />
+                                </div>
+                                <div class="col-lg-6 mb-5">
+                                    <label asp-for="MobileNo">Primary phone:</label>
+                                    <input asp-for="MobileNo" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                                </div>
+                                <div class="col-lg-6 mb-5">
+                                    <label asp-for="SecondaryPhone">Secondary phone:</label>
+                                    <input asp-for="SecondaryPhone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="row">
+                        <div class="col-lg-6">
+                            <button type="submit" class="btn btn-primary mr-2">Save</button>
+                            <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                        </div>
+                        <div class="col-lg-6 text-lg-right">
+                            @*<button type="reset" class="btn btn-danger">Delete</button>*@
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+@section scripts  {
+    <script src="~/assets/plugins/signature/signature_pad.min.js"></script>
+    <script src="~/pages/profile.js" asp-append-version="true"></script>
+}

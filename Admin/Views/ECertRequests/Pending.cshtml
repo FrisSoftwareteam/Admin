@@ -1,0 +1,102 @@
+﻿@model IEnumerable<ECertRequest>
+
+@{
+    ViewData["Title"] = "Pending Accounts";
+}
+
+<div class="container">
+    <div class="col-xl-12">
+        <div class="d-block">
+            <table id="tb_data" class="table table-row-bordered data-list gy-5 gs-7">
+                <thead class="d-none">
+                    <tr class="fw-bold fs-6 text-gray-800">
+                        <th>Company</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex justify-content-start flex-column">
+                                        <a id="a_desc_@item.Id" asp-action="Details" asp-route-id="@item.Id" class="text-dark fw-bolder text-hover-primary fs-3">@item.Description</a>
+                                        <span id="sp_brief_@item.Id" class="text-dark fw-bold text-muted d-block fs-7 mb-3">@item.Brief</span>
+                                        <span class="text-dark fw-bolder d-block fs-7">Uploaded by: <span id="sp_name_@item.Id">@item.StockBroker.User.FullName</span></span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <a asp-action="Details" asp-route-code="@item.Code" class="btn btn-sm btn-light btn-active-light-info bt_complete">
+                                    <span class="fw-bolder">Details</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="diag" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content rounded">
+            <div class="modal-header pb-0 border-0 justify-content-end">
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                </div>
+            </div>
+            <div class="modal-body scroll-y px-10 px-lg-15 pt-0 pb-15">
+                <form id="diag_form" class="form" asp-action="Complete" enctype="multipart/form-data">
+                    <input id="hd_id" type="hidden" name="Id" />
+                    <div class="mb-13 text-center">
+                        <h1 id="h_desc" class="mb-3">Description</h1>
+                        <div class="text-gray-500 fw-bold fs-5">Uploaded by <span id="sp_name">Stock Broker</span></div>
+                    </div>
+                    <div>
+                        <div id="dv_brief" class="text-gray-800 fw-bold fs-5 mb-10">
+                            Brief Description
+                        </div>
+                    </div>
+                    <div class="d-flex flex-column mb-8 fv-row">
+                        <label class="d-flex align-items-center fs-6 fw-bold mb-2"> <span class="required">Comments</span> <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="Your comments will be a guide to what has been done to this request"></i> </label>
+                        <textarea class="form-control form-control-solid" placeholder="Enter some comments" name="comments" required></textarea>
+                    </div>
+                    <div class="d-flex flex-column mb-8 fv-row">
+                        <label class="required fs-6 fw-bold mb-2">Updated file:</label>
+                        <input id="tx_units" type="file" class="form-control form-control-solid" placeholder="Enter no of units" name="mfile" required />
+                    </div>
+                    <div class="text-center mt-7">
+                        <button type="submit" id="diag_submit" class="btn btn-success">
+                            <span class="indicator-label">Submit</span>
+                            <span class="indicator-progress">
+                                Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                        <button type="button" id="diag_cancel" class="btn btn-white me-3" data-bs-dismiss="modal">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script>
+    $('.bt_complete').click(function () {
+        var id = $(this).attr('data-id');
+
+        $('#hd_id').val(id);
+        $('#h_desc').html($(`#a_desc_${id}`).html());
+        $('#dv_brief').html($(`#sp_brief_${id}`).html());
+        $('#sp_name').html($(`#sp_name_${id}`).html());
+    });
+
+    $('#diag_form').submit(function () {
+        var button = document.querySelector("#diag_submit");
+        button.setAttribute("data-kt-indicator", "on");
+    });
+</script>
+}

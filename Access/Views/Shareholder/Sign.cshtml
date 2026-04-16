@@ -1,0 +1,34 @@
+﻿@model ShareholderModel
+
+@{
+    ViewData["Title"] = "Update Signature";
+    var sign = new SignatureModel(Model.Id, Model.Signature);
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">Update Your Signature</h1>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>Append you signature to your profile as part of your verification process.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    <a asp-controller="Shareholder" asp-action="Index" class="btn btn-info">Back</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="_SignatureModal" model="sign" />
+
+@section scripts  {
+    <script src="~/assets/plugins/signature/signature_pad.min.js"></script>
+    <script src="~/pages/profile.js" asp-append-version="true"></script>
+}

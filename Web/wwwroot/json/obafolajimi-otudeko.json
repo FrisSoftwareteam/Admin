@@ -1,0 +1,36 @@
+{
+    "time" : 1616597705582,
+    "blocks" : [
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "Obafolajimi is a finance and strategy professional with cross-sector experience spanning corporate finance, strategy, and performance management. He is a Principal at Honeywell Group Limited (HGL), a leading investment holding company with a deep history of building, scaling, and investing in some of Nigeria’s most successful businesses for over 5 decades."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "At HGL, he assists in overseeing the portfolio by investing, monitoring and managing the company’s funds and portfolio companies. He also leads on investments and activities in the technology and the metals and mining sectors."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "Prior to HGL, Obafolajimi worked in Standard Chartered Bank’s Strategic Client Coverage Group in Singapore, covering the Bank’s largest Southeast Asian Financial Sponsors and Diversified Business Groups. He worked on various financing and M&A transactions for companies in key economies such as Thailand, Philippines, and Malaysia and across numerous sectors including financial services, telecommunications, infrastructure, and consumer goods."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "He holds a BA (Hons) degree in Economic and Social Studies from the University of Manchester (UK), and an MBA degree from Harvard Business School (USA) where he was also a Board Member of the HBS Africa Business Club. He has completed the Masterclass in Private Equity Executive Progamme course at the London Business School (UK) and is a member of the Institute of Directors (UK)."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "He is a native speaker of Yoruba and an intermediate-level speaker of French. His interests include current affairs, foreign travel and cuisine, reading, and watching sports."
+          }
+        }
+    ],
+    "version" : "2.19.3"
+}

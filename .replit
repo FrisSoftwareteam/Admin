@@ -1,0 +1,40 @@
+modules = ["web", "dotnet-7.0", "nodejs-20", "dotnet-8.0", "postgresql-16"]
+[agent]
+expertMode = true
+
+[nix]
+channel = "stable-25_05"
+packages = ["mongodb"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Start application"
+
+[[workflows.workflow]]
+name = "Start application"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd Admin && ASPNETCORE_ENVIRONMENT=Development dotnet run --urls http://0.0.0.0:5000"
+waitForPort = 5000
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[deployment]
+deploymentTarget = "autoscale"
+run = ["bash", "-c", "cd Web && dotnet run -c Release --no-build --urls http://0.0.0.0:5000"]
+build = ["bash", "-c", "cd Web && dotnet build -c Release"]

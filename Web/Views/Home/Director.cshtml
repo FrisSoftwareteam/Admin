@@ -1,0 +1,21 @@
+﻿@model TeamMember
+
+@{
+    ViewBag.Title = Model.Name;
+}
+
+<div class="element-content-area sp-y pt-5">
+    <div class="container">
+        <div class="row mtn-30">
+            <div class="col-md-10 col-lg-9 m-auto">
+                <div class="section-title mb-4">
+                    <div class="mt-5 mb-4">
+                        <img src="/img/team/@Model.Photo" />
+                    </div>
+                    <h4 class="font-weight-bolder">@ViewBag.Title</h4>
+                </div>
+                @Html.Raw(Model.Html)
+            </div>
+        </div>
+    </div>
+</div>

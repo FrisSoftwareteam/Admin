@@ -1,0 +1,271 @@
+﻿@model PaymentModel
+
+@{
+    Layout = "_LayoutForms";
+    ViewData["Title"] = "Subscribe";
+}
+
+<div class="content flex-column-fluid" id="kt_content">
+
+    <div class="container">
+        <div class="post" id="kt_post">
+            <div class="d-flex flex-column flex-lg-row">
+                <div class="flex-lg-row-fluid me-lg-15 order-1 mb-10 mb-lg-0">
+                    <div class="card card-flush p-5 p-md-9 mb-5 mb-lg-10">
+                        <div class="card-body pt-0">
+                            <div class="flex-grow-1 bgi-no-repeat bgi-size-contain bgi-position-x-left card-rounded-bottom h-200px mh-200px my-5 my-lg-12" style="background-image:url('/access/img/illustrations/2.svg')"></div>
+                            <div class="card-title mb-4">
+                                <h1 class="fw-bolder">Complete Payment Now!</h1>
+                            </div>
+                            <div class="text-gray-800 fw-bold fs-5 mb-5">
+                                You do not have an active subscription. To subscribe now select
+                                the number of years you wish to subscribe for and use the most
+                                convenient payment method below.
+                            </div>
+
+                            <div class="separator my-10"></div>
+
+                            <div class="bg-primary rounded-3 p-7">
+                                <div class="text-white fw-bolder fs-2 mb-10">
+                                    <div>Hello @Model.Name,</div>
+                                    <span class="text-gray-300 fs-5">Please review the amount below before you continue.</span>
+                                    <div class="d-flex align-items-end my-5">
+                                        <input type="hidden" id="hd_price" value="@Model.Amount" />
+                                        <h1 class="sp_amount fw-bolder display-5 text-white">₦@Model.Amount.ToString("N2")</h1>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="separator my-10"></div>
+
+                            <div class="card bg-light-dark pt-4 mt-10 mb-6">
+                                <div class="card-header border-0">
+                                    <div class="card-title">
+                                        <h1 class="fw-bolder">Pay to Bank</h1>
+                                    </div>
+                                </div>
+                                <div class="card-body pt-0">
+                                    <div class="fw-bold fs-5 text-gray-800 mb-5">
+                                        Make a transfer of <span class="sp_amount fw-boldest">NGN @Model.Amount.ToString("N2")</span>
+                                        to the bank account displayed below with the reference <span class="fw-boldest text-decoration-underline">@Model.Reference</span>,
+                                        Use the button below to upload evidence of payment
+                                        and wait for a confirmation.
+                                    </div>
+                                    <div class="display-4 fw-lighter text-gray-600 mb-5">2013798370 FBN</div>
+
+                                    @if (Model.HasPreviousPayment)
+                                    {
+                                        <div class="notice d-flex bg-white rounded flex-stack mt-10 p-6">
+                                            <div class="d-flex flex-stack flex-grow-1 flex-wrap flex-md-nowrap">
+                                                <div class="d-flex">
+                                                    <span class="svg-icon svg-icon-3tx svg-icon-warning me-4">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                                            <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10"></circle>
+                                                            <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1"></rect>
+                                                            <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1"></rect>
+                                                        </svg>
+                                                    </span>
+                                                    <div class="mb-3 mb-md-0 fw-bold">
+                                                        <h4 class="text-gray-900 fw-bolder">You've got pending payments that needs confirmation.</h4>
+                                                            <div class="fs-6 text-gray-700 pe-7">@Model.PreviousPayment</div>
+                                                    </div>
+                                                </div>
+                                                <div class="mx-10">
+                                                    <div class="spinner-border" role="status">
+                                                        <span class="visually-hidden">Loading...</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        <div class="separator border-gray-300 my-7"></div>
+                                        <div class="mb-0">
+                                            <p>
+                                                Please note that you do not need to re-upload the evidence of payment if you have already done so.
+                                                Just wait for the admin to activate you account. You will be notified of any issue.
+                                            </p>
+                                            <button type="submit" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modal_bank_pay">
+                                                <span class="indicator-label">I have made Payment</span>
+                                                <span class="indicator-progress">
+                                                    Please wait...
+                                                    <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                                </span>
+                                            </button>
+                                        </div>
+                                    }
+                                </div>
+                            </div>
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex-column flex-lg-row-auto w-100 w-lg-350px w-xl-400px mb-10 order-2 d-none d-md-block">
+                    <div class="card card-flush pt-3 mb-0">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <h2>Summary</h2>
+                            </div>
+                        </div>
+                        <div class="card-body pt-0 fs-6">
+                            <div class="mb-7">
+                                <h5 class="mb-3">Customer details</h5>
+                                <div class="fw-boldest text-gray-900 text-hover-primary">@Model.Name</div>
+                                <div class="fw-bold text-gray-600 text-hover-primary">@Model.EmailAddress</div>
+                                <div class="fw-bold text-gray-600 text-hover-primary">@Model.PhoneNumber</div>
+                            </div>
+                            <div class="separator separator-dashed mb-7"></div>
+                            <div class="mb-7">
+                                <h5 class="mb-3">Payment details</h5>
+                                <div class="fw-bolder text-gray-800">ID: @Model.Reference</div>
+                                <div class="sp_amount fw-bolder text-gray-800">NGN @Model.Amount.ToString("N2")</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div class="modal fade" id="modal_bank_pay" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Request Confirmation</h2>
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <span class="svg-icon svg-icon-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                            <rect opacity="0.5" x="6" y="17.3137" width="16" height="2" rx="1" transform="rotate(-45 6 17.3137)" fill="black"></rect>
+                            <rect x="7.41422" y="6" width="16" height="2" rx="1" transform="rotate(45 7.41422 6)" fill="black"></rect>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+            <div class="modal-body scroll-y mx-5 mx-xl-15 my-7">
+                <form id="frm_bankpay" method="post" class="form form-loader" enctype="multipart/form-data">
+
+                    <input type="hidden" name="@nameof(BankPayModel.Id)" value="@Model.Reference" />
+                    <input type="hidden" name="@nameof(BankPayModel.Years)" value="1" id="hd_years" />
+                    <input type="hidden" name="@nameof(BankPayModel.Amount)" value="@Model.Amount" id="hd_amount" />
+
+                    <div class="row mb-10">
+                        <div class="col-md-7 fv-row" data-select2-id="select2-data-136-viqw">
+                            <label class="required fs-6 fw-bold form-label mb-2">Account / Depositor's Name</label>
+                            <input type="text" class="form-control form-control-solid" placeholder="John Bull" name="@nameof(BankPayModel.Payee)" value="@Model.Name" required />
+                        </div>
+                        <div class="col-md-5 fv-row fv-plugins-icon-container">
+                            <label class="d-flex align-items-center fs-6 fw-bold form-label mb-2">
+                                <span class="required">Payment Date</span>
+                                <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="" data-bs-original-title="Enter a card CVV code" aria-label="Enter a card CVV code"></i>
+                            </label>
+                            <input type="date" class="form-control form-control-solid" placeholder="Payment date" name="@nameof(BankPayModel.Date)" value="@Tools.Now.ToString("yyy-mm-dd")" required />
+                        </div>
+                    </div>
+
+                    <div class="d-flex flex-column mb-7 fv-row fv-plugins-icon-container">
+                        <label class="d-flex align-items-center fs-6 fw-bold form-label mb-2">
+                            <span class="required">Transaction Reference</span>
+                            <i class="fas fa-exclamation-circle ms-2 fs-7" data-bs-toggle="tooltip" title="" data-bs-original-title="Specify a card holder's name" aria-label="Specify a card holder's name"></i>
+                        </label>
+                        <input type="text" class="form-control form-control-solid" placeholder="TR3789328782739208-98239" name="@nameof(BankPayModel.Reference)" required />
+                    </div>
+
+                    <div class="row g-9 mb-8">
+                        <div class="col fv-row">
+                            <label class="required fs-6 fw-bold mb-2">Upload receipt</label>
+                            <input type="file" class="form-control form-control-solid" placeholder="Select a file" name="mfile" required />
+                        </div>
+                    </div>
+
+                    <div class="text-center pt-15">
+                        <button class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary bt-submit">
+                            <span class="indicator-label">Submit</span>
+                            <span class="indicator-progress">
+                                Please wait...
+                                <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*
+    <div class="d-block mt-10">
+    <button type="button" id="bt_subscribe" class="btn btn-primary er fs-6 px-8 py-4" onclick="payWithPaystack()">
+    <span class="indicator-label">
+    Subscribe Now
+    </span>
+    <span class="indicator-progress">
+    Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+    </span>
+    </button>
+    </div>
+*@
+
+@section scripts {
+
+<script src="~/pages/subscribe.js" asp-append-version="true"></script>
+    @*<script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+    var cnt = 1;
+    var button = document.querySelector("#bt_subscribe");
+
+    function payWithPaystack() {
+
+    button.setAttribute("data-kt-indicator", "on");
+
+    cnt += 1;
+    var typ = @((int)PaymentItem.Subscription);
+    var amt = @Model.Amount.ToString("N2").Replace(",", "");
+    var ref = '@Model.Reference' + cnt;
+    var years = $('#tx_years').val().replace(' yrs', '');
+
+    var handler = PaystackPop.setup({
+    key: '@Model.PaymentSettings.PublicKey',
+    email: '@Model.EmailAddress',
+    ref: ref,
+    amount: amt * years * 100,
+    quantity: years,
+    metadata: {
+    custom_fields: [
+    {
+    display_name: "Payment Item",
+    variable_name: "@CustomField.pay_item.ToString()",
+    value: typ
+    },
+    {
+    display_name: "No of Years",
+    variable_name: "@CustomField.years.ToString()",
+    value: years
+    },
+    {
+    display_name: "Account Ids",
+    variable_name: "@CustomField.accounts.ToString()",
+    value: "@string.Join(",", Model.User.Shareholders.Select(x => x.Id))"
+    }
+    ]
+    },
+    callback: function (response) {
+    window.location.href = `/sh/subscribing/${response.reference}`;
+    },
+    onClose: function(){
+    button.setAttribute("data-kt-indicator", "off");
+    //alert('window closed');
+    }
+    });
+    handler.openIframe();
+    }
+    </script>*@
+
+}
+

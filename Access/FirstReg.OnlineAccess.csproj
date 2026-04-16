@@ -1,0 +1,33 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+        <PropertyGroup>
+                 <TargetFramework>net8.0</TargetFramework>
+        </PropertyGroup>
+
+        <ItemGroup>
+                <PackageReference Include="ICG.NetCore.Utilities.Spreadsheet" Version="7.4.0" />
+                <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="8.0.8" />
+                <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="8.0.8" />
+                <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.8" />
+                <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.4" />
+                <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.8" />
+                <PackageReference Include="Hashids.net" Version="1.7.0" />
+                <PackageReference Include="QuestPDF" Version="2024.10.4" />
+        </ItemGroup>
+
+        <ItemGroup>
+                <ProjectReference Include="..\Core\FirstReg.Core.csproj" />
+        </ItemGroup>
+
+        <ItemGroup>
+          <Content Update="wwwroot\templates\shareofferadmin.html">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+          </Content>
+          <Content Update="wwwroot\templates\shareofferuser.html">
+            <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+            <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
+          </Content>
+        </ItemGroup>
+
+</Project>

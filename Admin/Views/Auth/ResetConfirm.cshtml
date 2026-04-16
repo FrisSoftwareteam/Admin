@@ -1,0 +1,22 @@
+﻿@model ResetModel
+@{
+    ViewData["Title"] = "Password Changed";
+}
+
+<div class="d-flex flex-column flex-column-fluid bgi-position-y-bottom position-x-center bgi-no-repeat bgi-size-contain bgi-attachment-fixed" style="background-image: url(/assets/media/illustrations/development-hd.png)">
+    <div class="d-flex flex-column flex-column-fluid text-center p-10 py-lg-20">
+        <a href="~/" class="mb-12">
+            <img alt="Logo" src="/img/logos/logo.png" class="h-55px">
+        </a>
+        <div class="pt-lg-10">
+            <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">Password Changed</h1>
+            <div class="fw-bold fs-3 text-muted mb-15">
+                Your password was successfully changed.<br />
+                Please Sign in to start using your account again.
+            </div>
+            <div class="text-center">
+                <a asp-action="Login" class="btn btn-primary btn-lg fw-bolder">Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>

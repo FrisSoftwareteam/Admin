@@ -1,0 +1,54 @@
+﻿@model string
+
+@{
+    ViewData["Title"] = "Users";
+}
+
+<div class="container">
+
+    <div class="d-flex flex-wrap flex-stack">
+        <div class="d-flex flex-column flex-wrap align-items-start my-1">
+            <div class="d-flex my-0">
+                <div class="d-flex align-items-center position-relative my-0 me-5">
+                    <span class="svg-icon svg-icon-3 position-absolute ms-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                <rect x="0" y="0" width="24" height="24" />
+                                <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                                <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero" />
+                            </g>
+                        </svg>
+                    </span>
+                    <input type="search" id="tb_search" class="form-control form-control-white w-250px ps-9" placeholder="Search" />
+                </div>
+                <div class="me-5">
+                    <select id="cb_type" data-control="select2" data-hide-search="true" data-placeholder="Filter" class="form-select form-select-white me-5">
+                        <option value="-">All Users</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap my-1">
+            @*<a href="javascript:;" class="btn btn-info ms-3" data-bs-toggle="modal"
+                data-bs-target="#diag_user"><span class="me-2">+</span> Add New</a>*@
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <table id="tb_data" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list" data-url="@Model">
+            <thead class="fs-7 text-gray-400 text-uppercase d-none">
+                <tr class="fw-bold fs-6 text-gray-800">
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Type</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/pages/users.js" asp-append-version="true"></script>
+}

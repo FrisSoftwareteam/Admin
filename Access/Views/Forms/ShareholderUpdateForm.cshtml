@@ -1,0 +1,63 @@
+﻿@model ShareholderUpdateModel
+
+@{
+    Layout = null;
+}
+
+<form class="form form-loader" method="post">
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="AccountNo" />
+    <input type="hidden" asp-for="FullName" />
+    <input type="hidden" asp-for="OtherName" />
+    <input type="hidden" asp-for="LastName" />
+    <div class="row justify-content-center py-5">
+        <div class="col-lg-9 col-md-10">
+
+            <div class="form-group row">
+                <div class="col-lg-12 mb-8">
+                    <label class="fs-6 fw-bold mb-2 required" asp-for="FullName">Name:</label>
+                    <input type="text" class="form-control form-control-solid h-auto py-4 px-7" value="@Model.FullName" placeholder="@Model.FullName" required readonly />
+                </div>
+            </div>
+
+            <h3 class="pb-5 mt-10 mb-9 border-bottom">Update your Information</h3>
+            <div class="form-group row">
+                <div class="col-lg-6 mb-8">
+                    <label class="fs-6 fw-bold mb-2 required" asp-for="Phone">Phone Number:</label>
+                    <input asp-for="Phone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                </div>
+                <div class="col-lg-6 mb-8">
+                    <label class="fs-6 fw-bold mb-2 required" asp-for="Email">Email address:</label>
+                    <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" required />
+                </div>
+                <div class="col-lg-6 mb-8">
+                    <label class="fs-6 fw-bold mb-2" asp-for="ClearingNo">Clearing House Number (CHN):</label>
+                    <input asp-for="ClearingNo" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. CH87654321" />
+                </div>
+                <div class="col-lg-6 mb-8">
+                    <label class="fs-6 fw-bold mb-2" asp-for="StockBroker">Name of your Stockbroker:</label>
+                    <input asp-for="StockBroker" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. ABC security" />
+                </div>
+            </div>
+
+            <div class="separator mt-2 mb-10"></div>
+
+            <div class="mt-10">
+                <div class="row">
+                    <div class="col-lg-6">
+                        <button type="submit" class="btn btn-primary me-2 bt-submit">
+                            <span class="indicator-label">Submit</span>
+                            <span class="indicator-progress">
+                                Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                        <a asp-action="FidelityUpdate" class="btn btn-secondary">Cancel</a>
+                    </div>
+                    <div class="col-lg-6 text-lg-end">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</form>

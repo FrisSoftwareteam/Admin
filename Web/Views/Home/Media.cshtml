@@ -1,0 +1,90 @@
+﻿@{
+    ViewData["Title"] = "Media";
+}
+
+@functions {
+    private string ExtractYouTubeId(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+
+        try
+        {
+            var uri = new Uri(url);
+            var host = uri.Host.ToLowerInvariant();
+
+            // Standard watch URL ?v=ID
+            if (uri.Query?.Contains("v=") == true)
+            {
+                var query = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var part in query)
+                {
+                    var kv = part.Split('=', 2);
+                    if (kv.Length == 2 && kv[0].Equals("v", StringComparison.OrdinalIgnoreCase))
+                        return kv[1];
+                }
+            }
+
+            // Shortened youtu.be/<id> or /live/<id>
+            if (host.Contains("youtu.be") || host.Contains("youtube.com"))
+            {
+                var segments = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (segments.Length > 0)
+                {
+                    // handle /live/<id> or just /<id>
+                    if (segments[0].Equals("live", StringComparison.OrdinalIgnoreCase) && segments.Length > 1)
+                        return segments[1];
+
+                    return segments[^1];
+                }
+            }
+        }
+        catch
+        {
+            // ignore parsing issues and fall back to provided banner
+        }
+
+        return null;
+    }
+
+    private string ResolveBanner(FirstReg.Web.Video item)
+    {
+        var ytId = ExtractYouTubeId(item.Url);
+        if (!string.IsNullOrEmpty(ytId))
+            return $"https://img.youtube.com/vi/{ytId}/hqdefault.jpg";
+
+        // fall back to supplied banner (absolute URL or local)
+        if (!string.IsNullOrWhiteSpace(item.Banner) && item.Banner.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return item.Banner;
+
+        return $"/img/media/{item.Banner}";
+    }
+}
+
+<section class="video-promo-with-icon ptb-60">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-10">
+                <div class="section-heading text-center">
+                    <h1>Media Gallery</h1>
+                    <p>Information is key. Learn more about your shares and dividends.</p>
+                    
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var item in Tools.GetMedia())
+            {
+                var banner = ResolveBanner(item);
+                <div class="col-sm-4 mb-5">
+                    <div class="video-bg-with-icon" 
+                         style="background: url('@banner') no-repeat center center; background-size: cover;">
+                        <a href="@item.Url" class="popup-youtube">
+                            <i class="fas fa-play"></i>
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>

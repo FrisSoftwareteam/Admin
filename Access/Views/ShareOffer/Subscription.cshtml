@@ -1,0 +1,23 @@
+﻿@model ShareSubscriptionPageModel
+
+@{
+    ViewData["Title"] = $"Share Subscription - {Model.Subscription.Code}";
+}
+
+<div class="mt-lg-10">
+    <div class="row justify-content-center text-center">
+        <div class="col-sm-10 col-md-6">
+            <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">@ViewBag.Title</h1>
+            <div class="fw-bold fs-3 text-gray-800 mb-15">
+                Your subscription was successfully submitted with the reference number <span class="fw-bold">@Model.Subscription.Response.UniqueKey</span>,
+                if you'd like to complete payment now, please click the <span>Proceed to Payment</span> button below.
+            </div>
+        </div>
+    </div>
+    <div class="mw-700px scroll-y mt-5 mx-auto pt-0 pb-15">
+        @foreach (var step in Model.Steps)
+        {
+            <partial name="_ActivationStep" model="step" />
+        }
+    </div>
+</div>

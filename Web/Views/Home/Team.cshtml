@@ -1,0 +1,97 @@
+﻿@model Team
+
+@{
+    ViewBag.Title = "Management Team";
+}
+
+<section class="page-header position-relative overflow-hidden ptb-120 bg-dark" style="background: url('assets/img/page-header-bg.svg')no-repeat bottom left">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 col-md-12">
+                <h1 class="display-5 fw-bold">Meet Our Team</h1>
+                <p class="lead">
+                    Our management team is equally made up of exceptionally brilliant,
+                    internationally trained, and experienced professionals in the
+                    capital market industry in Nigeria
+                </p>
+            </div>
+        </div>
+        <div class="bg-circle rounded-circle circle-shape-3 position-absolute bg-dark-light right-5"></div>
+    </div>
+</section>
+
+<section class="team-section ptb-120">
+    <div class="container">
+        <div class="row justify-content-start">
+            <div class="col-lg-6 col-md-8">
+                <div class="section-heading">
+                    <h2>Board of Directors</h2>
+                    <p>
+                        First Registrars is governed by a diverse constituency of policy
+                        makers from both the private and public sectors.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+
+            @foreach (var team in Model.Directors)
+            {
+
+            <div class="col-md-3 col-sm-6">
+                <div class="team-single-wrap mt-5">
+                    <div class="team-img rounded-custom">
+                        <a href="/about/team/@team.Id">
+                            <img src="/img/team/@team.Photo" alt="team" class="img-fluid position-relative">
+                        </a>
+                    </div>
+                    <div class="team-info mt-4 text-center">
+                        <a href="/about/team/@team.Id" class="text-decoration-none"><h5 class="h6 mb-1">@team.Name</h5></a>
+                        <p class="text-muted small mb-0">@team.Designation</p>
+                    </div>
+                </div>
+            </div>
+
+            }
+
+        </div>
+    </div>
+</section>
+
+<section class="team-section ptb-120 bg-light">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-12">
+                <div class="section-heading text-center">
+                    <h2>Management Team</h2>
+                    <p>
+                        Our management team has a wealth of expertise, they set the strategy ensure smooth
+                        running of the operations, to deliver your outstanding service and customer experience.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+
+            @foreach (var team in Model.Management)
+            {
+
+            <div class="col-md-3 col-sm-6">
+                <div class="team-single-wrap mt-5">
+                    <div class="team-img rounded-custom">
+                        <a href="/about/team/@team.Id">
+                            <img src="/img/team/@team.Photo" alt="team" class="img-fluid position-relative">
+                        </a>
+                    </div>
+                    <div class="team-info mt-4 text-center">
+                        <a href="/about/team/@team.Id" class="text-decoration-none"><h5 class="h6 mb-1">@team.Name</h5></a>
+                        <p class="text-muted small mb-0">@team.Designation</p>
+                    </div>
+                </div>
+            </div>
+
+            }
+
+        </div>
+    </div>
+</section>

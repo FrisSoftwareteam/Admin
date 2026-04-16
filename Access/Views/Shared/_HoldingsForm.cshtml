@@ -1,0 +1,54 @@
+﻿@model IEnumerable<Register>
+
+<div>
+    <div class="row mb-0">
+        <div class="col-md-10">
+            <div class="form-group row mb-0">
+                <div class="col-md-8">
+                    <label class="form-label required">Security:</label>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required">Account No:</label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rpt_holdings">
+        <div class="form-group">
+            <div data-repeater-list="rpt_holdings">
+                <div data-repeater-item>
+                    <div class="form-group row mb-0">
+                        <div class="col-md-10">
+                            <div class="form-group row mb-0">
+                                <div class="col-md-8 mb-5">
+                                    <select name="@nameof(ECertHolding.RegisterId)" class="form-select form-control-solid h-auto px-7" aria-label="Select security" required>
+                                        <option></option>
+                                        @foreach (var reg in Model.OrderBy(x => x.Name))
+                                        {
+                                            <option value="@reg.Id">@reg.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-5">
+                                    <input type="text" name="@nameof(ECertHolding.AccountNo)" class="form-control form-control-solid h-auto px-7" placeholder="Enter account no" maxlength="50" required />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <a href="javascript:;" data-repeater-delete class="btn btn-light-danger">
+                                <i class="la la-trash-o"></i>Delete
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group mt-5">
+            <a href="javascript:;" data-repeater-create class="btn btn-light-primary">
+                <i class="la la-plus"></i> Add more
+            </a>
+        </div>
+    </div>
+</div>

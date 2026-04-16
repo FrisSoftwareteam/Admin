@@ -1,0 +1,39 @@
+﻿@model IEnumerable<Client>
+
+@{
+    ViewBag.Title = "Our Clients";
+}
+
+<section class="integration-section ptb-60">
+    <div class="container">
+        <div class="row align-items-center justify-content-lg-between">
+            <div class="col-lg-8 col-md-10">
+                <div class="section-heading">
+                    <h4 class="h5 text-primary">Our Clients</h4>
+                    <h2>We Provide quality service to best of companies</h2>
+                    <p>
+                        Our client base proudly consists of established conglomerates,
+                        Investment management companies, and SME's that desire the cutting-edge
+                        customer-centric services that we offer in sustaining their brands
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <div class="integration-wrapper position-relative w-100">
+                    <ul class="integration-list list-unstyled mb-0">
+                        @foreach (var client in Model)
+                        {
+                            <li>
+                                <div class="single-integration">
+                                    <img src="/img/clients/@client.Logo" alt="@client.Name" class="img-fluid rounded-custom">
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

@@ -1,0 +1,1241 @@
+BEGIN TRANSACTION
+SET QUOTED_IDENTIFIER ON
+SET ARITHABORT ON
+SET NUMERIC_ROUNDABORT OFF
+SET CONCAT_NULL_YIELDS_NULL ON
+SET ANSI_NULLS ON
+SET ANSI_PADDING ON
+SET ANSI_WARNINGS ON
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.zarch_agnt_Brn
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.yes
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.xxx
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.withholdingtax
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.verifndatabs
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.UNITS2
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.UNIT4
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Transfer_correction
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.[TRADING REPORT]
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.TokenUsers
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.TokenLogs
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.testing
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Tbl_Member
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Table1
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_wmessage_center
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_wclntacct
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_wclint
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_warr_others
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_warr_misc
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_wadmins
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_verif_hist
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_update
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_units_max
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_UNITS_2_banke
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_unclaimed_dividend
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_transferor
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_transferee
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_stop
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_stockv
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_state
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_slit_mast
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_slit_certificate
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_slit_cert_source
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.t_slit_cert
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_signature
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_holder_type]
+  
+AS
+SELECT description as typedesc,
+hold_type as holdertype,
+who as enteredby
+
+
+From dbo.T_shold_type
+GO
+DROP TABLE dbo.T_shold_type
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_shold_add
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.t_shartabs
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_sh_cap
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_servdtdt
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_servdt
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_sec_type]
+  
+AS
+SELECT description as secu_desc,
+sec_sector as secu_type,
+who as enteredby
+
+
+
+From dbo.T_secu_type
+GO
+DROP TABLE dbo.T_secu_type
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_bonuses]
+  
+AS
+SELECT acct_frac as fractact,
+acqdtpd as actdatepd,
+allot_dt as allot_date,
+bonus_seq as bonus_number,
+chg_dt as changedat,
+chg_who as changedby,
+close_dt as closure_date,
+enterd_dt as createdat,
+paid as paynow,
+ratio1 as bonus_ratio1,
+ratio2 as bonus_ratio2,
+Regcode as reg_code,
+who as enteredby
+
+
+From dbo.T_script
+GO
+DROP TABLE dbo.T_script
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_revalid
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_return_money
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_rept_sig
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_reissue_dept
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_reissue
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_company]
+  
+AS
+SELECT     auth_sh AS auth_share, chg_dt AS changedat, chg_who AS changedby, coy_addr AS prc_address, coy_email AS prc_email, coy_fax AS prc_fax, 
+                      coy_name AS prc_name, coy_no AS prc_no, coy_phone AS prc_phone, coy_type AS prc_type, enterd_dt AS createdat, incop_dt AS date_incorporate, 
+                      list_dt AS date_listed, rc_num AS rc_number, who AS enteredby, website
+FROM         dbo.T_reg_name
+GO
+DROP TABLE dbo.T_reg_name
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_reg_category
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_regist]
+  
+AS
+SELECT     chg_dt AS changedat, chg_who AS changedby, coy_no AS prc_no, date_tak AS takeupdt, description AS register_desc, enterd_dt AS createdat, 
+                      nominal AS nomvalue, regcode AS register_code, sec_type AS security_type, shares AS actual_shares, who AS enteredby, caution, active, symbol, 
+                      fraction, fund_cert_narr
+FROM         dbo.T_reg
+GO
+DROP TABLE dbo.T_reg
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_redeem_certs
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_REDEEM_WARRANT]
+  
+AS
+SELECT     acctno AS account_number, chg_dt AS changedat, chg_who AS changedby, description AS narration, enterd_dt AS createdat, holding AS red_holding, 
+                      instal AS red_instalment, net AS red_amount, paid_dt AS date_paid, payable_dt AS redate_payable, regcode AS register_code, reissue AS red_reissue, 
+                      reissue_dt AS redate_reissue, serial AS red_sno, solid_acct AS sourceact, status AS red_status, storage_no AS storageno, unclaim AS red_unclaim, 
+                      verif AS red_verify, verif_dt AS redverify_date, warr_code AS redwarrant_code, who AS enteredby, consolid_id, claimed, claimedate, claimedby, batch, 
+                      Audit_check, auto, annotation, fcle AS finacle
+FROM         dbo.T_red_warr
+GO
+DROP TABLE dbo.T_red_warr
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_REDEMPTION]
+  
+AS
+SELECT acctno as red_account,
+acqdtpd as actdatepd,
+chg_dt as changedat,
+chg_who as changedby,
+enterd_dt as createdat,
+paid as paynow,
+payable_dt as redate_payable,
+rate as redemption_rate,
+rate_p as penalty_rate,
+redeemdt as redem_date,
+regcode as register_code,
+serial as installment_serial_code,
+sno_red as redeem_sno,
+total_amt as red_totamt,
+who as enteredby
+
+
+From dbo.T_red
+GO
+DROP TABLE dbo.T_red
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_range_auth
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_process_right_hist
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_probate_change_auth
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_probate_arch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_probate
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_price
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_picture_signtory
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_picture
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_online
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_occupation
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_Name_change_auth
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mstf1_nm
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mstf1_md
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mstf1_ad
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mstf
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_move_lg
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_move_gp
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_move_ex
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_move
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_monitor
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_message_center_arch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_message_center
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_manual_div_setup
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_manual_div
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_manual_cert_mast
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_manual_cert_details
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mandate_change_auth
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_mailer_conf
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_logger1
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_logger_type
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_local_govt
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_lga
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_int_warr_old
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_INTEREST_WARRANT]
+  
+AS
+SELECT     acctno AS account_number, chg_dt AS changedat, chg_who AS changedby, description AS narration, enterd_dt AS createdat, gross AS intgross_amt, 
+                      holding AS int_holding, net AS intnet_amt, oldint_warr AS intoldno, paid_dt AS date_paid, payable_dt AS intdate_payable, pyt AS intpay_no, regcode AS register_code, 
+                      reissue AS int_reissue, reissue_dt AS intdate_reissue, solid_acct AS sourceact, status AS intstatus, storage AS storageno, tax AS intax_amt, 
+                      unclaim AS int_unclaimed, verif AS intverify, verif_dt AS intverify_date, warr_code AS intwar_code, who AS enteredby, consolid_id, claimed, claimedate, claimedby, 
+                      batch, audit_check, audit_check_dt, auto, annotation, fcle AS finacle
+FROM         dbo.T_int_warr
+GO
+DROP TABLE dbo.t_int_warr
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_INTEREST_PAY]
+  
+AS
+SELECT acqdtpd as actdatepd,
+chg_dt as changedat,
+crat_dt as createdat,
+chg_who as changedby,
+cut_off as int_cutoff,
+inst_cd as instalmnt_code,
+int_acct as int_account,
+int_rate as interest_rate,
+int_serial as int_sno,
+int_tx_rt as intaxrate,
+paid as paynow,
+pay_dt as intdate_payable,
+regcode as reg_code,
+totamount as int_totamt,
+who as enteredby,
+yr_freq as yr_frequency
+
+
+From dbo.T_int_pay
+GO
+DROP TABLE dbo.T_int_pay
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_INSTALLMENT
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_imp_batch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_getUnits
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_getStocks
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_fed_constituency
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_expu
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_exp_date
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_exar
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_ex
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+ALTER VIEW [dbo].[T_dividends_type]
+  
+AS
+SELECT description as div_type_desc,
+div_type as dividend_type,
+who as enteredby
+
+
+From dbo.T_divs_type
+GO
+DROP TABLE dbo.T_divs_type
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_dividend_warrant_group
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.t_div_reprint
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_dept
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_days
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_curr
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscslien
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_trans_notupdated
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_trans
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_mast
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_disk_G
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_CERTIFICATE_temp
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cscs_cert
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cross
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_country
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_countByPhone
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_countByEmail
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.t_corresp_dept
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_corresp_aknowdg
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_corresp
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_control
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_consolid_sub
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_consolid_mast
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_company_contacts
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_claimed_dividend
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_certificate_split
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_certificate_slit
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_certificate_group
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cert_status
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cert_mast
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_cert_detail
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_caut_add
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_canx
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_brokers
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_brokerage
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.t_branch_oper_hd
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_branch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_batch_oldcert
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agerange
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agent_type
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agent_Branch_arch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agent_Branch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agent_arch
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_agent
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_address_archive
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_addr_change_auth
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_additional
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.T_account
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.subscriptionDoc
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.stateinNigeria
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.StanbicScrip_ViewTest
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Stanbic_Archive
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Sheet1$
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.shareholdertable
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Results
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.range_cutoff
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.['POLICE NOMINAL ROLL$']
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.['POLICE']
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.phonenumbers
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.outlier2
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.otpLogs
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.newTUNITS
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.newImageTable
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.newdelta
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.new_TUNITSSSS
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.new_companylist
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.nbrecords
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.nbrecord
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.nb_non_closure_update
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Frismob
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.[FOKAS SHAREHOLDERS]
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.[FIDELITY REGISTER]
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.[FIDELITY DIV 15 APPEND]
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.FBN_LINK_TABLE_AFTER_SEARCH_OUTSTANDING_CERT_WITHOUT_E
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.FBN_LINK_E_Only
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.FBN_LINK_Certificate_Only
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.FBN_LINK_Both_Cert_and_E
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.etf30_20170427
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Edas_MassV_DataA
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.duplicated_unit_transfer_nos
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.deltared
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.deltainterest
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_no_recordsin
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_289
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_281
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_209
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_154
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc_139
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_subscriptionDoc
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_bankstatment
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.dbo_api_divclientcompany$
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.complainCopy
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_OTI_20230201012542PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_OTI_20230201012511PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_julian_20220926121908PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_julian_20220909024446PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_JULIAN_20201118024733PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_JULIAN_20200528100935AM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_imaobong_20200430075115PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_imaobong_20200429015824PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_hannah_20221012014147PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_hannah_20221012014131PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_hannah_20221012014130PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_daramola_20230201033638PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_daramola_20230201015344PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_DARAMOLA_20230201013807PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_DARAMOLA_20221114024756PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_DARAMOLA_20220926110839AM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_daramola_20220620094054AM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_DARAMOLA_20220620030006PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_DARAMOLA_20210610113736AM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Cert_BIDEMI_20210304020246PM
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.['BROAD STREET$']
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.Banksortcodes
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.banksforeadvice
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.arm_accts_with_image$
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.api_divclientcompany
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.api_divclien_old
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.allFbnWithEmailPhone
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.ActiveRegistersFiltered
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.a1
+GO
+COMMIT
+BEGIN TRANSACTION
+GO
+DROP TABLE dbo.a
+GO
+COMMIT

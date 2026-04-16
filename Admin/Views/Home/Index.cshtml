@@ -1,0 +1,281 @@
+@model DashboardModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="post d-flex flex-column-fluid" id="kt_post">
+    <div id="kt_content_container" class="container-xxl">
+
+        <div class="page-title d-flex flex-column justify-content-center flex-wrap me-3 mb-7">
+            <h1 class="page-heading d-flex text-dark fw-bolder fs-3 flex-column justify-content-center my-0">Dashboard</h1>
+            <span class="text-muted fw-semibold fs-7 my-1">Welcome back &mdash; here's what's happening today</span>
+        </div>
+
+        <div class="row g-5 g-xl-8 mb-5">
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#17C653; background-image: url('/admin/assets/media/patterns/vector-1.png')">
+                    <div class="card-header pt-5">
+                        <div class="card-title d-flex flex-column">
+                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.TotalUsers</span>
+                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Total Users</span>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center pt-0">
+                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">All registered accounts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#009EF7; background-image: url('/admin/assets/media/patterns/vector-1.png')">
+                    <div class="card-header pt-5">
+                        <div class="card-title d-flex flex-column">
+                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.Shareholders</span>
+                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Shareholders</span>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center pt-0">
+                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">Registered shareholder accounts</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#F1416C; background-image: url('/admin/assets/media/patterns/vector-1.png')">
+                    <div class="card-header pt-5">
+                        <div class="card-title d-flex flex-column">
+                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">@Model.Active</span>
+                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">Active Subscribers</span>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center pt-0">
+                        <span class="text-white opacity-75 fw-semibold fs-7 me-2">Valid subscriptions today</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-3 col-md-6">
+                <div class="card card-flush bgi-no-repeat bgi-size-contain bgi-position-x-end h-md-50px mb-5 mb-xl-10" style="background-color:#7239EA; background-image: url('/admin/assets/media/patterns/vector-1.png')">
+                    <div class="card-header pt-5">
+                        <div class="card-title d-flex flex-column">
+                            <span class="fs-2hx fw-bolder text-white me-2 lh-1 ls-n2">&#8358;@Model.ThisMonth</span>
+                            <span class="text-white opacity-75 pt-1 fw-semibold fs-6">This Month</span>
+                        </div>
+                    </div>
+                    <div class="card-footer d-flex align-items-center pt-0">
+                        <span class="text-success bg-white rounded px-2 py-1 fw-bolder fs-8 me-2">+@Model.Percentage%</span>
+                        <span class="text-white opacity-75 fw-semibold fs-7">vs last month</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5 g-xl-8 mb-5">
+            <div class="col-xl-8">
+                <div class="card card-xl-stretch">
+                    <div class="card-header border-0 pt-5 pb-3">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">Monthly Sales</span>
+                            <span class="text-muted fw-bold fs-7">Revenue performance over the past 6 months</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <span class="fw-bolder fs-4 text-primary">&#8358;@Model.TotalSales</span>
+                        </div>
+                    </div>
+                    <div class="card-body pt-2 pb-0">
+                        <div class="mixed-widget-10-chart" data-kt-color="primary" style="height: 220px"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">User Breakdown</span>
+                            <span class="text-muted fw-bold fs-7">@Model.TotalUsers total accounts</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body pt-4">
+                        @{
+                            var totalCount = Model.Shareholders + Model.StockBrokers + Model.CompanySecs + Model.FRAdmins + Model.SystemAdmins;
+                            int Pct(int val) => totalCount > 0 ? (int)(val * 100.0 / totalCount) : 0;
+                        }
+                        <div class="d-flex flex-column gap-4">
+                            <div class="d-flex align-items-center">
+                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">SH</div>
+                                <div class="flex-grow-1">
+                                    <div class="progress h-8px rounded">
+                                        <div class="progress-bar bg-primary" style="width: @Pct(Model.Shareholders)%"></div>
+                                    </div>
+                                </div>
+                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.Shareholders</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">SB</div>
+                                <div class="flex-grow-1">
+                                    <div class="progress h-8px rounded">
+                                        <div class="progress-bar bg-success" style="width: @Pct(Model.StockBrokers)%"></div>
+                                    </div>
+                                </div>
+                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.StockBrokers</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">CS</div>
+                                <div class="flex-grow-1">
+                                    <div class="progress h-8px rounded">
+                                        <div class="progress-bar bg-warning" style="width: @Pct(Model.CompanySecs)%"></div>
+                                    </div>
+                                </div>
+                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.CompanySecs</span>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <div class="w-50px fw-bold fs-7 text-gray-500 me-3">FR</div>
+                                <div class="flex-grow-1">
+                                    <div class="progress h-8px rounded">
+                                        <div class="progress-bar bg-danger" style="width: @Pct(Model.FRAdmins)%"></div>
+                                    </div>
+                                </div>
+                                <span class="ms-3 fw-bolder text-dark fs-7">@Model.FRAdmins</span>
+                            </div>
+                        </div>
+                        <div class="separator my-5"></div>
+                        <div class="d-flex flex-wrap gap-3 fs-7">
+                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-primary me-1"></span> Shareholders</span>
+                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-success me-1"></span> Stock Brokers</span>
+                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-warning me-1"></span> Company Secs</span>
+                            <span class="d-flex align-items-center gap-1"><span class="bullet bg-danger me-1"></span> FR Admins</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-5 g-xl-8 mb-5">
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">Subscription Status</span>
+                            <span class="text-muted fw-bold fs-7">@Model.TotalSubscribers total subscribers</span>
+                        </h3>
+                    </div>
+                    <div class="card-body pt-4 d-flex flex-column justify-content-center">
+                        <div class="d-flex align-items-center mb-5">
+                            <div class="d-flex align-items-center flex-grow-1 me-5">
+                                <div class="symbol symbol-40px me-4">
+                                    <span class="symbol-label bg-light-success">
+                                        <i class="bi bi-check-circle-fill text-success fs-4"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="fw-bolder fs-6 text-dark d-block">Active</span>
+                                    <span class="fw-bold fs-7 text-muted">Valid subscription</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-light-success fw-bolder fs-6 px-4 py-3">@Model.Active</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-5">
+                            <div class="d-flex align-items-center flex-grow-1 me-5">
+                                <div class="symbol symbol-40px me-4">
+                                    <span class="symbol-label bg-light-warning">
+                                        <i class="bi bi-clock-fill text-warning fs-4"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="fw-bolder fs-6 text-dark d-block">Inactive</span>
+                                    <span class="fw-bold fs-7 text-muted">Expired subscription</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-light-warning fw-bolder fs-6 px-4 py-3">@Model.Inactive</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <div class="d-flex align-items-center flex-grow-1 me-5">
+                                <div class="symbol symbol-40px me-4">
+                                    <span class="symbol-label bg-light-danger">
+                                        <i class="bi bi-dash-circle-fill text-danger fs-4"></i>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="fw-bolder fs-6 text-dark d-block">Never Subscribed</span>
+                                    <span class="fw-bold fs-7 text-muted">No subscription history</span>
+                                </div>
+                            </div>
+                            <span class="badge badge-light-danger fw-bolder fs-6 px-4 py-3">@Model.Never</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">New Users</span>
+                            <span class="text-muted fw-bold fs-7">Most recently registered</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a asp-controller="Users" asp-action="Index" class="btn btn-sm btn-light">View All</a>
+                        </div>
+                    </div>
+                    <div class="card-body pt-4">
+                        @foreach (var user in Model.Users)
+                        {
+                            <div class="d-flex align-items-center mb-5">
+                                <div class="symbol symbol-40px symbol-circle me-4">
+                                    <span class="symbol-label bg-light-primary text-primary fw-bolder fs-6">@user.Initial</span>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <span class="fs-6 fw-bolder text-dark d-block text-truncate" style="max-width:160px">@user.Name</span>
+                                    <span class="fs-7 text-muted text-truncate d-block" style="max-width:160px">@user.Email</span>
+                                </div>
+                                <span class="badge badge-light fw-bold ms-2">@user.Type</span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4">
+                <div class="card h-100">
+                    <div class="card-header border-0 pt-5">
+                        <h3 class="card-title align-items-start flex-column">
+                            <span class="card-label fw-bolder fs-3 mb-1">Recent Cert Requests</span>
+                            <span class="text-muted fw-bold fs-7">Latest e-certificate requests</span>
+                        </h3>
+                        <div class="card-toolbar">
+                            <a asp-controller="ECertRequests" asp-action="Pending" class="btn btn-sm btn-light-primary">Pending</a>
+                        </div>
+                    </div>
+                    <div class="card-body pt-4">
+                        @if (!Model.CertRequests.Any())
+                        {
+                            <div class="text-center text-muted py-10">
+                                <i class="bi bi-inbox fs-2x d-block mb-2"></i>
+                                No recent requests
+                            </div>
+                        }
+                        else
+                        {
+                            @foreach (var file in Model.CertRequests)
+                            {
+                                <div class="d-flex align-items-center mb-5">
+                                    <div class="symbol symbol-40px me-4">
+                                        <span class="symbol-label bg-light-info">
+                                            <i class="bi bi-file-earmark-text text-info fs-5"></i>
+                                        </span>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <span class="fs-6 fw-bolder text-dark d-block text-truncate" style="max-width:140px">@file.Description</span>
+                                        <span class="fs-7 text-muted">@file.Time &bull; <span class="text-primary">@file.Name</span></span>
+                                    </div>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

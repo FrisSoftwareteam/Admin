@@ -1,0 +1,19 @@
+﻿@{
+    ViewData["Title"] = "Confirm Email";
+}
+
+<div class="pt-lg-10">
+    <div class="row justify-content-center text-center">
+        <div class="col-sm-10 col-md-6">
+            <img class="img-fluid mw-200px" src="~/img/illustrations/confirm-email.png" />
+            <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">Confirm your Account</h1>
+            <div class="fw-bold fs-3 text-gray-800 mb-15">
+                We have sent a verification email link to you. Please check your email 
+                and follow the link to resume access to your account.
+            </div>
+            <div class="text-center">
+                <a asp-action="@nameof(FirstReg.OnlineAccess.Controllers.AuthController.ReConfirm)" class="btn btn-lg btn-primary fw-bolder">Resend Email</a>
+            </div>
+        </div>
+    </div>
+</div>
