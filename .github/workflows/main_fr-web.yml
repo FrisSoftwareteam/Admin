@@ -21,14 +21,12 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '8.0.x'
 
       - name: Build with dotnet
-        working-directory: FirstReg-master/FirstReg-master
-        run: dotnet build FirstReg.sln --configuration Release
+        run: dotnet build "Online-Access-Asp.net-main 101.sln" --configuration Release
 
       - name: dotnet publish
-        working-directory: FirstReg-master/FirstReg-master
         run: dotnet publish Web/FirstReg.Web.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
 
       - name: Upload artifact for deployment job
