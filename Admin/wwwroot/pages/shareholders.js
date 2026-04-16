@@ -6,6 +6,7 @@ var page = {
             const t = document.getElementById("tb_data");
 
             if (!t) return;
+            const hideSubscription = t.getAttribute('data-hide-subscription') === 'true';
 
             const e = $(t).DataTable({
                 info: 1,
@@ -19,12 +20,19 @@ var page = {
                     data: function (d) {
                         d.verified = $('#cb_verified').val();
                         d.subscribed = $('#cb_subscribed').val();
+                        d.dateSort = $('#cb_date_sort').val();
                     }
                 },
-                columnDefs: [{
-                    targets: 4,
-                    orderable: !1
-                }],
+                columnDefs: [
+                    {
+                        targets: 5,
+                        orderable: !1
+                    },
+                    {
+                        targets: 3,
+                        visible: !hideSubscription
+                    }
+                ],
                 language: {
                     processing: `<div class="d-flex align-items-center gap-3 py-4">
                         <span class="spinner-border spinner-border-sm text-primary" role="status"></span>
@@ -42,6 +50,7 @@ var page = {
                 }],
                 createdRow: function (row, data, index) {
                     $(row).attr('id', data[2]);
+                    const actionIndex = hideSubscription ? 4 : 5;
 
                     //if (data[1] == '1') {
                     //    $('td', row).eq(1).html('<span class="badge badge-light-success fw-bolder px-4 py-3">Active</span>');
@@ -50,9 +59,9 @@ var page = {
                     //    $('td', row).eq(1).html('<span class="badge badge-light-danger fw-bolder px-4 py-3">Expired</span>');
                     //}
 
-                    $('td', row).eq(4).addClass('text-end');
-                    $('td', row).eq(4).html(
-                        `<a href="${data[7]}" class="btn btn-sm btn-light btn-active-light-primary">
+                    $('td', row).eq(actionIndex).addClass('text-end');
+                    $('td', row).eq(actionIndex).html(
+                        `<a href="${data[8]}" class="btn btn-sm btn-light btn-active-light-primary">
                             <span class="fw-bolder">Details</span>
                         </a>`);
 
@@ -71,12 +80,17 @@ var page = {
 
             var cb_verified = $('#cb_verified');
             var cb_subscribed = $('#cb_subscribed');
+            var cb_date_sort = $('#cb_date_sort');
 
             cb_verified.on("change", function () {
                 e.ajax.reload();
             });
 
             cb_subscribed.on("change", function () {
+                e.ajax.reload();
+            });
+
+            cb_date_sort.on("change", function () {
                 e.ajax.reload();
             });
 

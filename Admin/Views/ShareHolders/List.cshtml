@@ -1,7 +1,9 @@
 ﻿@model string[]
 
 @{
-    ViewData["Title"] = "Shareholders";
+    var isPendingList = ViewData["IsPendingList"] is bool pendingList && pendingList;
+    var hideSubscriptionColumn = ViewData["HideSubscriptionColumn"] is bool hideColumn && hideColumn;
+    ViewData["Title"] ??= "Shareholders";
 }
 
 <div class="container">
@@ -20,22 +22,39 @@
                     </span>
                     <input type="search" id="tb_search" class="form-control form-control-white w-250px ps-9" placeholder="Search" />
                 </div>
+                <div class="d-flex align-items-center my-0">
+                    <select id="cb_date_sort" class="form-select form-select-white w-200px">
+                        <option value="">Date Order</option>
+                        <option value="oldest">Oldest to Newest</option>
+                        <option value="newest">Newest to Oldest</option>
+                    </select>
+                </div>
             </div>
         </div>
         <div class="d-flex flex-wrap my-1">
+            @if (isPendingList)
+            {
+                <form asp-controller="ShareHolders" asp-action="DeletePendingAccounts" method="post" class="ms-3"
+                      onsubmit="return confirm('Delete all unactivated shareholder accounts and email the affected users?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger btn-sm">Delete All</button>
+                </form>
+            }
             <a href="javascript:;" class="btn btn-info btn-sm ms-3" data-mode="full-modal" data-target="diag_user"><span class="me-2">+</span> Add New</a>
             @*<a href="javascript:;" class="btn btn-info btn-sm ms-3" data-mode="full-modal" data-target="diag_user"><span class="me-2">+</span> Add New</a>*@
         </div>
     </div>
 
     <div class="mb-5">
-        <table id="tb_data" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list" data-url="@Model.First()">
+        <table id="tb_data" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list"
+               data-url="@Model.First()" data-hide-subscription="@hideSubscriptionColumn.ToString().ToLowerInvariant()">
             <thead class="fs-5 text-gray-400 text-uppercase">
                 <tr class="fw-bold fs-7 text-gray-700">
                     <th>Name</th>
                     <th>Contact</th>
                     <th>Status</th>
                     <th>Subscription</th>
+                    <th>Date</th>
                     <th></th>
                 </tr>
             </thead>

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,11 +43,17 @@ namespace FirstReg.Admin.Controllers
         });
 
         [HttpGet("pending")]
-        public IActionResult Pending() => View("List", new string[]
+        public IActionResult Pending()
         {
-            Url.Action(nameof(GetLists), new { v = false }),
-            Url.Action(nameof(SwitchGroup)),
-        });
+            ViewData["Title"] = "Unactivated Shareholders";
+            ViewData["IsPendingList"] = true;
+
+            return View("List", new string[]
+            {
+                Url.Action(nameof(GetLists), new { v = false, s = false, d = "2026-04-13" }),
+                Url.Action(nameof(SwitchGroup)),
+            });
+        }
 
         [Route("expired")]
         public IActionResult Expired() => View("List", new string[]
@@ -97,42 +104,7 @@ namespace FirstReg.Admin.Controllers
                 if (!hs.Any())
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                var shareholder = hs.First();
-                var user = shareholder.User;
-                var email = user?.Email;
-                var fullName = user?.FullName ?? shareholder.FullName;
-
-                if (!string.IsNullOrWhiteSpace(email))
-                {
-                    try
-                    {
-                        await _service.Email.SendAccountDeletedEmailAsync(email, fullName);
-                    }
-                    catch (Exception emailEx)
-                    {
-                        _logger.LogWarning(emailEx, "Account deleted email could not be sent to {Email}", email);
-                        TempData["warning"] = "Account deleted, but the notification email could not be sent.";
-                    }
-                }
-
-                foreach (var holding in shareholder.Holdings.ToList())
-                    await _service.Data.DeleteAsync(holding);
-
-                await _service.Data.DeleteAsync(shareholder);
-
-                if (user != null)
-                {
-                    var hasOtherAccounts = await _service.Data.ExistsAsync<Shareholder>(x =>
-                        x.UserId == user.Id && x.Id != shareholder.Id);
-
-                    if (!hasOtherAccounts)
-                    {
-                        var result = await _userManager.DeleteAsync(user);
-
-                        if (!result.Succeeded)
-                            TempData["warning"] = "Shareholder account deleted, but the linked user record could not be removed.";
-                    }
-                }
+                await DeleteShareholderAsync(hs.First(), sendDeleteEmail: true);
 
                 TempData["success"] = $"Shareholder account {code} was deleted successfully.";
                 return RedirectToAction(nameof(Index));
@@ -142,6 +114,109 @@ namespace FirstReg.Admin.Controllers
                 _logger.LogError(ex.ToString());
                 TempData["error"] = $"Could not delete shareholder account: {Clear.Tools.GetAllExceptionMessage(ex)}";
                 return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
+            }
+        }
+
+        [HttpPost("delete-pending-accounts")]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeletePendingAccounts()
+        {
+            try
+            {
+                var pendingShareholders = await _service.Data.GetAsQueryable<Shareholder>()
+                    .AsNoTracking()
+                    .Include(x => x.User)
+                    .Where(x => !x.Verified)
+                    .ToListAsync();
+
+                if (!pendingShareholders.Any())
+                {
+                    TempData["warning"] = "There are no unactivated shareholder accounts to delete.";
+                    return RedirectToAction(nameof(Pending));
+                }
+
+                foreach (var recipient in pendingShareholders
+                    .Select(x => new
+                    {
+                        x.Id,
+                        Email = x.User?.Email,
+                        Name = x.User?.FullName ?? x.FullName
+                    })
+                    .Where(x => !string.IsNullOrWhiteSpace(x.Email))
+                    .GroupBy(x => x.Email.Trim(), StringComparer.OrdinalIgnoreCase)
+                    .Select(x => x.First()))
+                {
+                    try
+                    {
+                        await _service.Email.SendAccountDeletedEmailAsync(recipient.Email, recipient.Name);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Bulk delete email could not be sent to {Email}", recipient.Email);
+                    }
+                }
+
+                var pendingIds = pendingShareholders.Select(x => x.Id).ToList();
+
+                var shareholdersToDelete = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.Holdings)
+                    .Include(x => x.User)
+                    .Where(x => pendingIds.Contains(x.Id))
+                    .ToListAsync();
+
+                var deletedCount = 0;
+                foreach (var shareholder in shareholdersToDelete)
+                {
+                    await DeleteShareholderAsync(shareholder, sendDeleteEmail: false);
+                    deletedCount++;
+                }
+
+                TempData["success"] = $"{deletedCount} unactivated shareholder account(s) were deleted successfully.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                TempData["error"] = $"Could not delete unactivated shareholder accounts: {Clear.Tools.GetAllExceptionMessage(ex)}";
+            }
+
+            return RedirectToAction(nameof(Pending));
+        }
+
+        private async Task DeleteShareholderAsync(Shareholder shareholder, bool sendDeleteEmail)
+        {
+            var user = shareholder.User;
+            var email = user?.Email;
+            var fullName = user?.FullName ?? shareholder.FullName;
+
+            if (sendDeleteEmail && !string.IsNullOrWhiteSpace(email))
+            {
+                try
+                {
+                    await _service.Email.SendAccountDeletedEmailAsync(email, fullName);
+                }
+                catch (Exception emailEx)
+                {
+                    _logger.LogWarning(emailEx, "Account deleted email could not be sent to {Email}", email);
+                    TempData["warning"] = "Account deleted, but the notification email could not be sent.";
+                }
+            }
+
+            foreach (var holding in shareholder.Holdings.ToList())
+                await _service.Data.DeleteAsync(holding);
+
+            await _service.Data.DeleteAsync(shareholder);
+
+            if (user == null) return;
+
+            var hasOtherAccounts = await _service.Data.ExistsAsync<Shareholder>(x =>
+                x.UserId == user.Id && x.Id != shareholder.Id);
+
+            if (!hasOtherAccounts)
+            {
+                var result = await _userManager.DeleteAsync(user);
+
+                if (!result.Succeeded)
+                    TempData["warning"] = "Shareholder account deleted, but the linked user record could not be removed.";
             }
         }
 
@@ -491,7 +566,7 @@ namespace FirstReg.Admin.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetLists(bool? v, bool? s)
+        public async Task<IActionResult> GetLists(bool? v, bool? s, string dateSort, DateTime? d)
         {
             try
             {
@@ -514,6 +589,9 @@ namespace FirstReg.Admin.Controllers
                 else if (s == false)
                     query = query.Where(x => x.ExpiryDate == null || x.ExpiryDate < Tools.Now);
 
+                if (d != null)
+                    query = query.Where(x => (x.CreatedOn ?? x.Date) >= d.Value.Date);
+
                 var recordsTotal = await query.CountAsync();
 
                 if (!string.IsNullOrWhiteSpace(search))
@@ -528,8 +606,14 @@ namespace FirstReg.Admin.Controllers
 
                 var recordsFiltered = await query.CountAsync();
 
+                query = dateSort?.ToLowerInvariant() switch
+                {
+                    "oldest" => query.OrderBy(x => x.CreatedOn ?? x.Date).ThenBy(x => x.FullName),
+                    "newest" => query.OrderByDescending(x => x.CreatedOn ?? x.Date).ThenBy(x => x.FullName),
+                    _ => query.OrderBy(x => x.FullName)
+                };
+
                 var shs = await query
-                    .OrderBy(x => x.FullName)
                     .Skip(start)
                     .Take(length)
                     .Select(x => new
@@ -541,6 +625,7 @@ namespace FirstReg.Admin.Controllers
                         x.SecondaryPhone,
                         x.Verified,
                         IsSubscribed = x.ExpiryDate != null && x.ExpiryDate > Tools.Now,
+                        Date = x.CreatedOn ?? x.Date,
                         x.Id
                     })
                     .ToListAsync();
@@ -556,6 +641,7 @@ namespace FirstReg.Admin.Controllers
                         $"{x.Email}<br>{$"{x.PrimaryPhone} {x.SecondaryPhone}".Trim()}".Trim(),
                         x.Verified ? "verified" : "pending",
                         x.IsSubscribed ? "active" : "expired",
+                        x.Date.ToString("dd/MMM/yyyy"),
                         x.Id.ToString(),
                         Clear.Tools.StringUtility.SQLSerialize(x.Verified),
                         Clear.Tools.StringUtility.SQLSerialize(x.IsSubscribed),

@@ -20,7 +20,24 @@ namespace FirstReg.Admin
 
             using (var scope = host.Services.CreateScope())
             {
-                scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
+                var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+
+                if (!env.IsDevelopment())
+                {
+                    scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
+                }
+                else
+                {
+                    try
+                    {
+                        scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
+                    }
+                    catch (Exception ex)
+                    {
+                        logger.LogWarning(ex, "Skipping database migration during local development startup.");
+                    }
+                }
             }
 
             host.Run();
