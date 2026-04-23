@@ -25,11 +25,21 @@ namespace FirstReg.Admin
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.AddDbContext<AppDB>(options => options.UseLazyLoadingProxies().UseSqlite(
-            //    Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("FirstReg.Admin")));
+            var isDevelopment = string.Equals(
+                Configuration[HostDefaults.EnvironmentKey],
+                Environments.Development,
+                StringComparison.OrdinalIgnoreCase);
 
-            services.AddDbContext<AppDB>(options => options.UseLazyLoadingProxies().UseSqlServer(
-                Configuration.GetConnectionString("DefaultConnection")));
+            if (isDevelopment)
+            {
+                services.AddDbContext<AppDB>(options => options.UseLazyLoadingProxies().UseSqlite(
+                    Configuration.GetConnectionString("DefaultConnection"), b => b.MigrationsAssembly("FirstReg.Admin")));
+            }
+            else
+            {
+                services.AddDbContext<AppDB>(options => options.UseLazyLoadingProxies().UseSqlServer(
+                    Configuration.GetConnectionString("DefaultConnection")));
+            }
 
             services.AddSingleton<IMongoClient, MongoClient>(s =>
             {
@@ -72,7 +82,9 @@ namespace FirstReg.Admin
             {
                 options.Cookie.HttpOnly = true;
                 options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SecurePolicy = isDevelopment
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(60 * 24);
 
                 options.LoginPath = "/login";
@@ -83,7 +95,9 @@ namespace FirstReg.Admin
             services.AddAntiforgery(options =>
             {
                 options.Cookie.SameSite = SameSiteMode.None;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.SecurePolicy = isDevelopment
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
             });
 
             services.Configure<ForwardedHeadersOptions>(options =>
@@ -104,7 +118,7 @@ namespace FirstReg.Admin
 
             services.AddDatabaseDeveloperPageExceptionFilter();
 
-            services.AddControllersWithViews().AddRazorRuntimeCompilation();
+            services.AddControllersWithViews();
             services.AddRazorPages();
         }
 
@@ -130,8 +144,6 @@ namespace FirstReg.Admin
                 var proto = context.Request.Headers["X-Forwarded-Proto"].ToString();
                 if (!string.IsNullOrEmpty(proto))
                     context.Request.Scheme = proto;
-                else if (env.IsDevelopment())
-                    context.Request.Scheme = "https";
                 return next(context);
             });
 

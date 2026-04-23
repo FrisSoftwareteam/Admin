@@ -23,21 +23,22 @@ namespace FirstReg.Admin
                 var env = scope.ServiceProvider.GetRequiredService<IHostEnvironment>();
                 var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
 
-                if (!env.IsDevelopment())
-                {
-                    scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
-                }
-                else
-                {
-                    try
-                    {
-                        scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
-                    }
-                    catch (Exception ex)
-                    {
-                        logger.LogWarning(ex, "Skipping database migration during local development startup.");
-                    }
-                }
+                // Migration disabled for local development to avoid DB connection issues.
+                // if (!env.IsDevelopment())
+                // {
+                //     scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
+                // }
+                // else
+                // {
+                //     try
+                //     {
+                //         scope.ServiceProvider.GetRequiredService<AppDB>().Database.Migrate();
+                //     }
+                //     catch (Exception ex)
+                //     {
+                //         logger.LogWarning(ex, "Skipping database migration during local development startup.");
+                //     }
+                // }
             }
 
             host.Run();
