@@ -1,0 +1,43 @@
+﻿@model IEnumerable<TeamMember>
+
+@{
+    ViewData["Title"] = "Board of Directors";
+}
+
+<div class="element-content-area sp-y">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-9">
+                <div class="section-title">
+                    <h3 class="font-weight-bolder">@ViewBag.Title</h3>
+                    <p>
+                        Our Board is constituted of a team of seasoned professionals and experienced 
+                        individuals in the corporate and financial terrain in Nigeria
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="row mtn-30">
+
+            @foreach (var team in Model)
+            {
+
+                <div class="col-md-3 col-sm-6">
+                    <a asp-action="Director" asp-route-id="@team.Id" target="_blank" class="team-member d-block">
+                        <figure class="team-member__thumb">
+                            <img src="/img/team/@team.Photo" alt="@team.Name" />
+                        </figure>
+                        <div class="team-member__content">
+                            <div class="member-info">
+                                <h3>@team.Name</h3>
+                                <span class="designation">@team.Designation</span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+
+            }
+
+        </div>
+    </div>
+</div>

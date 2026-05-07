@@ -1,0 +1,24 @@
+{
+    "time" : 1616597705582,
+    "blocks" : [
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "Sikiru Rufai is an accomplished accountant and business manager. He is an Associate of the Institute of Chartered Accountants in England and Wales (ICAEW), and an ICAEW Business and Finance Professional (BFP). He is also a Fellow of the Institute of Chartered Accountants of Nigeria (ICAN), a Fellow of the National Institute of Marketing of Nigeria (NIMN) and an Associate of the Chartered Institute of Taxation of Nigeria (CITN). He holds a first degree in Geography and Planning from the University of Jos and an MBA from the University of Lagos."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "His professional career took him through Z.O.Ososanya & Co., as an auditor, OSA & Co. (Now Baker Tilly), as a consultant, and PricewaterhouseCoopers, as a manager in corporate finance and strategy. He was Managing Director, Honeywell Oil and Gas Limited and Group Chief Finance Officer/Director, Honeywell Group Limited."
+          }
+        },
+        {
+            "type" : "paragraph",
+          "data": {
+            "text": "He served and is serving on the board of some companies in Africa including Honeywell Flour Mills Plc, Marble Capital Limited and Carnot Gambia Limited. He is the Founder and Chairman of Council, College of Management and Information Technology, American International University, West Africa, The Gambia. He is also a Council Member of the Institute for Enterprise Management and Analytics (IEMA) in Nigeria and a director in TESB Management Consultants (TESB) in both Nigeria and The Gambia."
+          }
+        }
+    ],
+    "version" : "2.19.3"
+}

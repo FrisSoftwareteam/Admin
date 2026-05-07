@@ -1,0 +1,44 @@
+{
+  "time": 1616599421766,
+  "blocks": [
+    {
+      "type": "paragraph",
+      "data": {
+        "text": "Omowunmi Senkoya is a graduate of Town & Regional Planning from Federal Polytechnic, Ilaro and holds a Master of Business Administration (MBA) degree from Ambrose Alli University, Ekpoma. She is a Fellow of the Institute of Capital Market Registrars (ICMR) and a Fellow of the Institute of Operations Management Nigeria (IOMN)."
+      }
+    },
+    {
+      "type": "paragraph",
+      "data": {
+        "text": "Her working experience began with the Lagos State Ministry of Physical Planning and African Barter Company Limited before joining First Registrars in 2000. By dint of hard work, Wunmi rose through the ranks and currently the Head, Abuja Liaison Office of First Registrars."
+      }
+    },
+    {
+      "type": "paragraph",
+      "data": {
+        "text": "Wunmi’s career has exposed her to many technical, leadership and management courses such as:"
+      }
+    },
+    {
+      "type": "list",
+      "data": {
+        "style": "unordered",
+        "items": [
+          "Investment Banking and Capital Market Operations-Boyle Street Consulting Ltd",
+          "Result Based Leadership through Effective Time Management-Solid Rock Consult",
+          "Management Development Program on Effective Registrar-Credible Associate Ltd",
+          "Enterprise Risk Management-CIBN Lagos Branch",
+          "Customer Service Excellence and Relationship Management-AMAG Professional Training Academy",
+          "Value Creation for Quoted Companies-ICSAN/NSE"
+        ]
+      }
+    },
+    {
+      "type": "paragraph",
+      "data": {
+        "text": "Omowunmi Senkoya is married with children."
+      }
+    }
+  ],
+  "version": "2.19.3"
+}
