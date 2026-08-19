@@ -16,6 +16,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace FirstReg.OnlineAccess.Controllers;
@@ -25,6 +26,121 @@ namespace FirstReg.OnlineAccess.Controllers;
 public class FRAdminController(ILogger<FRAdminController> logger, Service service, IApiClient apiClient, EStockApiUrl apiUrl, Mongo mongo, IWebHostEnvironment env, IConfiguration config)
         : BaseController(service, AuditLogSection.FrAdmin)
 {
+        private static readonly JsonSerializerOptions FallbackJsonOptions = new()
+        {
+                PropertyNameCaseInsensitive = true
+        };
+
+        private static string DisplayClearingNo(string clearingNo)
+        {
+                if (string.IsNullOrWhiteSpace(clearingNo))
+                        return "";
+
+                var value = clearingNo.Trim();
+                if (value.Trim('0').Length == 0)
+                        return "";
+                if (value.Equals("##PARSE_ERROR##", StringComparison.OrdinalIgnoreCase))
+                        return "";
+
+                return value;
+        }
+
+        private async Task<int> GetDefaultRegisterId()
+        {
+                var matches = await service.Data.GetAsQueryable<Register>().AsNoTracking()
+                        .Where(x => x.Name.Contains("Fidelity"))
+                        .Select(x => new { x.Id, x.Name })
+                        .ToListAsync();
+
+                var selected = matches.FirstOrDefault(x =>
+                                x.Name.Equals("Fidelity Bank Plc", StringComparison.OrdinalIgnoreCase))
+                        ?? matches.FirstOrDefault(x =>
+                                x.Name.Contains("Fidelity Bank Plc", StringComparison.OrdinalIgnoreCase)
+                                && !x.Name.Contains("Accumul", StringComparison.OrdinalIgnoreCase)
+                                && !x.Name.Contains("Right", StringComparison.OrdinalIgnoreCase)
+                                && !x.Name.Contains("Offer", StringComparison.OrdinalIgnoreCase));
+
+                return selected?.Id ?? 0;
+        }
+
+        private sealed class FallbackShareholderRecord
+        {
+                public string SerialNo { get; set; }
+                public string AccountNo { get; set; }
+                public string Name { get; set; }
+                public string Address { get; set; }
+                public string CertificateNo { get; set; }
+                public string Units { get; set; }
+                public string Email { get; set; }
+                public string Phone { get; set; }
+                public string FailedReason { get; set; }
+                public string ClearingNo { get; set; }
+                public string Broker { get; set; }
+                public string Source { get; set; }
+                public string RegisterName { get; set; }
+        }
+
+        private bool HasFallbackSearch(string global, string name, string addr, string acc, string oldacc)
+                => new[] { global, name, addr, acc, oldacc }.Any(x => !string.IsNullOrWhiteSpace(x));
+
+        private List<FallbackShareholderRecord> LoadFallbackShareholders()
+        {
+                var dataDir = Path.Combine(env.WebRootPath, "data");
+                var fallbackFiles = new[]
+                {
+                        ("fidelity-rights-2024-list-of-failed.json", "Fidelity Rights 2024 Failed"),
+                        ("fidelity-rights-2024-list-not-sent.json", "Fidelity Rights 2024 Not Sent"),
+                        ("oando-shareholder-list-2025.json", "Oando Shareholder List 2025")
+                };
+
+                var results = new List<FallbackShareholderRecord>();
+
+                foreach (var (fileName, source) in fallbackFiles)
+                {
+                        var path = Path.Combine(dataDir, fileName);
+                        if (!System.IO.File.Exists(path))
+                                continue;
+
+                        using var stream = System.IO.File.OpenRead(path);
+                        var records = JsonSerializer.Deserialize<List<FallbackShareholderRecord>>(stream, FallbackJsonOptions) ?? [];
+
+                        foreach (var record in records)
+                        {
+                                record.Source = source;
+                                record.RegisterName = source;
+                        }
+
+                        results.AddRange(records);
+                }
+
+                return results;
+        }
+
+        private List<FallbackShareholderRecord> SearchFallbackShareholders(
+                int regid, string global, string name, string addr, string cscs, string acc, string oldacc)
+        {
+                if (regid > 0 || !HasFallbackSearch(global, name, addr, acc, oldacc))
+                        return [];
+
+                string ContainsSafe(string value, string term)
+                        => value ?? string.Empty;
+
+                return LoadFallbackShareholders()
+                        .Where(x =>
+                                (string.IsNullOrWhiteSpace(name) || ContainsSafe(x.Name, name).Contains(name, StringComparison.OrdinalIgnoreCase)) &&
+                                (string.IsNullOrWhiteSpace(acc) || ContainsSafe(x.AccountNo, acc).Contains(acc, StringComparison.OrdinalIgnoreCase)) &&
+                                (string.IsNullOrWhiteSpace(oldacc) || ContainsSafe(x.CertificateNo, oldacc).Contains(oldacc, StringComparison.OrdinalIgnoreCase)) &&
+                                (string.IsNullOrWhiteSpace(addr) || ContainsSafe(x.Address, addr).Contains(addr, StringComparison.OrdinalIgnoreCase)) &&
+                                (string.IsNullOrWhiteSpace(cscs) || ContainsSafe(x.ClearingNo, cscs).Contains(cscs, StringComparison.OrdinalIgnoreCase)) &&
+                                (string.IsNullOrWhiteSpace(global) ||
+                                        ContainsSafe(x.Name, global).Contains(global, StringComparison.OrdinalIgnoreCase) ||
+                                        ContainsSafe(x.AccountNo, global).Contains(global, StringComparison.OrdinalIgnoreCase) ||
+                                        ContainsSafe(x.Address, global).Contains(global, StringComparison.OrdinalIgnoreCase) ||
+                                        ContainsSafe(x.CertificateNo, global).Contains(global, StringComparison.OrdinalIgnoreCase)))
+                        .Take(250)
+                        .ToList();
+        }
+
         private async Task<RegSH> GetShareholderDetailsModel(int regid, int accno)
         {
                 var holdingsQuery = service.Data.GetAsQueryable<ShareHolding>()
@@ -41,8 +157,9 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         .AsEnumerable()
                         .FirstOrDefault(x => int.TryParse(x.AccountNo, out var dbAccNo) && dbAccNo == accno);
 
+                // List is sourced from Shareholders_staging — fall back there when live ShareHoldings has no row.
                 if (holding == null)
-                        throw new InvalidOperationException("The selected shareholder was not found.");
+                        return await GetShareholderDetailsFromStaging(regid, accno);
 
                 var model = new RegSH
                 {
@@ -50,7 +167,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         RegCode = holding.RegisterId,
                         Register = holding.Register?.Name ?? "",
                         AccountNo = int.TryParse(holding.AccountNo, out var parsedAccNo) ? parsedAccNo : accno,
-                        ClearingNo = holding.Shareholder?.ClearingNo ?? "",
+                        ClearingNo = DisplayClearingNo(holding.Shareholder?.ClearingNo),
                         Gender = "",
                         Phone = holding.Shareholder?.SecondaryPhone ?? "",
                         Mobile = holding.Shareholder?.PrimaryPhone ?? "",
@@ -67,20 +184,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                 if (string.IsNullOrWhiteSpace(fullName))
                         fullName = holding.Shareholder?.FullName?.Trim();
 
-                if (!string.IsNullOrWhiteSpace(fullName))
-                {
-                        var nameParts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-                        if (nameParts.Length == 1)
-                        {
-                                model.LastName = nameParts[0];
-                        }
-                        else
-                        {
-                                model.LastName = nameParts[^1];
-                                model.FirstName = nameParts[0];
-                                model.MiddleName = string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2));
-                        }
-                }
+                ApplyFullName(model, fullName);
 
                 if (holding.ShareHolderId > 0)
                 {
@@ -93,7 +197,9 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
 
                         if (bsonHolding != null)
                         {
-                                model.ClearingNo = string.IsNullOrWhiteSpace(model.ClearingNo) ? bsonHolding.ClearingNo : model.ClearingNo;
+                                model.ClearingNo = string.IsNullOrWhiteSpace(model.ClearingNo)
+                                        ? DisplayClearingNo(bsonHolding.ClearingNo)
+                                        : model.ClearingNo;
                                 model.FirstName = string.IsNullOrWhiteSpace(model.FirstName) ? bsonHolding.FirstName : model.FirstName;
                                 model.MiddleName = string.IsNullOrWhiteSpace(model.MiddleName) ? bsonHolding.MiddleName : model.MiddleName;
                                 model.LastName = string.IsNullOrWhiteSpace(model.LastName) ? bsonHolding.LastName : model.LastName;
@@ -121,6 +227,86 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         });
                 }
 
+                await PopulateDividendsAsync(model, regid);
+
+                return model;
+        }
+
+        private async Task<RegSH> GetShareholderDetailsFromStaging(int regid, int accno)
+        {
+                var staging = await service.Data.GetAsQueryable<ShareholderStaging>()
+                        .FirstOrDefaultAsync(x => x.RegisterCode == regid && x.AccountNumber == accno);
+
+                if (staging == null)
+                        throw new InvalidOperationException("The selected shareholder was not found in Shareholders_staging.");
+
+                static decimal ParseUnits(string holdings)
+                {
+                        if (string.IsNullOrWhiteSpace(holdings))
+                                return 0m;
+                        var cleaned = holdings.Replace(",", "").Trim();
+                        return decimal.TryParse(cleaned, out var units) ? units : 0m;
+                }
+
+                var units = ParseUnits(staging.Holdings);
+                var model = new RegSH
+                {
+                        Id = staging.AccountNumber,
+                        RegCode = staging.RegisterCode,
+                        Register = staging.CompanyName ?? "",
+                        AccountNo = staging.AccountNumber,
+                        ClearingNo = DisplayClearingNo(staging.ClearingNo),
+                        Gender = "",
+                        Phone = staging.Mobile ?? "",
+                        Mobile = staging.Mobile ?? "",
+                        Email = staging.Mail ?? "",
+                        Address1 = staging.Address ?? "",
+                        Address2 = "",
+                        City = "",
+                        TotalUnits = units,
+                        Units = new List<Bson.Unit>(),
+                        Dividends = new List<Bson.Dividend>()
+                };
+
+                ApplyFullName(model, staging.Names?.Trim());
+
+                model.Units.Add(new Bson.Unit
+                {
+                        Id = staging.AccountNumber,
+                        AccountNo = staging.AccountNumber,
+                        RegCode = regid,
+                        CertNo = 0,
+                        Date = DateTime.Now.ToString("dd-MMM-yyyy"),
+                        OldCertNo = "",
+                        Description = "Staging balance",
+                        Narration = "From Shareholders_staging",
+                        TotalUnits = units
+                });
+
+                await PopulateDividendsAsync(model, regid);
+                return model;
+        }
+
+        private static void ApplyFullName(RegSH model, string fullName)
+        {
+                if (string.IsNullOrWhiteSpace(fullName))
+                        return;
+
+                var nameParts = fullName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                if (nameParts.Length == 1)
+                {
+                        model.LastName = nameParts[0];
+                }
+                else
+                {
+                        model.LastName = nameParts[^1];
+                        model.FirstName = nameParts[0];
+                        model.MiddleName = string.Join(" ", nameParts.Skip(1).Take(nameParts.Length - 2));
+                }
+        }
+
+        private async Task PopulateDividendsAsync(RegSH model, int regid)
+        {
                 if (!model.Dividends.Any())
                 {
                         try
@@ -137,7 +323,6 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                         }
                 }
 
-                // Backfill DatePaid directly from estock ___SDividends view (bypasses deployed API version)
                 if (model.Dividends.Any(d => string.IsNullOrEmpty(d.DatePaid)))
                 {
                         try
@@ -168,36 +353,38 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                 logger.LogWarning($"eStock DatePaid backfill failed: {Clear.Tools.GetAllExceptionMessage(ex)}");
                         }
                 }
-
-                return model;
         }
 
         public IActionResult Index()
         {
+                logger.LogWarning($"FRADMIN DEBUG: Index hit. IsAuthenticated={User.Identity.IsAuthenticated}, Name={User.Identity.Name}");
                 return RedirectToAction(nameof(Shareholders));
         }
 
 
         [Route("shareholders")]
-        public async Task<IActionResult> Shareholders(int regid, string global,
+        public async Task<IActionResult> Shareholders(int? regid, string global,
                 string name, string addr, string cscs, string acc, string oldacc)
         {
                 try
                 {
+                        var selectedRegId = regid ?? await GetDefaultRegisterId();
+
+                        logger.LogWarning($"FRADMIN DEBUG: Shareholders hit. IsAuthenticated={User.Identity.IsAuthenticated}, Name={User.Identity.Name}");
                         await LogAuditAction(AuditLogType.Search,
-                                $"{User.Identity.Name} searched with these parameters: RegCode={regid}, Global={global}, " +
+                                $"{User.Identity.Name} searched with these parameters: RegCode={selectedRegId}, Global={global}, " +
                                 $"Name={name}, Address={addr}, CSCS={cscs}, Account={acc}, OldAccount={oldacc}");
 
                         return View(new FRRegisterSHSumm()
                         {
-                                RegId = regid,
+                                RegId = selectedRegId,
                                 Global = global,
                                 Name = name,
                                 Address = addr,
                                 ClearingNo = cscs,
                                 AccountNo = acc,
                                 OldAccountNo = oldacc,
-                                ListUrl = Url.Action(nameof(GetShareholderLists), new { regid, global, name, addr, cscs, acc, oldacc }),
+                                ListUrl = Url.Action(nameof(GetShareholderLists), new { regid = selectedRegId, global, name, addr, cscs, acc, oldacc }),
                                 ExportUrl = "",
                                 DetailsUrl = Url.Action(nameof(GetShareholderDetails)),
                                 DividendsUrl = Url.Action(nameof(GetShareholderDetails))
@@ -224,37 +411,90 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
         {
                 try
                 {
-                        IQueryable<ShareHolding> query = service.Data.GetAsQueryable<ShareHolding>()
-                                .Where(x => x.AccountName != null && x.AccountName != "");
+                        var hasFilter = regid > 0
+                                || !string.IsNullOrWhiteSpace(global)
+                                || !string.IsNullOrWhiteSpace(name)
+                                || !string.IsNullOrWhiteSpace(addr)
+                                || !string.IsNullOrWhiteSpace(cscs)
+                                || !string.IsNullOrWhiteSpace(acc)
+                                || !string.IsNullOrWhiteSpace(oldacc);
+
+                        IQueryable<ShareholderStaging> query = service.Data.GetAsQueryable<ShareholderStaging>().AsNoTracking();
 
                         if (regid > 0)
-                                query = query.Where(x => x.RegisterId == regid);
-                        if (!string.IsNullOrWhiteSpace(name))
-                                query = query.Where(x => x.AccountName.Contains(name));
-                        if (!string.IsNullOrWhiteSpace(acc))
-                                query = query.Where(x => x.AccountNo.Contains(acc));
-                        if (!string.IsNullOrWhiteSpace(global))
-                                query = query.Where(x => x.AccountName.Contains(global) || x.AccountNo.Contains(global));
-                        if (!string.IsNullOrWhiteSpace(cscs))
-                                query = query.Where(x => x.Shareholder.ClearingNo.Contains(cscs));
-                        if (!string.IsNullOrWhiteSpace(addr))
-                                query = query.Where(x => x.Shareholder.Street.Contains(addr) || x.Shareholder.City.Contains(addr));
+                                query = query.Where(x => x.RegisterCode == regid);
 
-                        var rows = await query
-                                .OrderBy(x => x.AccountName)
-                                .Take(5000)
+                        if (!string.IsNullOrWhiteSpace(name))
+                                query = query.Where(x => x.Names.Contains(name));
+                        if (!string.IsNullOrWhiteSpace(acc) && int.TryParse(acc, out var accNoFilter))
+                                query = query.Where(x => x.AccountNumber == accNoFilter);
+                        if (!string.IsNullOrWhiteSpace(addr))
+                                query = query.Where(x => x.Address.Contains(addr));
+                        if (!string.IsNullOrWhiteSpace(cscs))
+                                query = query.Where(x => x.ClearingNo.Contains(cscs));
+                        if (!string.IsNullOrWhiteSpace(oldacc))
+                                query = query.Where(x => x.BankAc.Contains(oldacc) || x.BranchCode.Contains(oldacc));
+                        if (!string.IsNullOrWhiteSpace(global))
+                        {
+                                if (int.TryParse(global, out var globalAcc))
+                                {
+                                        query = query.Where(x =>
+                                                x.AccountNumber == globalAcc ||
+                                                x.Names.Contains(global) ||
+                                                x.CompanyName.Contains(global) ||
+                                                x.Address.Contains(global) ||
+                                                x.ClearingNo.Contains(global));
+                                }
+                                else
+                                {
+                                        query = query.Where(x =>
+                                                x.Names.Contains(global) ||
+                                                x.CompanyName.Contains(global) ||
+                                                x.Address.Contains(global) ||
+                                                x.ClearingNo.Contains(global));
+                                }
+                        }
+
+                        // Unfiltered default: TOP 500 with no ORDER BY so SQL does not sort millions of rows.
+                        // Filtered: account order is cheap relative to sorting names.
+                        if (hasFilter)
+                                query = query.OrderBy(x => x.AccountNumber);
+
+                        var stagingRows = await query
+                                .Take(500)
                                 .Select(x => new
                                 {
-                                        x.Id,
-                                        x.RegisterId,
-                                        x.AccountNo,
-                                        x.AccountName,
-                                        x.Units,
-                                        RegisterName = x.Register.Name,
-                                        ClearingNo = x.Shareholder.ClearingNo,
-                                        Phone = x.Shareholder.PrimaryPhone
+                                        x.AccountNumber,
+                                        AccountName = x.Names ?? "",
+                                        Holdings = x.Holdings,
+                                        RegisterName = x.CompanyName ?? "",
+                                        RegisterId = x.RegisterCode,
+                                        Phone = x.Mobile ?? "",
+                                        x.ClearingNo
                                 })
                                 .ToListAsync();
+
+                        static decimal ParseUnits(string holdings)
+                        {
+                                if (string.IsNullOrWhiteSpace(holdings))
+                                        return 0m;
+                                var cleaned = holdings.Replace(",", "").Trim();
+                                return decimal.TryParse(cleaned, out var units) ? units : 0m;
+                        }
+
+                        var rows = stagingRows
+                                .Select(x => new
+                                {
+                                        Id = x.RegisterId > 0 ? 1 : 0,
+                                        x.RegisterId,
+                                        AccountNo = x.AccountNumber.ToString(),
+                                        x.AccountName,
+                                        Units = ParseUnits(x.Holdings),
+                                        x.RegisterName,
+                                        ClearingNo = DisplayClearingNo(x.ClearingNo),
+                                        x.Phone
+                                })
+                                .ToList();
 
                         return Ok(new
                         {
@@ -273,7 +513,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                 }
                 catch (Exception ex)
                 {
-                        logger.LogError($"Error fetching shareholders from DB: {Clear.Tools.GetAllExceptionMessage(ex)}");
+                        logger.LogError($"Error fetching shareholders from Shareholders_staging: {Clear.Tools.GetAllExceptionMessage(ex)}");
                         return StatusCode(StatusCodes.Status500InternalServerError, Clear.Tools.GetAllExceptionMessage(ex));
                 }
         }
@@ -443,7 +683,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                                         InfoCell("Shareholder Name", model.Name?.ToUpper());
                                                         InfoCell("Register", model.Register?.ToUpper());
                                                         InfoCell("Account Number", model.AccountNo.ToString());
-                                                        InfoCell("CSCS / CHN Number", string.IsNullOrWhiteSpace(model.ClearingNo) ? "-" : model.ClearingNo);
+                                                        InfoCell("CSCS / CHN Number", string.IsNullOrWhiteSpace(DisplayClearingNo(model.ClearingNo)) ? "" : model.ClearingNo);
                                                         InfoCell("Email Address", string.IsNullOrWhiteSpace(model.Email) ? "-" : model.Email);
                                                         InfoCell("Phone", string.IsNullOrWhiteSpace(model.Phone) ? (string.IsNullOrWhiteSpace(model.Mobile) ? "-" : model.Mobile) : model.Phone);
                                                         InfoCell("Address", string.IsNullOrWhiteSpace(model.Address) ? "-" : model.Address);
@@ -623,7 +863,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                                         InfoCell("Shareholder Name", model.Name?.ToUpper());
                                                         InfoCell("Register", model.Register?.ToUpper());
                                                         InfoCell("Account Number", model.AccountNo.ToString());
-                                                        InfoCell("CSCS / CHN Number", string.IsNullOrWhiteSpace(model.ClearingNo) ? "-" : model.ClearingNo);
+                                                        InfoCell("CSCS / CHN Number", string.IsNullOrWhiteSpace(DisplayClearingNo(model.ClearingNo)) ? "" : model.ClearingNo);
                                                         InfoCell("Email Address", string.IsNullOrWhiteSpace(model.Email) ? "-" : model.Email);
                                                         InfoCell("Phone", string.IsNullOrWhiteSpace(model.Phone) ? (string.IsNullOrWhiteSpace(model.Mobile) ? "-" : model.Mobile) : model.Phone);
                                                         InfoCell("Address", string.IsNullOrWhiteSpace(model.Address) ? "-" : model.Address);

@@ -26,11 +26,12 @@ var page = {
                 },
                 'processing': true,
                 'language': {
+                    'emptyTable': 'No shareholders found.',
+                    'zeroRecords': 'No shareholders found.',
                     'loadingRecords': 'Loading shareholders, please wait...',
                     'processing': '<div class="d-flex align-items-center gap-3 py-3"><span class="spinner-border spinner-border-sm"></span><span>Loading shareholders, please wait...</span></div>',
-                    'emptyTable': 'No shareholders found matching your search criteria.',
                     'info': 'Showing _START_ to _END_ of _TOTAL_ shareholders',
-                    'infoEmpty': 'No shareholders found',
+                    'infoEmpty': 'No shareholders to show',
                     'infoFiltered': '(filtered from _MAX_ total shareholders)'
                 },
                 buttons: [{
@@ -42,11 +43,23 @@ var page = {
                     $(row).attr('id', `tr-${data[4]}`);
 
                     $('td', row).eq(4).addClass('text-end');
-                    $('td', row).eq(4).html(
-                        `<a class="btn btn-sm btn-light btn-active-light-primary a_details" data-id="${data[5]}" 
-                            data-accno="${data[4]}" data-reg="${data[6]}" onclick="ViewShareholderDetails(${data[5]}, ${data[6]}, ${data[4]})">
-                            <span class="fw-bolder">Details</span>
-                        </a>`);
+                    const id = parseInt(data[5], 10);
+                    const reg = parseInt(data[6], 10);
+                    const accNo = parseInt(data[4], 10);
+                    const hasDetails = Number.isInteger(id) && id > 0 && Number.isInteger(reg) && reg > 0 && Number.isInteger(accNo);
+
+                    if (hasDetails) {
+                        $('td', row).eq(4).html(
+                            `<a class="btn btn-sm btn-light btn-active-light-primary a_details" data-id="${data[5]}" 
+                                data-accno="${data[4]}" data-reg="${data[6]}" onclick="ViewShareholderDetails(${data[5]}, ${data[6]}, ${data[4]})">
+                                <span class="fw-bolder">Details</span>
+                            </a>`);
+                    } else {
+                        $('td', row).eq(4).html(
+                            `<span class="btn btn-sm btn-light disabled" title="This match came from an offline shareholder list and has no live holding details.">
+                                <span class="fw-bolder">Offline Match</span>
+                            </span>`);
+                    }
                 }
             });
 
@@ -66,6 +79,14 @@ KTUtil.onDOMContentLoaded((function () {
     page.init()
 }));
 
+function displayCscs(value) {
+    if (value == null) return '';
+    var text = String(value).trim();
+    if (text === '' || /^0+$/.test(text)) return '';
+    if (text.toUpperCase() === '##PARSE_ERROR##') return '';
+    return text;
+}
+
 var closeButton = document.getElementById('bt_close');
 if (closeButton) {
     closeButton.addEventListener('click', () => {
@@ -84,21 +105,28 @@ var ViewShareholderDetails = function (id, reg, accno) {
 
     let url = $('#hd_details_url').val();
 
+    // Show loading feedback on all detail buttons
+    $('.a_details').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Loading...');
+
+    toastr.info('Loading shareholder details, please wait...', '', { timeOut: 10000, extendedTimeOut: 0 });
+
     $.ajax({
         type: "GET",
         url: `${url}/${reg}/${accno}`,
         cache: false,
         success: function (json) {
+            toastr.clear();
             setAccountStatement(json, url, reg, accno);
             setDividendHistory(json, url, reg, accno);
-
             switchBlock('v_details', 'v-block');
         },
         error: function (xhr, error, thrown) {
+            toastr.clear();
             var msg = xhr.responseText || thrown || 'Could not fetch shareholder details. Please try again.';
             toastr.error(msg.length > 200 ? 'Could not fetch shareholder details. Please try again.' : msg);
         },
         complete: function () {
+            $('.a_details').prop('disabled', false).html('<span class="fw-bolder">Details</span>');
         }
     });
 }
@@ -108,7 +136,7 @@ function setAccountStatement(json, url, reg, accno) {
     $('#sp_register').html(json.register);
 
     $('#sp_acc').html(json.accountNo);
-    $('#sp_cscs').html(json.clearingNo);
+    $('#sp_cscs').html(displayCscs(json.clearingNo));
     $('#sp_oldacc').html('');
     $('#sp_address').html(json.address);
 
@@ -169,7 +197,7 @@ function setDividendHistory(json, url, reg, accno) {
     $('#sp_divs_register').html(json.register);
 
     $('#sp_divs_acc').html(json.accountNo);
-    $('#sp_divs_cscs').html(json.clearingNo);
+    $('#sp_divs_cscs').html(displayCscs(json.clearingNo));
     $('#sp_divs_oldacc').html('');
     $('#sp_divs_address').html(json.address);
 

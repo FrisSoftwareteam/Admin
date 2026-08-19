@@ -3,6 +3,7 @@ using FirstReg.Data;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
@@ -32,6 +33,10 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
 
             return View(nameof(Details), new ShareholderModel(sh));
         }
+
+        foreach (var holder in user.Shareholders.Where(x => x.Verified && x.IsSubscribed))
+            await UpdateDetails(holder);
+
         return View(new ShareHolderDashboardModel(user));
     }
 
@@ -39,16 +44,13 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
     {
         try
         {
-            if (sh.LastUpdate is null || sh.LastUpdate < Tools.Now.Date)
-            {
-                var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
-                sh = await Tools.UpdateAccountDetails(sh, regids, apiClient, apiUrl, mondgodb);
-                if (sh.Verified) await service.Data.UpdateAsync(sh);
-            }
+            var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
+            sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, service.Data);
+            if (sh.Verified) await service.Data.UpdateAsync(sh);
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "Failed to update shareholder details from API for {ClearingNo}", sh.ClearingNo);
+            logger.LogError(ex, "Failed to update shareholder details from staging for {ClearingNo}", sh.ClearingNo);
             TempData["error"] = "Some portfolio data could not be refreshed. Showing last known data.";
         }
         return sh;
@@ -277,22 +279,20 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
     {
         try
         {
-            var holdings = (await service.Data.Find<ShareHolding>(x => x.AccountNo == no)).ToList();
+            var user = await service.Data.Get<User>(x => x.UserName.ToLower() == User.Identity.Name.ToLower());
+            var holderIds = user.Shareholders.Select(x => x.Id).ToList();
 
-            if (!holdings.Any())
+            var holding = await service.Data.GetAsQueryable<ShareHolding>()
+                .Include(x => x.Shareholder)
+                .Include(x => x.Register)
+                .Where(x => x.AccountNo == no && holderIds.Contains(x.ShareHolderId))
+                .OrderByDescending(x => x.Units)
+                .FirstOrDefaultAsync();
+
+            if (holding == null)
                 throw new InvalidOperationException("The selected account was not found, please try again");
 
-            var shms = db.Find<Bson.Shareholder, int>(holdings.First().ShareHolderId, MongoTables.Shareholders);
-
-            if (!shms.Any())
-                throw new InvalidOperationException("The selected account was not found, please try again");
-
-            var bholdings = shms.First().Holdings.Where(x => x.AccountNo == no).ToList();
-
-            if (!bholdings.Any())
-                throw new InvalidOperationException("The selected account was not found, please try again");
-
-            return View(new SecurityDetailsModel(holdings.First(), bholdings.First()));
+            return View(new SecurityDetailsModel(holding));
         }
         catch (Exception ex)
         {

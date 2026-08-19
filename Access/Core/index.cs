@@ -407,6 +407,26 @@ public class SecurityDetailsModel : SecurityModel
     public SecurityDetailsModel()
     {
         Transactions = new();
+        Dividends = new();
+    }
+
+    public SecurityDetailsModel(ShareHolding holding) : base(holding)
+    {
+        Transactions =
+        [
+            new()
+            {
+                AccountNo = holding.AccountNo,
+                Date = holding.Date == default ? Tools.Now : holding.Date,
+                Transaction = "Current holding",
+                Reference = "Current holding",
+                UnitsIn = holding.Units > 0 ? holding.Units : 0,
+                UnitsOut = holding.Units < 0 ? Math.Abs(holding.Units) : 0,
+                Balance = holding.Units,
+                Status = holding.Status.ToString()
+            }
+        ];
+        Dividends = [];
     }
 
     public SecurityDetailsModel(ShareHolding holding, Bson.Holding bholding) : base(holding)

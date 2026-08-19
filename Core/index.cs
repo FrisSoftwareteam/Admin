@@ -654,6 +654,115 @@ public static class Tools
 
         return sh;
     }
+
+    /// <summary>
+    /// True when a CSCS/CHN can be used to match Shareholders_staging.
+    /// Placeholder values like 0 and ##PARSE_ERROR## are ignored.
+    /// </summary>
+    public static bool IsRealClearingNo(string clearingNo)
+    {
+        if (string.IsNullOrWhiteSpace(clearingNo))
+            return false;
+
+        var value = clearingNo.Trim();
+        if (value.Trim('0').Length == 0)
+            return false;
+        if (value.Equals("##PARSE_ERROR##", StringComparison.OrdinalIgnoreCase))
+            return false;
+
+        return true;
+    }
+
+    /// <summary>
+    /// Populates a shareholder's holdings/units from frdb's Shareholders_staging import,
+    /// matched by clearing house number and by existing account/register pairs.
+    /// Used instead of the live estock activation API,
+    /// which requires a network round-trip and has been failing/timing out in production.
+    /// </summary>
+    public static async Task<Shareholder> UpdateAccountDetailsFromStaging(
+        Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data)
+    {
+        sh.LastUpdate = Now;
+
+        var holdingKeys = sh.Holdings
+            .Select(h => new
+            {
+                h.RegisterId,
+                AccountNo = int.TryParse(h.AccountNo, out var acc) ? acc : (int?)null
+            })
+            .Where(x => x.AccountNo.HasValue)
+            .Select(x => (x.RegisterId, AccountNo: x.AccountNo.Value))
+            .ToList();
+
+        var accountNos = holdingKeys.Select(x => x.AccountNo).Distinct().ToList();
+        var hasChn = IsRealClearingNo(sh.ClearingNo);
+        var chn = hasChn ? sh.ClearingNo.Trim() : null;
+
+        if (!hasChn && accountNos.Count == 0)
+            return sh;
+
+        List<ShareholderStaging> fetched;
+        if (hasChn && accountNos.Count > 0)
+            fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn || accountNos.Contains(x.AccountNumber));
+        else if (hasChn)
+            fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn);
+        else
+            fetched = await data.Find<ShareholderStaging>(x => accountNos.Contains(x.AccountNumber));
+
+        var rows = fetched.Where(x =>
+            (hasChn && string.Equals((x.ClearingNo ?? "").Trim(), chn, StringComparison.OrdinalIgnoreCase))
+            || holdingKeys.Any(k => k.RegisterId == x.RegisterCode && k.AccountNo == x.AccountNumber)
+        ).ToList();
+
+        static decimal ParseUnits(string holdings)
+        {
+            if (string.IsNullOrWhiteSpace(holdings))
+                return 0m;
+            var cleaned = holdings.Replace(",", "").Trim();
+            return decimal.TryParse(cleaned, out var units) ? units : 0m;
+        }
+
+        foreach (var row in rows)
+        {
+            var units = ParseUnits(row.Holdings);
+            var accountNo = row.AccountNumber.ToString();
+
+            var existing = sh.Holdings.FirstOrDefault(x => x.RegisterId == row.RegisterCode);
+            if (existing != null)
+            {
+                existing.AccountNo = accountNo;
+                existing.AccountName = row.Names;
+                existing.Units = units;
+                existing.Status = ShareHoldingStatus.Verified;
+            }
+            else if (registerIds.Contains(row.RegisterCode))
+            {
+                sh.Holdings.Add(new()
+                {
+                    RegisterId = row.RegisterCode,
+                    AccountNo = accountNo,
+                    AccountName = row.Names,
+                    Units = units,
+                    Value = 0,
+                    Status = ShareHoldingStatus.Verified,
+                    Date = Now
+                });
+            }
+        }
+
+        foreach (var h in sh.Holdings)
+        {
+            var matched = int.TryParse(h.AccountNo, out var acc)
+                && rows.Any(x => x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
+            if (!matched)
+            {
+                h.Units = 0;
+                h.Status = ShareHoldingStatus.Pending;
+            }
+        }
+
+        return sh;
+    }
 }
 
 public record ImageSize(int Width, int Height);
