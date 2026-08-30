@@ -400,8 +400,26 @@
                             </div>
 
                             <div class="mb-0">
-                                <div class="fs-6 text-gray-600 mb-10">
+                                <div class="fs-6 text-gray-600 mb-5">
                                     Please choose a strong password to secure your account.
+                                </div>
+                                <div class="signup-password-rules mb-10">
+                                    <div class="fw-bolder text-dark mb-3">Password must include:</div>
+                                    <div class="signup-rule" data-rule="length">
+                                        <span class="signup-rule-light"></span> At least 8 characters
+                                    </div>
+                                    <div class="signup-rule" data-rule="letter">
+                                        <span class="signup-rule-light"></span> At least one letter
+                                    </div>
+                                    <div class="signup-rule" data-rule="number">
+                                        <span class="signup-rule-light"></span> At least one number
+                                    </div>
+                                    <div class="signup-rule" data-rule="symbol">
+                                        <span class="signup-rule-light"></span> At least one symbol (for example ! @@ # $ %)
+                                    </div>
+                                    <div class="signup-rule" data-rule="match">
+                                        <span class="signup-rule-light"></span> Both passwords match
+                                    </div>
                                 </div>
 
                                 <div class="row">
@@ -457,6 +475,7 @@
                                 <input type="hidden" asp-for="Signature" id="Signature" />
                                 <input type="hidden" asp-for="Photo" id="Photo" />
                                 <input type="hidden" asp-for="Passport" id="Passport" />
+                                <input type="hidden" asp-for="RegisterStep" id="RegisterStep" />
                                 <div id="signup_accounts_hidden"></div>
 
                             </div>
@@ -469,13 +488,14 @@
                             <div class="row mb-10 fv-row">
                                 <div class="col-6">
                                     <label class="form-label mb-3">Password</label>
-                                    <input type="password" class="form-control form-control-lg form-control-solid" asp-for="Password" placeholder="••••••••" required />
+                                    <input type="password" class="form-control form-control-lg form-control-solid" asp-for="Password" placeholder="••••••••" autocomplete="new-password" required />
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label mb-3">Confirm password</label>
-                                    <input type="password" class="form-control form-control-lg form-control-solid" asp-for="RePassword" placeholder="••••••••" required />
+                                    <input type="password" class="form-control form-control-lg form-control-solid" asp-for="RePassword" placeholder="••••••••" autocomplete="new-password" required />
                                 </div>
                             </div>
+                            <div id="signup_password_error" class="text-danger fw-bold mb-5" style="display:none;"></div>
 
                             <div class="d-flex flex-stack pt-15">
                                 <div class="mr-2">
@@ -484,7 +504,7 @@
                                 <div>
                                     @*<button type="submit" class="btn btn-lg btn-primary">Continue  </button>*@
 
-                                    <button type="submit" class="btn btn-primary bt-submit">
+                                    <button type="submit" class="btn btn-primary bt-submit" disabled title="Enter a password that meets all the conditions">
                                         <span class="indicator-label">
                                             Submit
                                             <span class="svg-icon svg-icon-4 ms-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <rect fill="#000000" opacity="0.5" transform="translate(8.500000, 12.000000) rotate(-90.000000) translate(-8.500000, -12.000000)" x="7.5" y="7.5" width="2" height="9" rx="1" /> <path d="M9.70710318,15.7071045 C9.31657888,16.0976288 8.68341391,16.0976288 8.29288961,15.7071045 C7.90236532,15.3165802 7.90236532,14.6834152 8.29288961,14.2928909 L14.2928896,8.29289093 C14.6714686,7.914312 15.281055,7.90106637 15.675721,8.26284357 L21.675721,13.7628436 C22.08284,14.136036 22.1103429,14.7686034 21.7371505,15.1757223 C21.3639581,15.5828413 20.7313908,15.6103443 20.3242718,15.2371519 L15.0300721,10.3841355 L9.70710318,15.7071045 Z" fill="#000000" fill-rule="nonzero" transform="translate(14.999999, 11.999997) scale(1, -1) rotate(90.000000) translate(-14.999999, -11.999997)" /> </g> </svg> </span>
@@ -577,6 +597,51 @@
         border: 1px solid #e4e6ef;
         border-radius: 4px;
         background: #111;
+    }
+
+    .signup-password-rules {
+        background: #f9f9fb;
+        border: 1px solid #e4e6ef;
+        border-radius: 8px;
+        padding: 1rem 1.25rem;
+    }
+
+    .signup-rule {
+        display: flex;
+        align-items: center;
+        color: #7e8299;
+        font-weight: 600;
+        margin-bottom: 0.45rem;
+    }
+
+    .signup-rule:last-child {
+        margin-bottom: 0;
+    }
+
+    .signup-rule-light {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: #d8d8e5;
+        margin-right: 10px;
+        flex-shrink: 0;
+    }
+
+    .signup-rule.is-invalid .signup-rule-light {
+        background: #f1416c;
+    }
+
+    .signup-rule.is-valid .signup-rule-light {
+        background: #50cd89;
+    }
+
+    .signup-rule.is-invalid {
+        color: #f1416c;
+    }
+
+    .signup-rule.is-valid {
+        color: #50cd89;
     }
 </style>
 }

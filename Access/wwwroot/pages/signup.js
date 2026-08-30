@@ -218,10 +218,104 @@ var sendEmailCode = function () {
 var element = document.querySelector("#signup_stepper");
 var wizard = new KTStepper(element);
 
+function getPasswordRules(password, confirm) {
+    return {
+        length: password.length >= 8,
+        letter: /[A-Za-z]/.test(password),
+        number: /\d/.test(password),
+        symbol: /[^A-Za-z0-9]/.test(password),
+        match: password.length > 0 && password === confirm
+    };
+}
+
+function passwordMeetsRules() {
+    var password = $('input#Password').val() || '';
+    var confirm = $('input#RePassword').val() || '';
+    var rules = getPasswordRules(password, confirm);
+    return rules.length && rules.letter && rules.number && rules.symbol && rules.match;
+}
+
+function updatePasswordLights() {
+    var password = $('input#Password').val() || '';
+    var confirm = $('input#RePassword').val() || '';
+    var started = password.length > 0 || confirm.length > 0;
+    var rules = getPasswordRules(password, confirm);
+
+    $('.signup-rule').each(function () {
+        var key = $(this).data('rule');
+        $(this).removeClass('is-valid is-invalid');
+        if (!started) return;
+        $(this).addClass(rules[key] ? 'is-valid' : 'is-invalid');
+    });
+
+    var ready = passwordMeetsRules();
+    $('#form_final .bt-submit').prop('disabled', !ready);
+    if (!ready) {
+        $('#form_final .bt-submit').attr('title', 'Enter a password that meets all the conditions');
+    } else {
+        $('#form_final .bt-submit').attr('title', 'Submit');
+        $('#signup_password_error').hide().text('');
+    }
+}
+
+function restoreSignupStateFromForm() {
+    var confirmed = ($('input[type="hidden"]#EmailConfirmed').val() || '').toString().toLowerCase();
+    emailValidated = confirmed === 'true' || confirmed === 'True';
+
+    if ($('input#Photo').val()) applySignupDoc('photo', $('input#Photo').val(), false);
+    if ($('input#Passport').val()) {
+        var passport = $('input#Passport').val();
+        applySignupDoc('passport', passport, passport.indexOf('application/pdf') !== -1);
+    }
+    if ($('input#Signature').val()) applySignupDoc('signature', $('input#Signature').val(), false);
+
+    $('#sp-fname').html($('input[type="hidden"]#FirstName').val() || '');
+    $('#sp-lname').html($('input[type="hidden"]#LastName').val() || '');
+    $('#sp-email').html($('input[type="hidden"]#Email').val() || '');
+    $('#sp-phone').html($('input[type="hidden"]#MobileNo').val() || '');
+    $('#sp-street').html($('input[type="hidden"]#Street').val() || '');
+    $('#sp-city').html($('input[type="hidden"]#City').val() || '');
+    $('#sp-state').html($('input[type="hidden"]#State').val() || '');
+    $('#sp-postcode').html($('input[type="hidden"]#PostCode').val() || '');
+    $('#sp-country').html($('input[type="hidden"]#Country').val() || '');
+
+    if ($('input[type="hidden"]#FirstName').val())
+        $('form#form_basic input#FirstName').val($('input[type="hidden"]#FirstName').val());
+    if ($('input[type="hidden"]#LastName').val())
+        $('form#form_basic input#LastName').val($('input[type="hidden"]#LastName').val());
+    if ($('input[type="hidden"]#Email').val())
+        $('form#form_basic input#Email').val($('input[type="hidden"]#Email').val());
+    if ($('input[type="hidden"]#MobileNo').val())
+        $('form#form_basic input#MobileNo').val($('input[type="hidden"]#MobileNo').val());
+    if ($('input[type="hidden"]#Street').val())
+        $('form#form_address input#Street').val($('input[type="hidden"]#Street').val());
+    if ($('input[type="hidden"]#City').val())
+        $('form#form_address input#City').val($('input[type="hidden"]#City').val());
+    if ($('input[type="hidden"]#State').val())
+        $('form#form_address input#State').val($('input[type="hidden"]#State').val());
+    if ($('input[type="hidden"]#PostCode').val())
+        $('form#form_address input#PostCode').val($('input[type="hidden"]#PostCode').val());
+    if ($('input[type="hidden"]#Country').val())
+        $('form#form_address input#Country').val($('input[type="hidden"]#Country').val());
+}
+
 $(document).ready(function () {
-    wizard.goTo(1);
     updateContinueButton();
     refreshSignupAccountButtons();
+    updatePasswordLights();
+
+    var restoreStep = parseInt($('#RegisterStep').val() || '0', 10);
+    if (restoreStep === 5) {
+        restoreSignupStateFromForm();
+        wizard.goTo(5);
+        updatePasswordLights();
+    } else {
+        wizard.goTo(1);
+    }
+});
+
+$('input#Password, input#RePassword').on('input', function () {
+    updatePasswordLights();
 });
 
 $('#signup_file_photo, #signup_file_passport, #signup_file_signature').on('change', function () {
@@ -510,6 +604,8 @@ $('#bt_cancel_final').click(function (e) {
 });
 
 $('#form_final').submit(function (e) {
+    $('#RegisterStep').val('5');
+
     if (!emailValidated) {
         e.preventDefault();
         toastr.error('Please validate your email before finishing account creation');
@@ -524,9 +620,17 @@ $('#form_final').submit(function (e) {
         return;
     }
 
-    if ($('input#Password').val() !== $('input#RePassword').val()) {
+    if (!passwordMeetsRules()) {
         e.preventDefault();
-        toastr.error('Your passwords do not match');
+        updatePasswordLights();
+        var message = 'Please enter a password that meets all the conditions';
+        if (($('input#Password').val() || '') !== ($('input#RePassword').val() || ''))
+            message = 'Your passwords do not match';
+        $('#signup_password_error').text(message).show();
+        toastr.error(message);
+        var blocked = document.querySelector('#form_final .bt-submit');
+        if (blocked) blocked.removeAttribute('data-kt-indicator');
+        wizard.goTo(5);
         return;
     }
 

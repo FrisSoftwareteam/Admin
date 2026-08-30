@@ -67,9 +67,9 @@ public class Startup
             options.SignIn.RequireConfirmedAccount = false;
 
             // Password settings.
-            options.Password.RequireDigit = false;
-            options.Password.RequireLowercase = false;
-            options.Password.RequireNonAlphanumeric = false;
+            options.Password.RequireDigit = true;
+            options.Password.RequireLowercase = true;
+            options.Password.RequireNonAlphanumeric = true;
             options.Password.RequireUppercase = false;
             options.Password.RequiredLength = 8;
             options.Password.RequiredUniqueChars = 0;

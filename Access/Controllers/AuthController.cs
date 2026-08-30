@@ -182,7 +182,14 @@ public class AuthController : BaseController
             {
                 ModelState.AddModelError(string.Empty, "Please enter a Clearing House Number or a Share Account Number before creating your account");
                 TempData["error"] = "Please enter a Clearing House Number or a Share Account Number before creating your account";
-                return View(model);
+                return StayOnPasswordStep(model);
+            }
+
+            if (!PasswordMeetsRules(model.Password, model.RePassword, out var passwordError))
+            {
+                ModelState.AddModelError(nameof(model.Password), passwordError);
+                TempData["error"] = passwordError;
+                return StayOnPasswordStep(model);
             }
 
             if (ModelState.IsValid)
@@ -191,7 +198,7 @@ public class AuthController : BaseController
                 {
                     ModelState.AddModelError(string.Empty, "Please validate your email before finishing account creation");
                     TempData["error"] = "Please validate your email before finishing account creation";
-                    return View(model);
+                    return StayOnPasswordStep(model);
                 }
 
                 if (string.IsNullOrWhiteSpace(model.Photo) ||
@@ -200,7 +207,7 @@ public class AuthController : BaseController
                 {
                     ModelState.AddModelError(string.Empty, "Please upload your profile picture, passport/NIN and signature before finishing account creation");
                     TempData["error"] = "Please upload your profile picture, passport/NIN and signature before finishing account creation";
-                    return View(model);
+                    return StayOnPasswordStep(model);
                 }
 
                 var user = new User
@@ -310,7 +317,50 @@ public class AuthController : BaseController
         }
 
         // If we got this far, something failed, redisplay form
-        return View(await BuildRegisterModel(model));
+        return StayOnPasswordStep(model);
+    }
+
+    private IActionResult StayOnPasswordStep(RegisterModel model)
+    {
+        model.RegisterStep = 5;
+        model.Password = null;
+        model.RePassword = null;
+        return View(model);
+    }
+
+    private static bool PasswordMeetsRules(string password, string confirm, out string error)
+    {
+        password ??= string.Empty;
+        confirm ??= string.Empty;
+
+        if (password.Length < 8)
+        {
+            error = "Password must be at least 8 characters.";
+            return false;
+        }
+        if (!password.Any(char.IsLetter))
+        {
+            error = "Password must include at least one letter.";
+            return false;
+        }
+        if (!password.Any(char.IsDigit))
+        {
+            error = "Password must include at least one number.";
+            return false;
+        }
+        if (!password.Any(ch => !char.IsLetterOrDigit(ch)))
+        {
+            error = "Password must include at least one symbol.";
+            return false;
+        }
+        if (password != confirm)
+        {
+            error = "Your passwords do not match.";
+            return false;
+        }
+
+        error = null;
+        return true;
     }
 
     private async Task<RegisterModel> BuildRegisterModel(RegisterModel model)

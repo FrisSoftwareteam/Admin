@@ -335,6 +335,7 @@ public class RegisterModel : UserModel
     public string CheckEmailUrl { get; set; }
     public string ValidateEmailUrl { get; set; }
     public string GenerateValidateEmailUrl { get; set; }
+    public int RegisterStep { get; set; }
     public List<RegisterAccountEntry> Accounts { get; set; } = new();
     public List<Register> Registers { get; set; } = new();
 }
