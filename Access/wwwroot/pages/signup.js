@@ -32,7 +32,12 @@ function applySignupDoc(key, dataUrl, isPdf) {
     if (!dataUrl) {
         signupDocs[key] = false;
         $('input#' + field).val('');
+        $('#signup_file_' + key).val('');
         $('#signup_status_' + key).text('');
+        $('#signup_preview_' + key).attr('src', '');
+        if (key === 'passport') {
+            $('#signup_preview_passport_file').hide();
+        }
         $('#signup_preview_' + key + '_wrp').hide();
         updateContinueButton();
         return;
@@ -226,6 +231,12 @@ $('#signup_file_photo, #signup_file_passport, #signup_file_signature').on('chang
 $('.signup-take-photo').on('click', function (e) {
     e.preventDefault();
     openSignupCamera($(this).data('doc'));
+});
+
+$(document).on('click', '.signup-delete-doc', function (e) {
+    e.preventDefault();
+    var key = $(this).data('doc');
+    applySignupDoc(key, '');
 });
 
 $('#signup_camera_capture').on('click', function () {
