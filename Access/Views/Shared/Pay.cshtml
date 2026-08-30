@@ -178,7 +178,10 @@
                     <div class="row g-9 mb-8">
                         <div class="col fv-row">
                             <label class="required fs-6 fw-bold mb-2">Upload receipt</label>
-                            <input type="file" class="form-control form-control-solid" placeholder="Select a file" name="mfile" required />
+                            <div class="d-flex align-items-center">
+                                <input type="file" id="bankpay_receipt" class="form-control form-control-solid" placeholder="Select a file" name="mfile" required />
+                                <button type="button" id="bt_clear_receipt" class="btn btn-light-danger ms-3 text-nowrap" style="display:none;">Delete</button>
+                            </div>
                         </div>
                     </div>
 

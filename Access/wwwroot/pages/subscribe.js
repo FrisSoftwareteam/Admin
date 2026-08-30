@@ -24,3 +24,26 @@ var dialer_updated = function (value, amount) {
         $('.sp_amount').html(new Intl.NumberFormat('en-US', { style: 'currency', currency: 'NGN' }).format(amt));
     }
 };
+
+function updateReceiptDeleteButton() {
+    var input = document.getElementById('bankpay_receipt');
+    var button = document.getElementById('bt_clear_receipt');
+    if (!input || !button) return;
+    $(button).toggle(!!(input.files && input.files.length));
+}
+
+$(document).on('change', '#bankpay_receipt', function () {
+    updateReceiptDeleteButton();
+});
+
+$(document).on('click', '#bt_clear_receipt', function (e) {
+    e.preventDefault();
+    var input = document.getElementById('bankpay_receipt');
+    if (!input) return;
+    input.value = '';
+    updateReceiptDeleteButton();
+});
+
+$('#modal_bank_pay').on('shown.bs.modal', function () {
+    updateReceiptDeleteButton();
+});
