@@ -65,7 +65,11 @@ namespace FirstReg.Services
             await SendEmailAsync(new MailAddress(email, name), "Confirm your Email", "reconfirm", new { name, code, link });
 
         public async Task<SendResponse> SendWelcomeEmailAsync(string email, string name) =>
-            await SendEmailAsync(new MailAddress(email, name), "Welcome to First Registrars & Investor Services Limited", "welcome", new { name });
+            await SendEmailAsync(new MailAddress(email, name), "Welcome to First Registrars & Investor Services Limited", "welcome", new
+            {
+                name,
+                link = "https://firstregistrarsnigeria.com/access/login"
+            });
 
         public async Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link) =>
            await SendEmailAsync(new MailAddress(email, name), "Reset Password", "reset", new { name, link });
