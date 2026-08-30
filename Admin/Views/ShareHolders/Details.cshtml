@@ -12,7 +12,14 @@
                     <div class="card-body pt-15 pb-3">
                         <div class="d-flex flex-center flex-column mb-5">
                             <div class="symbol symbol-100px symbol-circle mb-7">
-                                <img src="~/assets/media/avatars/blank.png" alt="image" />
+                                @if (!string.IsNullOrWhiteSpace(Model.Photo))
+                                {
+                                    <img src="@Model.Photo" alt="Profile picture" />
+                                }
+                                else
+                                {
+                                    <img src="~/assets/media/avatars/blank.png" alt="image" />
+                                }
                             </div>
                             <a href="#" class="fs-3 text-gray-800 text-hover-primary fw-bolder mb-1">@Model.User.FullName</a>
                             <div class="fs-5 fw-bold text-gray-400 mb-2">@Model.User.Email</div>
@@ -95,12 +102,49 @@
                 <div class="card mb-5 mb-xl-8">
                     <div class="card-header border-0">
                         <div class="card-title">
-                            <h3 class="fw-bolder m-0">Signature</h3>
+                            <h3 class="fw-bolder m-0">Documents</h3>
                         </div>
                     </div>
                     <div class="card-body pt-2">
-                        <div class="py-5">
-                            <img src="@Model.Signature" class="w-100" />
+                        <div class="fw-bolder mb-2">Profile picture</div>
+                        <div class="py-3">
+                            @if (!string.IsNullOrWhiteSpace(Model.Photo))
+                            {
+                                <img src="@Model.Photo" class="w-100" alt="Profile picture" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
+                        </div>
+                        <div class="fw-bolder mt-5 mb-2">Passport / NIN</div>
+                        <div class="py-3">
+                            @if (!string.IsNullOrWhiteSpace(Model.Passport))
+                            {
+                                if (Model.Passport.StartsWith("data:application/pdf"))
+                                {
+                                    <a href="@Model.Passport" target="_blank" class="fw-bold">Open PDF</a>
+                                }
+                                else
+                                {
+                                    <img src="@Model.Passport" class="w-100" alt="Passport / NIN" />
+                                }
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
+                        </div>
+                        <div class="fw-bolder mt-5 mb-2">Signature</div>
+                        <div class="py-3">
+                            @if (!string.IsNullOrWhiteSpace(Model.Signature))
+                            {
+                                <img src="@Model.Signature" class="w-100" alt="Signature" />
+                            }
+                            else
+                            {
+                                <span class="text-muted">Not provided</span>
+                            }
                         </div>
                     </div>
                 </div>

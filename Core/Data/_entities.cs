@@ -101,6 +101,12 @@ public partial class Shareholder
     [Column(TypeName = "varchar(MAX)")]
     public string Signature { get; set; }
 
+    [Column(TypeName = "varchar(MAX)")]
+    public string Photo { get; set; }
+
+    [Column(TypeName = "varchar(MAX)")]
+    public string Passport { get; set; }
+
     public bool Verified { get; set; }
 
     [Column(TypeName = "varchar(100)")]

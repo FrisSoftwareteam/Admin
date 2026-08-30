@@ -1,58 +1,171 @@
 var expdate;
 var emailValidated = false;
-var signatureSaved = false;
-var signupSignaturePad = null;
+var signupDocs = { photo: false, passport: false, signature: false };
+var signupCameraStream = null;
+var signupCameraDoc = null;
+var signupDocFields = { photo: 'Photo', passport: 'Passport', signature: 'Signature' };
+var signupDocLabels = { photo: 'Profile picture', passport: 'Passport / NIN', signature: 'Signature' };
+
+function documentsSaved() {
+    return signupDocs.photo && signupDocs.passport && signupDocs.signature
+        && $('input#Photo').val() && $('input#Passport').val() && $('input#Signature').val();
+}
 
 function updateContinueButton() {
-    var ready = emailValidated && signatureSaved;
+    var ready = emailValidated && documentsSaved();
     $('#btn-submit-validation').prop('disabled', !ready);
     if (ready) {
         $('#btn-submit-validation').attr('title', 'Continue');
-    } else if (!emailValidated && !signatureSaved) {
-        $('#btn-submit-validation').attr('title', 'Validate email and upload signature before continuing');
+    } else if (!emailValidated && !documentsSaved()) {
+        $('#btn-submit-validation').attr('title', 'Validate email and upload all three documents before continuing');
     } else if (!emailValidated) {
         $('#btn-submit-validation').attr('title', 'Validate your email before continuing');
     } else {
-        $('#btn-submit-validation').attr('title', 'Upload or draw your signature before continuing');
+        $('#btn-submit-validation').attr('title', 'Upload profile picture, passport/NIN and signature before continuing');
     }
 }
 
-function applySignature(dataUrl) {
+function applySignupDoc(key, dataUrl, isPdf) {
+    var field = signupDocFields[key];
+    if (!field) return;
+
     if (!dataUrl) {
-        signatureSaved = false;
-        $('input#Signature').val('');
-        $('#signup_signature_preview_wrp').hide();
+        signupDocs[key] = false;
+        $('input#' + field).val('');
+        $('#signup_status_' + key).text('');
+        $('#signup_preview_' + key + '_wrp').hide();
         updateContinueButton();
         return;
     }
 
-    $('input#Signature').val(dataUrl);
-    signatureSaved = true;
-    $('#signup_signature_preview').attr('src', dataUrl);
-    $('#signup_signature_preview_wrp').show();
-    $('#signup_signature_status').text('Signature saved');
-    toastr.success('Signature saved');
+    $('input#' + field).val(dataUrl);
+    signupDocs[key] = true;
+    $('#signup_status_' + key).text(isPdf ? 'File selected' : 'Photo captured');
+    $('#signup_preview_' + key + '_wrp').show();
+    if (key === 'passport') {
+        if (isPdf) {
+            $('#signup_preview_passport').hide();
+            $('#signup_preview_passport_file').show();
+        } else {
+            $('#signup_preview_passport').attr('src', dataUrl).show();
+            $('#signup_preview_passport_file').hide();
+        }
+    } else {
+        $('#signup_preview_' + key).attr('src', dataUrl);
+    }
     updateContinueButton();
 }
 
-function initSignupSignaturePad() {
-    var canvas = document.getElementById('signup_signature_pad');
-    if (!canvas || typeof SignaturePad === 'undefined') return;
+function resizeImageFile(file, callback) {
+    var reader = new FileReader();
+    reader.onerror = function () {
+        callback(null);
+    };
+    reader.onload = function (e) {
+        var img = new Image();
+        img.onerror = function () {
+            callback(null);
+        };
+        img.onload = function () {
+            var maxW = 900;
+            var scale = Math.min(1, maxW / img.width);
+            var canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(img.width * scale));
+            canvas.height = Math.max(1, Math.round(img.height * scale));
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            callback(canvas.toDataURL('image/jpeg', 0.72));
+        };
+        img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+}
 
-    var ratio = Math.max(window.devicePixelRatio || 1, 1);
-    var width = Math.min(600, (canvas.parentElement?.clientWidth || 600));
-    canvas.width = width * ratio;
-    canvas.height = Math.max(160, width / 3) * ratio;
-    canvas.style.width = width + 'px';
-    canvas.style.height = Math.max(160, width / 3) + 'px';
-    canvas.getContext('2d').scale(ratio, ratio);
-
-    if (signupSignaturePad) {
-        signupSignaturePad.clear();
+function handleSignupFile(key, file) {
+    if (!file) {
+        applySignupDoc(key, '');
+        return;
     }
 
-    signupSignaturePad = new SignaturePad(canvas, {
-        backgroundColor: 'rgb(255, 255, 255)'
+    var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name || '');
+    if (isPdf && key !== 'passport') {
+        toastr.error('Please upload an image for ' + signupDocLabels[key]);
+        applySignupDoc(key, '');
+        return;
+    }
+
+    if (isPdf) {
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            applySignupDoc(key, e.target.result, true);
+        };
+        reader.onerror = function () {
+            toastr.error('Could not read that file');
+            applySignupDoc(key, '');
+        };
+        reader.readAsDataURL(file);
+        return;
+    }
+
+    if (!file.type || file.type.indexOf('image/') !== 0) {
+        toastr.error('Please upload an image for ' + signupDocLabels[key]);
+        applySignupDoc(key, '');
+        return;
+    }
+
+    resizeImageFile(file, function (dataUrl) {
+        if (!dataUrl) {
+            toastr.error('Could not read that file');
+            applySignupDoc(key, '');
+            return;
+        }
+        applySignupDoc(key, dataUrl, false);
+    });
+}
+
+function stopSignupCamera() {
+    if (signupCameraStream) {
+        signupCameraStream.getTracks().forEach(function (track) {
+            track.stop();
+        });
+        signupCameraStream = null;
+    }
+    var video = document.getElementById('signup_camera_video');
+    if (video) video.srcObject = null;
+}
+
+function showSignupCameraModal(show) {
+    var el = document.getElementById('signup_camera_modal');
+    if (window.bootstrap && bootstrap.Modal) {
+        var modal = bootstrap.Modal.getOrCreateInstance(el);
+        if (show) modal.show();
+        else modal.hide();
+        return;
+    }
+    $(el).modal(show ? 'show' : 'hide');
+}
+
+function openSignupCamera(key) {
+    signupCameraDoc = key;
+    $('#signup_camera_title').text('Take photo — ' + signupDocLabels[key]);
+    showSignupCameraModal(true);
+
+    var facing = key === 'photo' ? 'user' : 'environment';
+    var constraints = { video: { facingMode: facing }, audio: false };
+    navigator.mediaDevices.getUserMedia(constraints).catch(function () {
+        return navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+    }).then(function (stream) {
+        signupCameraStream = stream;
+        var video = document.getElementById('signup_camera_video');
+        video.srcObject = stream;
+    }).catch(function () {
+        showSignupCameraModal(false);
+        var input = document.getElementById('signup_file_' + key);
+        if (input) {
+            input.setAttribute('capture', key === 'photo' ? 'user' : 'environment');
+            input.click();
+        } else {
+            toastr.error('Could not open the camera. Please choose a file instead.');
+        }
     });
 }
 
@@ -103,55 +216,34 @@ var wizard = new KTStepper(element);
 $(document).ready(function () {
     wizard.goTo(1);
     updateContinueButton();
-    initSignupSignaturePad();
     refreshSignupAccountButtons();
 });
 
-$(window).on('resize', function () {
-    if (document.getElementById('signup_signature_pad')) {
-        initSignupSignaturePad();
-    }
+$('#signup_file_photo, #signup_file_passport, #signup_file_signature').on('change', function () {
+    handleSignupFile($(this).data('doc'), this.files && this.files[0]);
 });
 
-$('a[data-bs-toggle="tab"][href="#signup_tab_signature_draw"]').on('shown.bs.tab', function () {
-    initSignupSignaturePad();
+$('.signup-take-photo').on('click', function (e) {
+    e.preventDefault();
+    openSignupCamera($(this).data('doc'));
 });
 
-$('#signup_signature_file').on('change', function () {
-    var file = this.files && this.files[0];
-    if (!file) {
-        applySignature('');
+$('#signup_camera_capture').on('click', function () {
+    var video = document.getElementById('signup_camera_video');
+    var canvas = document.getElementById('signup_camera_canvas');
+    if (!video || !video.videoWidth || !signupCameraDoc) {
+        toastr.error('Camera is not ready yet');
         return;
     }
-
-    if (!file.type || file.type.indexOf('image/') !== 0) {
-        toastr.error('Please upload an image file for your signature');
-        this.value = '';
-        applySignature('');
-        return;
-    }
-
-    var reader = new FileReader();
-    reader.onload = function (e) {
-        applySignature(e.target.result);
-    };
-    reader.onerror = function () {
-        toastr.error('Could not read signature file');
-        applySignature('');
-    };
-    reader.readAsDataURL(file);
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    applySignupDoc(signupCameraDoc, canvas.toDataURL('image/jpeg', 0.72), false);
+    showSignupCameraModal(false);
 });
 
-$('#bt_signup_clear_sign').on('click', function () {
-    if (signupSignaturePad) signupSignaturePad.clear();
-});
-
-$('#bt_signup_save_sign').on('click', function () {
-    if (!signupSignaturePad || signupSignaturePad.isEmpty()) {
-        toastr.warning('Please draw your signature first');
-        return;
-    }
-    applySignature(signupSignaturePad.toDataURL('image/png'));
+$('#signup_camera_modal').on('hidden.bs.modal', function () {
+    stopSignupCamera();
 });
 
 $('#form_type').submit(function (e) {
@@ -332,7 +424,6 @@ $('#form_address').submit(function (e) {
     $('input[type="hidden"]#Country').val($('input#Country').val());
 
     wizard.goTo(4);
-    setTimeout(initSignupSignaturePad, 50);
 });
 
 $('#bt_validate_email').click(function () {
@@ -395,8 +486,8 @@ $('#form_validate').submit(function (e) {
         updateContinueButton();
         return;
     }
-    if (!signatureSaved || !$('input#Signature').val()) {
-        toastr.error('Please upload or draw your signature before continuing');
+    if (!documentsSaved()) {
+        toastr.error('Please upload your profile picture, passport/NIN and signature before continuing');
         updateContinueButton();
         return;
     }
@@ -415,9 +506,9 @@ $('#form_final').submit(function (e) {
         return;
     }
 
-    if (!signatureSaved || !$('input#Signature').val()) {
+    if (!documentsSaved()) {
         e.preventDefault();
-        toastr.error('Please upload or draw your signature before finishing account creation');
+        toastr.error('Please upload your profile picture, passport/NIN and signature before finishing account creation');
         wizard.goTo(4);
         return;
     }

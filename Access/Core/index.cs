@@ -36,6 +36,8 @@ public class UserModel
             SecondaryPhone = first.SecondaryPhone;
             PostCode = first.PostCode;
             Signature = first.Signature;
+            Photo = first.Photo;
+            Passport = first.Passport;
         }
 
         if (user.StockBroker != null)
@@ -70,6 +72,8 @@ public class UserModel
     public bool PhoneConfirmed { get; set; }
 
     public string Signature { get; set; }
+    public string Photo { get; set; }
+    public string Passport { get; set; }
 }
 
 public class ClearingNoModel

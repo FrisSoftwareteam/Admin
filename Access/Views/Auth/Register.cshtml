@@ -82,7 +82,7 @@
     </div>
     <div class="d-flex flex-column flex-lg-row-fluid py-10">
         <div class="d-flex flex-center flex-column flex-column-fluid">
-            <div class="w-lg-700px p-10 p-lg-15 mx-auto">
+            <div class="w-lg-850px p-10 p-lg-15 mx-auto">
 
                 <div class="current" data-kt-stepper-element="content">
                     <div class="w-100">
@@ -321,37 +321,54 @@
                                 </div>
                             </div>
 
-                            <div class="mb-10 fv-row">
-                                <label class="form-label mb-3 fw-bolder text-dark">Signature <span class="text-danger">*</span></label>
-                                <div class="text-muted fs-7 mb-4">Upload or draw your signature. Continue stays disabled until this is saved.</div>
-
-                                <ul class="nav nav-tabs nav-line-tabs mb-5 fs-6">
-                                    <li class="nav-item">
-                                        <a class="nav-link active" data-bs-toggle="tab" href="#signup_tab_signature_upload">Upload</a>
-                                    </li>
-                                    <li class="nav-item">
-                                        <a class="nav-link" data-bs-toggle="tab" href="#signup_tab_signature_draw">Draw</a>
-                                    </li>
-                                </ul>
-
-                                <div class="tab-content">
-                                    <div class="tab-pane fade show active" id="signup_tab_signature_upload" role="tabpanel">
-                                        <input type="file" id="signup_signature_file" class="form-control form-control-solid" accept="image/*" />
-                                        <div id="signup_signature_preview_wrp" class="mt-4" style="display:none;">
-                                            <img id="signup_signature_preview" alt="Signature preview" class="border bg-white p-2" style="max-width:100%; max-height:160px;" />
-                                            <div class="text-success fw-bold mt-2" id="signup_signature_status">Signature saved</div>
+                            <div class="mb-10">
+                                <label class="form-label mb-4 fw-bolder text-dark">Upload documents</label>
+                                <div class="row g-5">
+                                    <div class="col-md-4">
+                                        <div class="signup-doc-card h-100">
+                                            <div class="fw-bolder text-dark mb-4">1. Profile picture <span class="text-danger">*</span></div>
+                                            <input type="file" id="signup_file_photo" class="d-none" accept="image/*" data-doc="photo" />
+                                            <label for="signup_file_photo" class="btn btn-primary">Choose file</label>
+                                            <div class="mt-3">
+                                                <a href="javascript:;" class="signup-take-photo link-primary fw-bold" data-doc="photo">Take photo</a>
+                                            </div>
+                                            <div class="text-muted fs-8 mt-3 signup-doc-status" id="signup_status_photo"></div>
+                                            <div class="signup-doc-preview mt-3" id="signup_preview_photo_wrp" style="display:none;">
+                                                <img id="signup_preview_photo" alt="Profile picture" />
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="tab-pane fade" id="signup_tab_signature_draw" role="tabpanel">
-                                        <div class="signature-wrp text-center">
-                                            <canvas id="signup_signature_pad" class="signature-pad border bg-white" width="600" height="200" style="max-width:100%;"></canvas>
+                                    <div class="col-md-4">
+                                        <div class="signup-doc-card h-100">
+                                            <div class="fw-bolder text-dark mb-4">2. Passport / NIN <span class="text-danger">*</span></div>
+                                            <input type="file" id="signup_file_passport" class="d-none" accept="image/*,.pdf,application/pdf" data-doc="passport" />
+                                            <label for="signup_file_passport" class="btn btn-primary">Choose file</label>
+                                            <div class="mt-3">
+                                                <a href="javascript:;" class="signup-take-photo link-primary fw-bold" data-doc="passport">Take photo</a>
+                                            </div>
+                                            <div class="text-muted fs-8 mt-3 signup-doc-status" id="signup_status_passport"></div>
+                                            <div class="signup-doc-preview mt-3" id="signup_preview_passport_wrp" style="display:none;">
+                                                <img id="signup_preview_passport" alt="Passport / NIN" />
+                                                <div class="text-muted fs-8 mt-2" id="signup_preview_passport_file" style="display:none;">PDF selected</div>
+                                            </div>
                                         </div>
-                                        <div class="mt-4 d-flex gap-2">
-                                            <button type="button" id="bt_signup_clear_sign" class="btn btn-light">Clear</button>
-                                            <button type="button" id="bt_signup_save_sign" class="btn btn-primary">Save Signature</button>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="signup-doc-card h-100">
+                                            <div class="fw-bolder text-dark mb-4">3. Signature <span class="text-danger">*</span></div>
+                                            <input type="file" id="signup_file_signature" class="d-none" accept="image/*" data-doc="signature" />
+                                            <label for="signup_file_signature" class="btn btn-primary">Choose file</label>
+                                            <div class="mt-3">
+                                                <a href="javascript:;" class="signup-take-photo link-primary fw-bold" data-doc="signature">Take photo</a>
+                                            </div>
+                                            <div class="text-muted fs-8 mt-3 signup-doc-status" id="signup_status_signature"></div>
+                                            <div class="signup-doc-preview mt-3" id="signup_preview_signature_wrp" style="display:none;">
+                                                <img id="signup_preview_signature" alt="Signature" />
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                                <div class="text-muted fs-7 mt-5">All three are required. You can choose a file or take a live photo with your phone, tablet or laptop camera.</div>
                             </div>
 
                             <div class="d-flex flex-stack pt-15">
@@ -359,7 +376,7 @@
                                     <button type="button" id="bt_cancel_validate" class="btn btn-lg btn-light-primary me-3"> <span class="svg-icon svg-icon-4 me-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <rect fill="#000000" opacity="0.3" transform="translate(15.000000, 12.000000) scale(-1, 1) rotate(-90.000000) translate(-15.000000, -12.000000)" x="14" y="7" width="2" height="10" rx="1" /> <path d="M3.7071045,15.7071045 C3.3165802,16.0976288 2.68341522,16.0976288 2.29289093,15.7071045 C1.90236664,15.3165802 1.90236664,14.6834152 2.29289093,14.2928909 L8.29289093,8.29289093 C8.67146987,7.914312 9.28105631,7.90106637 9.67572234,8.26284357 L15.6757223,13.7628436 C16.0828413,14.136036 16.1103443,14.7686034 15.7371519,15.1757223 C15.3639594,15.5828413 14.7313921,15.6103443 14.3242731,15.2371519 L9.03007346,10.3841355 L3.7071045,15.7071045 Z" fill="#000000" fill-rule="nonzero" transform="translate(9.000001, 11.999997) scale(-1, -1) rotate(90.000000) translate(-9.000001, -11.999997)" /> </g> </svg> </span> Previous</button>
                                 </div>
                                 <div>
-                                    <button type="submit" id="btn-submit-validation" class="btn btn-lg btn-primary" disabled title="Validate email and upload signature before continuing">Continue <span class="svg-icon svg-icon-4 ms-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <rect fill="#000000" opacity="0.5" transform="translate(8.500000, 12.000000) rotate(-90.000000) translate(-8.500000, -12.000000)" x="7.5" y="7.5" width="2" height="9" rx="1" /> <path d="M9.70710318,15.7071045 C9.31657888,16.0976288 8.68341391,16.0976288 8.29288961,15.7071045 C7.90236532,15.3165802 7.90236532,14.6834152 8.29288961,14.2928909 L14.2928896,8.29289093 C14.6714686,7.914312 15.281055,7.90106637 15.675721,8.26284357 L21.675721,13.7628436 C22.08284,14.136036 22.1103429,14.7686034 21.7371505,15.1757223 C21.3639581,15.5828413 20.7313908,15.6103443 20.3242718,15.2371519 L15.0300721,10.3841355 L9.70710318,15.7071045 Z" fill="#000000" fill-rule="nonzero" transform="translate(14.999999, 11.999997) scale(1, -1) rotate(90.000000) translate(-14.999999, -11.999997)" /> </g> </svg> </span> </button>
+                                    <button type="submit" id="btn-submit-validation" class="btn btn-lg btn-primary" disabled title="Validate email and upload all three documents before continuing">Continue <span class="svg-icon svg-icon-4 ms-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <rect fill="#000000" opacity="0.5" transform="translate(8.500000, 12.000000) rotate(-90.000000) translate(-8.500000, -12.000000)" x="7.5" y="7.5" width="2" height="9" rx="1" /> <path d="M9.70710318,15.7071045 C9.31657888,16.0976288 8.68341391,16.0976288 8.29288961,15.7071045 C7.90236532,15.3165802 7.90236532,14.6834152 8.29288961,14.2928909 L14.2928896,8.29289093 C14.6714686,7.914312 15.281055,7.90106637 15.675721,8.26284357 L21.675721,13.7628436 C22.08284,14.136036 22.1103429,14.7686034 21.7371505,15.1757223 C21.3639581,15.5828413 20.7313908,15.6103443 20.3242718,15.2371519 L15.0300721,10.3841355 L9.70710318,15.7071045 Z" fill="#000000" fill-rule="nonzero" transform="translate(14.999999, 11.999997) scale(1, -1) rotate(90.000000) translate(-14.999999, -11.999997)" /> </g> </svg> </span> </button>
                                 </div>
                             </div>
 
@@ -435,6 +452,8 @@
                                 <input type="hidden" asp-for="EmailConfirmed" />
                                 <input type="hidden" asp-for="ClearingNo" />
                                 <input type="hidden" asp-for="Signature" id="Signature" />
+                                <input type="hidden" asp-for="Photo" id="Photo" />
+                                <input type="hidden" asp-for="Passport" id="Passport" />
                                 <div id="signup_accounts_hidden"></div>
 
                             </div>
@@ -485,6 +504,26 @@
     </div>
 </div>
 
+<div class="modal fade" id="signup_camera_modal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="fw-bolder mb-0" id="signup_camera_title">Take photo</h3>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <video id="signup_camera_video" autoplay playsinline muted style="width:100%; max-height:360px; background:#111; border-radius:8px;"></video>
+                <canvas id="signup_camera_canvas" class="d-none"></canvas>
+                <div class="text-muted fs-7 mt-3">Allow camera access, then capture the photo.</div>
+            </div>
+            <div class="modal-footer flex-center">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="signup_camera_capture" class="btn btn-primary">Capture</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section styles {
 <style>
     /* Centered, 3x email-validation toast */
@@ -519,10 +558,26 @@
         right: 12px !important;
         top: 8px !important;
     }
+
+    .signup-doc-card {
+        border: 1px solid #e4e6ef;
+        background: #f9f9fb;
+        border-radius: 8px;
+        padding: 1.5rem 1.25rem;
+    }
+
+    .signup-doc-preview img {
+        width: 100%;
+        max-width: 160px;
+        height: 120px;
+        object-fit: cover;
+        border: 1px solid #e4e6ef;
+        border-radius: 4px;
+        background: #111;
+    }
 </style>
 }
 
 @section scripts {
-<script src="~/assets/plugins/signature/signature_pad.min.js"></script>
 <script src="~/pages/signup.js" asp-append-version="true"></script>
 }

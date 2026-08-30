@@ -91,6 +91,10 @@ IF COL_LENGTH('dbo.ShareHoldings', 'Hidden') IS NULL
     ALTER TABLE dbo.ShareHoldings ADD [Hidden] bit NOT NULL CONSTRAINT DF_ShareHoldings_Hidden DEFAULT(0);
 IF COL_LENGTH('dbo.Shareholders', 'AccountNo') IS NULL
     ALTER TABLE dbo.Shareholders ADD [AccountNo] varchar(50) NULL;
+IF COL_LENGTH('dbo.Shareholders', 'Photo') IS NULL
+    ALTER TABLE dbo.Shareholders ADD [Photo] varchar(MAX) NULL;
+IF COL_LENGTH('dbo.Shareholders', 'Passport') IS NULL
+    ALTER TABLE dbo.Shareholders ADD [Passport] varchar(MAX) NULL;
 ");
         }
 

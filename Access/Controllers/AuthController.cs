@@ -194,10 +194,12 @@ public class AuthController : BaseController
                     return View(model);
                 }
 
-                if (string.IsNullOrWhiteSpace(model.Signature))
+                if (string.IsNullOrWhiteSpace(model.Photo) ||
+                    string.IsNullOrWhiteSpace(model.Passport) ||
+                    string.IsNullOrWhiteSpace(model.Signature))
                 {
-                    ModelState.AddModelError(string.Empty, "Please upload or draw your signature before finishing account creation");
-                    TempData["error"] = "Please upload or draw your signature before finishing account creation";
+                    ModelState.AddModelError(string.Empty, "Please upload your profile picture, passport/NIN and signature before finishing account creation");
+                    TempData["error"] = "Please upload your profile picture, passport/NIN and signature before finishing account creation";
                     return View(model);
                 }
 
@@ -232,6 +234,8 @@ public class AuthController : BaseController
                         ClearingNo = firstChn ?? model.ClearingNo,
                         AccountNo = firstAcc,
                         Signature = model.Signature,
+                        Photo = model.Photo,
+                        Passport = model.Passport,
 
                         CreatedOn = Tools.Now
                     });

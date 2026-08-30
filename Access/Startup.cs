@@ -107,6 +107,12 @@ public class Startup
             options.Cookie.SecurePolicy = cookieSecurePolicy;
         });
 
+        services.Configure<Microsoft.AspNetCore.Http.Features.FormOptions>(options =>
+        {
+            options.ValueLengthLimit = 20_000_000;
+            options.MultipartBodyLengthLimit = 20_000_000;
+        });
+
         services.Configure<ForwardedHeadersOptions>(options =>
         {
             options.ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto;
