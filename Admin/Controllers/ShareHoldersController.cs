@@ -116,10 +116,8 @@ namespace FirstReg.Admin.Controllers
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
                 var shareholder = hs.First();
-                if (shareholder.Hidden)
-                    throw new InvalidOperationException("Shareholder was not found, please try again.");
-
                 var user = shareholder.User;
+                var userId = shareholder.UserId;
                 var email = user?.Email;
                 var fullName = user?.FullName ?? shareholder.FullName;
 
@@ -132,17 +130,28 @@ namespace FirstReg.Admin.Controllers
                     catch (Exception emailEx)
                     {
                         _logger.LogWarning(emailEx, "Account deleted email could not be sent to {Email}", email);
-                        TempData["warning"] = "Account hidden, but the notification email could not be sent.";
+                        TempData["warning"] = "Account deleted, but the notification email could not be sent.";
                     }
                 }
 
-                shareholder.Hidden = true;
-                foreach (var holding in shareholder.Holdings)
-                    holding.Hidden = true;
+                foreach (var holding in shareholder.Holdings.ToList())
+                    await _service.Data.DeleteAsync(holding);
 
-                await _service.Data.UpdateAsync(shareholder);
+                await _service.Data.DeleteAsync(shareholder);
 
-                TempData["success"] = $"Shareholder account {code} was removed from online access.";
+                if (userId.HasValue && _service.Data.Count<Shareholder>(x => x.UserId == userId.Value) == 0)
+                {
+                    try
+                    {
+                        await DeleteLoginUserAsync(userId.Value);
+                    }
+                    catch (Exception userEx)
+                    {
+                        _logger.LogWarning(userEx, "Shareholder {Code} was deleted but the login user {UserId} could not be removed", code, userId);
+                    }
+                }
+
+                TempData["success"] = $"Shareholder account {code} was deleted from the database.";
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)
@@ -150,6 +159,38 @@ namespace FirstReg.Admin.Controllers
                 _logger.LogError(ex.ToString());
                 TempData["error"] = $"Could not delete shareholder account: {Clear.Tools.GetAllExceptionMessage(ex)}";
                 return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
+            }
+        }
+
+        private async Task DeleteLoginUserAsync(int userId)
+        {
+            var payments = await _service.Data.Find<Payment>(x => x.UserId == userId);
+            foreach (var payment in payments)
+                await _service.Data.DeleteAsync(payment);
+
+            var tickets = await _service.Data.Find<Ticket>(x => x.UserId == userId);
+            foreach (var ticket in tickets)
+            {
+                var messages = await _service.Data.Find<Message>(x => x.TicketId == ticket.Id);
+                foreach (var message in messages)
+                    await _service.Data.DeleteAsync(message);
+                await _service.Data.DeleteAsync(ticket);
+            }
+
+            var subscriptions = await _service.Data.Find<Subscription>(x => x.UserId == userId);
+            foreach (var subscription in subscriptions)
+                await _service.Data.DeleteAsync(subscription);
+
+            var accessRoles = await _service.Data.Find<AccessRole>(x => x.UserId == userId);
+            foreach (var accessRole in accessRoles)
+                await _service.Data.DeleteAsync(accessRole);
+
+            var user = await _userManager.FindByIdAsync(userId.ToString());
+            if (user != null)
+            {
+                var result = await _userManager.DeleteAsync(user);
+                if (!result.Succeeded)
+                    throw new InvalidOperationException(string.Join(",", result.Errors.Select(x => x.Description)));
             }
         }
 
