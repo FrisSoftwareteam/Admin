@@ -1,0 +1,165 @@
+﻿@model ECertRequest
+@inject FirstReg.Service _service
+
+@{
+    ViewData["Title"] = $"Ecert Request - {Model.Code}";
+    var regs = await _service.Data.Get<Register>();
+}
+
+<div class="container">
+    <div class="page-header mb-10">
+        <div class="media mb-3">
+            <div class="media-body">
+                <div class="row">
+                    <div class="col-lg mb-3 mb-lg-0">
+                        <h1 class="page-header-title fs-2x">@Model.Description</h1>
+                        <div class="row align-items-center">
+                            <div class="col-auto col-md-11">
+                                <span class="fs-3">@Model.Brief</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-auto">
+                        <div class="col-lg-auto">
+                            <a href="#" class="btn btn-primary ps-7" data-kt-menu-trigger="click" data-kt-menu-attach="parent" data-kt-menu-placement="bottom-end" data-kt-menu-flip="bottom">
+                                Menu
+                                <span class="svg-icon svg-icon-2 me-0">
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                            <polygon points="0 0 24 0 24 24 0 24"></polygon>
+                                            <path d="M6.70710678,15.7071068 C6.31658249,16.0976311 5.68341751,16.0976311 5.29289322,15.7071068 C4.90236893,15.3165825 4.90236893,14.6834175 5.29289322,14.2928932 L11.2928932,8.29289322 C11.6714722,7.91431428 12.2810586,7.90106866 12.6757246,8.26284586 L18.6757246,13.7628459 C19.0828436,14.1360383 19.1103465,14.7686056 18.7371541,15.1757246 C18.3639617,15.5828436 17.7313944,15.6103465 17.3242754,15.2371541 L12.0300757,10.3841378 L6.70710678,15.7071068 Z" fill="#000000" fill-rule="nonzero" transform="translate(12.000003, 11.999999) rotate(-180.000000) translate(-12.000003, -11.999999)"></path>
+                                        </g>
+                                    </svg>
+                                </span>
+                            </a>
+                            <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg-light-primary fw-bold py-4 w-250px fs-6" data-kt-menu="true">
+                                <div class="menu-item px-5">
+                                    <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Shareholders</div>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="javascript:;" data-mode="full-modal" data-target="dv_holder_diag" class="menu-link px-5">Add New Holder</a>
+                                </div>
+                                <div class="separator my-3"></div>
+                                <div class="menu-item px-5">
+                                    <div class="menu-content text-muted pb-2 px-5 fs-7 text-uppercase">Request</div>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="@Tools.GetBlobFilePath(blobfolder.certs, Model.AuthLetterFileName)" target="_blank" class="menu-link px-5">View Auth Letter</a>
+                                </div>
+                                <div class="menu-item px-5 my-1">
+                                    <a href="javascript:;" class="menu-link px-5" data-bs-toggle="modal" data-bs-target="#new_cert_modal">Edit Request</a>
+                                </div>
+                                <div class="menu-item px-5">
+                                    <a href="javascript:;" class="menu-link text-danger px-5">Delete Request</a>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.ECertHolders.Count > 0)
+    {
+        foreach (var item in Model.ECertHolders)
+        {
+
+            <div class="mb-12 card card-docs">
+                <div class="card-body fs-6 px-5 py-7 text-gray-800">
+                    <div class="pb-md-5 pt-md-10 px-md-10">
+                        <div class="g-0 row">
+                            <div class="mb-10 col-md-4">
+                                <div class="rounded-3 bg-opacity-50 h-md-100 mx-md-5 p-5 pe-10">
+                                    <div>
+                                        <img src="@Tools.GetBlobFilePath(blobfolder.certs, item.PhotoFileName)" class="rounded w-200px mb-5" />
+                                        <h1 class="fw-bolder mb-2">
+                                            @item.FullName
+                                        </h1>
+                                    </div>
+                                    <div>
+                                        <img src="@item.Signature" class="h-100px" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-8">
+
+                                <div class="card-header px-0">
+                                    <h3 class="card-title align-items-start flex-column">
+                                        <span class="card-label fw-bolder text-dark">Certificates</span>
+                                        <span class="text-gray-400 mt-1 fw-bold fs-6">@item.ECertHoldings.Count certificates uploaded for @item.FullName</span>
+                                    </h3>
+                                    <div class="card-toolbar">
+                                        @*<a href="@Tools.GetBlobFilePath(blobfolder.certs, item.PhotoFileName)" data-fslightbox="lightbox-basic"
+                                            class="btn btn-sm btn-light-primary fw-bolder">View Shareholder ID</a>*@
+                                        <a href="@Tools.GetBlobFilePath(blobfolder.certs, item.IdFileName)" data-fslightbox="lightbox-basic"
+                                   class="btn btn-sm btn-light-primary fw-bolder">View Shareholder ID</a>
+                                    </div>
+                                </div>
+
+                                @foreach (var itm in item.ECertHoldings)
+                                {
+
+                                    <div class="card bg-light mb-5">
+
+                                        <div class="card-body p-5">
+                                            <div class="d-flex align-items-sm-center">
+                                                <div class="me-4 symbol symbol-2by3 symbol-60px">
+                                                    <div class="symbol symbol-60px">
+                                                        <img src="~/assets/media/svg/files/pdf.svg" alt="">
+                                                    </div>
+                                                </div>
+                                                <div class="d-flex align-items-center flex-row-fluid flex-wrap me-2 my-lg-0">
+                                                    <div class="my-2 flex-grow-1 me-2 my-lg-0">
+                                                        <a class="fw-bolder text-dark fs-3 text-hover-primary" href="#">
+                                                            @itm.Units units of @itm.Register.Name
+                                                        </a>
+                                                        <span class="text-muted fw-bold d-block">
+                                                            @itm.AccountNo / @itm.ClearingNo / @itm.CertificateNo
+                                                        </span>
+                                                    </div>
+                                                    <div class="d-flex align-items-center">
+                                                        <div class=me-6>
+                                                            <i class="fa fa-star-half-alt fs-5 me-1 text-warning">
+                                                            </i>
+                                                            <span class="fw-bolder text-gray-800">
+                                                                4.2
+                                                            </span>
+                                                        </div>
+                                                        <a class="border-0 btn btn-icon btn-light btn-sm" target="_blank" href="javascript:;">
+                                                            <span class="svg-icon svg-icon-2 svg-icon-primary">
+                                                                <svg height=24 viewBox="0 0 24 24" width=24 xmlns=http://www.w3.org/2000/svg fill=none>
+                                                                    <rect fill=black height=2 rx=1 width=13 x=18 y=13 opacity=0.5 transform="rotate(-180 18 13)">
+                                                                    </rect>
+                                                                    <path d="M15.4343 12.5657L11.25 16.75C10.8358 17.1642 10.8358 17.8358 11.25 18.25C11.6642 18.6642 12.3358 18.6642 12.75 18.25L18.2929 12.7071C18.6834 12.3166 18.6834 11.6834 18.2929 11.2929L12.75 5.75C12.3358 5.33579 11.6642 5.33579 11.25 5.75C10.8358 6.16421 10.8358 6.83579 11.25 7.25L15.4343 11.4343C15.7467 11.7467 15.7467 12.2533 15.4343 12.5657Z" fill=black>
+                                                                    </path>
+                                                                </svg>
+                                                            </span>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                }
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        }
+    }
+</div>
+
+@section scripts {
+<script src="~/assets/plugins/custom/fslightbox/fslightbox.bundle.js"></script>
+}

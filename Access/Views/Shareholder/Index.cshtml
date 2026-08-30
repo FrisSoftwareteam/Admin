@@ -1,0 +1,265 @@
+﻿@model ShareHolderDashboardModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="card bg-transparent shadow-none mb-5 mb-xl-10">
+    <div class="card-body p-0">
+        <div class="d-flex flex-wrap flex-sm-nowrap mb-3">
+            <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start flex-wrap mb-2">
+                    <div class="d-flex flex-column">
+                        <div class="d-flex align-items-center mb-2">
+                            <a href="#" class="text-gray-900 text-hover-primary fs-1 fw-bolder me-1">Welcome @Model.User.FirstName,</a>
+                            <a href="#"> <span class="svg-icon svg-icon-1 svg-icon-primary"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <path d="M10.0813 3.7242C10.8849 2.16438 13.1151 2.16438 13.9187 3.7242V3.7242C14.4016 4.66147 15.4909 5.1127 16.4951 4.79139V4.79139C18.1663 4.25668 19.7433 5.83365 19.2086 7.50485V7.50485C18.8873 8.50905 19.3385 9.59842 20.2758 10.0813V10.0813C21.8356 10.8849 21.8356 13.1151 20.2758 13.9187V13.9187C19.3385 14.4016 18.8873 15.491 19.2086 16.4951V16.4951C19.7433 18.1663 18.1663 19.7433 16.4951 19.2086V19.2086C15.491 18.8873 14.4016 19.3385 13.9187 20.2758V20.2758C13.1151 21.8356 10.8849 21.8356 10.0813 20.2758V20.2758C9.59842 19.3385 8.50905 18.8873 7.50485 19.2086V19.2086C5.83365 19.7433 4.25668 18.1663 4.79139 16.4951V16.4951C5.1127 15.491 4.66147 14.4016 3.7242 13.9187V13.9187C2.16438 13.1151 2.16438 10.8849 3.7242 10.0813V10.0813C4.66147 9.59842 5.1127 8.50905 4.79139 7.50485V7.50485C4.25668 5.83365 5.83365 4.25668 7.50485 4.79139V4.79139C8.50905 5.1127 9.59842 4.66147 10.0813 3.7242V3.7242Z" fill="#00A3FF" /> <path class="permanent" d="M14.8563 9.1903C15.0606 8.94984 15.3771 8.9385 15.6175 9.14289C15.858 9.34728 15.8229 9.66433 15.6185 9.9048L11.863 14.6558C11.6554 14.9001 11.2876 14.9258 11.048 14.7128L8.47656 12.4271C8.24068 12.2174 8.21944 11.8563 8.42911 11.6204C8.63877 11.3845 8.99996 11.3633 9.23583 11.5729L11.3706 13.4705L14.8563 9.1903Z" fill="white" /> </svg> </span> </a>
+                        </div>
+                        <div class="d-flex flex-wrap fw-bold fs-6 mb-0 pe-2">
+                            @*<a href="#" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2"> <span class="svg-icon svg-icon-4 me-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <rect x="0" y="0" width="24" height="24" /> <path d="M5,10.5 C5,6 8,3 12.5,3 C17,3 20,6.75 20,10.5 C20,12.8325623 17.8236613,16.03566 13.470984,20.1092932 C12.9154018,20.6292577 12.0585054,20.6508331 11.4774555,20.1594925 C7.15915182,16.5078313 5,13.2880005 5,10.5 Z M12.5,12 C13.8807119,12 15,10.8807119 15,9.5 C15,8.11928813 13.8807119,7 12.5,7 C11.1192881,7 10,8.11928813 10,9.5 C10,10.8807119 11.1192881,12 12.5,12 Z" fill="#000000" fill-rule="nonzero" /> </g> </svg> </span> @($"{Model.Shareholder.State}, {Model.Shareholder.Country}")</a>*@
+                            <a href="#" class="d-flex align-items-center text-gray-400 text-hover-primary me-5 mb-2"> <span class="svg-icon svg-icon-4 me-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <path d="M12,11 C9.790861,11 8,9.209139 8,7 C8,4.790861 9.790861,3 12,3 C14.209139,3 16,4.790861 16,7 C16,9.209139 14.209139,11 12,11 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" /> <path d="M3.00065168,20.1992055 C3.38825852,15.4265159 7.26191235,13 11.9833413,13 C16.7712164,13 20.7048837,15.2931929 20.9979143,20.2 C21.0095879,20.3954741 20.9979143,21 20.2466999,21 C16.541124,21 11.0347247,21 3.72750223,21 C3.47671215,21 2.97953825,20.45918 3.00065168,20.1992055 Z" fill="#000000" fill-rule="nonzero" /> </g> </svg> </span> @Model.User.PhoneNumber</a>
+                            <a href="#" class="d-flex align-items-center text-gray-400 text-hover-primary mb-2"> <span class="svg-icon svg-icon-4 me-1"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <path d="M11.575,21.2 C6.175,21.2 2.85,17.4 2.85,12.575 C2.85,6.875 7.375,3.05 12.525,3.05 C17.45,3.05 21.125,6.075 21.125,10.85 C21.125,15.2 18.825,16.925 16.525,16.925 C15.4,16.925 14.475,16.4 14.075,15.65 C13.3,16.4 12.125,16.875 11,16.875 C8.25,16.875 6.85,14.925 6.85,12.575 C6.85,9.55 9.05,7.1 12.275,7.1 C13.2,7.1 13.95,7.35 14.525,7.775 L14.625,7.35 L17,7.35 L15.825,12.85 C15.6,13.95 15.85,14.825 16.925,14.825 C18.25,14.825 19.025,13.725 19.025,10.8 C19.025,6.9 15.95,5.075 12.5,5.075 C8.625,5.075 5.05,7.75 5.05,12.575 C5.05,16.525 7.575,19.1 11.575,19.1 C13.075,19.1 14.625,18.775 15.975,18.075 L16.8,20.1 C15.25,20.8 13.2,21.2 11.575,21.2 Z M11.4,14.525 C12.05,14.525 12.7,14.35 13.225,13.825 L14.025,10.125 C13.575,9.65 12.925,9.425 12.3,9.425 C10.65,9.425 9.45,10.7 9.45,12.375 C9.45,13.675 10.075,14.525 11.4,14.525 Z" fill="#000000" /> </svg> </span> @Model.User.Email</a>
+                        </div>
+                    </div>
+                    <div class="d-flex my-4">
+                        <a asp-action="Profile" class="btn btn-primary ms-3">Edit Profile</a>
+                        @if (Model.IsGroup)
+                        {
+                            <a href="javascript:;" class="btn btn-info ms-3" data-bs-toggle="modal"
+                               data-bs-target="#diag_shareholder"><span class="me-2">+</span> Add Shareholder</a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Shareholders.Any(x => x.IsVerified && !x.IsSubscribed))
+{
+
+    <div class="alert alert-dismissible bg-light-warning border border-warning border-1 border-dashed d-flex flex-column flex-sm-row w-100 p-5 mb-10">
+
+        <span class="svg-icon svg-icon-2hx svg-icon-warning me-4 mb-5 mb-sm-0">
+            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                    <rect x="0" y="0" width="24" height="24"></rect>
+                    <path d="M13.2070325,4 C13.0721672,4.47683179 13,4.97998812 13,5.5 C13,8.53756612 15.4624339,11 18.5,11 C19.0200119,11 19.5231682,10.9278328 20,10.7929675 L20,17 C20,18.6568542 18.6568542,20 17,20 L7,20 C5.34314575,20 4,18.6568542 4,17 L4,7 C4,5.34314575 5.34314575,4 7,4 L13.2070325,4 Z" fill="#000000"></path>
+                    <circle fill="#000000" opacity="0.3" cx="18.5" cy="5.5" r="2.5"></circle>
+                </g>
+            </svg>
+        </span>
+
+        <div class="d-flex flex-column pe-0 pe-sm-10">
+            <h5 class="mb-1">Subscription Required!</h5>
+            <span>You do not have an active subscription on one or more accounts in your profile. Please click the Subscribe button to subscribe now.</span>
+        </div>
+
+        <div class="position-absolute position-sm-relative m-2 m-sm-0 top-0 end-0 ms-sm-auto">
+            <a asp-action="Subscribe" class="btn btn-outline btn-outline-danger btn-active-danger m-2">Subscribe</a>
+        </div>
+
+    </div>
+
+}
+
+<div class="d-flex flex-wrap flex-stack">
+    <div class="d-flex flex-wrap align-items-center my-1">
+        <h3 class="fw-bolder me-5 my-1">My Portfolio (@Model.SecurityCount)</h3>
+    </div>
+    <div class="d-flex flex-wrap my-1">
+        <div class="d-flex my-0">
+            <div class="d-flex align-items-center position-relative my-0">
+                <span class="svg-icon svg-icon-3 position-absolute ms-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <rect x="0" y="0" width="24" height="24" />
+                            <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                            <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero" />
+                        </g>
+                    </svg>
+                </span>
+                <input type="search" id="tb_holdings_search" class="form-control form-control-white w-200px ps-9" placeholder="Search" />
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mb-15">
+    <table id="tb_holdings" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list">
+        <thead class="fs-7 text-gray-400 text-uppercase d-none">
+            <tr>
+                <th class="min-w-250px">Description</th>
+                <th class="min-w-90px">units</th>
+                <th class="min-w-90px">Status</th>
+                <th class="min-w-50px text-end"></th>
+            </tr>
+        </thead>
+        <tbody class="fs-6">
+            @foreach (var item in Model.Shareholders)
+            {
+                <tr>
+                    <td>
+                        <div class="d-flex align-items-center me-2">
+
+                            @if (item.IsVerified)
+                            {
+                                <span class="svg-icon svg-icon-3tx svg-icon-success me-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path opacity="0.3" d="M10.3 14.3L11 13.6L7.70002 10.3C7.30002 9.9 6.7 9.9 6.3 10.3C5.9 10.7 5.9 11.3 6.3 11.7L10.3 15.7C9.9 15.3 9.9 14.7 10.3 14.3Z" fill="black" />
+                                        <path d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM11.7 15.7L17.7 9.70001C18.1 9.30001 18.1 8.69999 17.7 8.29999C17.3 7.89999 16.7 7.89999 16.3 8.29999L11 13.6L7.70001 10.3C7.30001 9.89999 6.69999 9.89999 6.29999 10.3C5.89999 10.7 5.89999 11.3 6.29999 11.7L10.3 15.7C10.5 15.9 10.8 16 11 16C11.2 16 11.5 15.9 11.7 15.7Z" fill="black" />
+                                    </svg>
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="svg-icon svg-icon-3tx svg-icon-warning me-4">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                        <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10"></circle>
+                                        <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1"></rect>
+                                        <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1"></rect>
+                                    </svg>
+                                </span>
+                            }
+
+                            <div>
+                                <div class="d-flex flex-column justify-content-center">
+                                    <a asp-action="Details" asp-route-code="@item.Code"
+                                       class="mb-1 text-gray-800 text-hover-primary h3">@item.FullName</a>
+                                    <div class="fw-bold fs-6 text-gray-400">@item.MobileNo</div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </td>
+                    <td>@item.ExpiryDate?.ToString("dd MMM yyy")</td>
+                    <td>
+                        @if (item.IsSubscribed)
+                        {
+                            <span class="badge badge-light-success fw-bolder px-4 py-3">Active</span>
+                        }
+                        else
+                        {
+                            <span class="badge badge-light-danger fw-bolder px-4 py-3">Expired</span>
+                        }
+                    </td>
+                    <td class="text-end">
+                        @if (item.IsVerified)
+                        {
+                            <a asp-action="Details" asp-route-code="@item.Code" class="btn btn-sm btn-primary btn-active-dark">
+                                <span>Details</span>
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Details" asp-route-code="@item.Code" class="btn btn-sm btn-info btn-active-dark">
+                                <span>Activate</span>
+                            </a>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<div class="card pt-4 mb-6 mb-xl-9">
+    <div class="card-header border-0">
+        <div class="card-title">
+            <h2 class="fw-bolder mb-0">Recent Payments</h2>
+        </div>
+        <div class="card-toolbar">
+            @*<a href="#" class="btn btn-sm btn-flex btn-light-primary" data-bs-toggle="modal" data-bs-target="#kt_modal_new_card"> <span class="svg-icon svg-icon-3"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"> <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M6.54184 2.36899C4.34504 2.65912 2.65912 4.34504 2.36899 6.54184C2.16953 8.05208 2 9.94127 2 12C2 14.0587 2.16953 15.9479 2.36899 17.4582C2.65912 19.655 4.34504 21.3409 6.54184 21.631C8.05208 21.8305 9.94127 22 12 22C14.0587 22 15.9479 21.8305 17.4582 21.631C19.655 21.3409 21.3409 19.655 21.631 17.4582C21.8305 15.9479 22 14.0587 22 12C22 9.94127 21.8305 8.05208 21.631 6.54184C21.3409 4.34504 19.655 2.65912 17.4582 2.36899C15.9479 2.16953 14.0587 2 12 2C9.94127 2 8.05208 2.16953 6.54184 2.36899Z" fill="#12131A" /> <path fill-rule="evenodd" clip-rule="evenodd" d="M12 17C12.5523 17 13 16.5523 13 16V13H16C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11H13V8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8V11H8C7.44772 11 7 11.4477 7 12C7 12.5523 7.44771 13 8 13H11V16C11 16.5523 11.4477 17 12 17Z" fill="#12131A" /> </svg> </span> Add new method </a>*@
+        </div>
+    </div>
+    <div id="dv_payments" class="card-body pt-0">
+
+        @foreach (var item in Model.User.Payments)
+        {
+
+            <div class="py-0" data-kt-customer-payment-method="row">
+                <div class="py-3 d-flex flex-stack flex-wrap">
+                    <div class="d-flex align-items-center collapsible rotate" data-bs-toggle="collapse" href="#pay_@item.Id" role="button" aria-expanded="false" aria-controls="pay_@item.Id">
+                        <div class="me-3 rotate-90">
+                            <span class="svg-icon svg-icon-3"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <path d="M6.70710678,15.7071068 C6.31658249,16.0976311 5.68341751,16.0976311 5.29289322,15.7071068 C4.90236893,15.3165825 4.90236893,14.6834175 5.29289322,14.2928932 L11.2928932,8.29289322 C11.6714722,7.91431428 12.2810586,7.90106866 12.6757246,8.26284586 L18.6757246,13.7628459 C19.0828436,14.1360383 19.1103465,14.7686056 18.7371541,15.1757246 C18.3639617,15.5828436 17.7313944,15.6103465 17.3242754,15.2371541 L12.0300757,10.3841378 L6.70710678,15.7071068 Z" fill="#000000" fill-rule="nonzero" transform="translate(12.000003, 11.999999) rotate(-270.000000) translate(-12.000003, -11.999999)" /> </g> </svg> </span>
+                        </div>
+                        <div class="me-3">
+                            <div class="d-flex align-items-center">
+                                <div class="text-gray-800 fw-bolder h4">@item.Description</div>
+                            </div>
+                            <div class="text-gray-400">@item.Date.ToString("dd MMM, yyy HH:mm")</div>
+                        </div>
+                    </div>
+                    <div class="d-flex my-3 ms-9">
+                        <div class="badge badge-light-primary ms-5">@item.Status</div>
+                    </div>
+                </div>
+                <div id="pay_@item.Id" class="collapse fs-6 ps-10" data-bs-parent="#dv_payments">
+                    <div class="d-flex flex-wrap py-5">
+                        <div class="flex-equal me-5">
+                            <table class="table table-flush fw-bold gy-1">
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Name</td>
+                                    <td class="text-gray-800">@item.User.FullName</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Amount</td>
+                                    <td class="text-gray-800">@item.Amount.ToString("N2")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Currency</td>
+                                    <td class="text-gray-800">@item.Currency</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Date</td>
+                                    <td class="text-gray-800">@item.Date.ToString("dd MMM, yyy")</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Remarks</td>
+                                    <td class="text-gray-800">@item.Remarks</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="flex-equal">
+                            <table class="table table-flush fw-bold gy-1">
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Status</td>
+                                    <td class="text-gray-800">@item.Status</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Phone</td>
+                                    <td class="text-gray-800">@item.User.PhoneNumber</td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Email</td>
+                                    <td class="text-gray-800">
+                                        <a href="#" class="text-gray-900 text-hover-primary">@item.User.Email</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="text-gray-400 min-w-125px w-125px">Gateway</td>
+                                    <td class="text-gray-800">
+                                        <a href="#" class="text-gray-900 text-hover-primary">@item.Gateway</a>
+                                    </td>
+                                </tr>
+                                @*<tr>
+                                        <td class="text-gray-400 min-w-125px w-125px">CVC check</td>
+                                        <td class="text-gray-800">
+                                            Passed
+                                            <span class="svg-icon svg-icon-2 svg-icon-success"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <path d="M9.26193932,16.6476484 C8.90425297,17.0684559 8.27315905,17.1196257 7.85235158,16.7619393 C7.43154411,16.404253 7.38037434,15.773159 7.73806068,15.3523516 L16.2380607,5.35235158 C16.6013618,4.92493855 17.2451015,4.87991302 17.6643638,5.25259068 L22.1643638,9.25259068 C22.5771466,9.6195087 22.6143273,10.2515811 22.2474093,10.6643638 C21.8804913,11.0771466 21.2484189,11.1143273 20.8356362,10.7474093 L17.0997854,7.42665306 L9.26193932,16.6476484 Z" fill="#000000" fill-rule="nonzero" opacity="0.5" transform="translate(14.999995, 11.000002) rotate(-180.000000) translate(-14.999995, -11.000002)" /> <path d="M4.26193932,17.6476484 C3.90425297,18.0684559 3.27315905,18.1196257 2.85235158,17.7619393 C2.43154411,17.404253 2.38037434,16.773159 2.73806068,16.3523516 L11.2380607,6.35235158 C11.6013618,5.92493855 12.2451015,5.87991302 12.6643638,6.25259068 L17.1643638,10.2525907 C17.5771466,10.6195087 17.6143273,11.2515811 17.2474093,11.6643638 C16.8804913,12.0771466 16.2484189,12.1143273 15.8356362,11.7474093 L12.0997854,8.42665306 L4.26193932,17.6476484 Z" fill="#000000" fill-rule="nonzero" transform="translate(9.999995, 12.000002) rotate(-180.000000) translate(-9.999995, -12.000002)" /> </g> </svg> </span>
+                                        </td>
+                                    </tr>*@
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="separator separator-dashed my-5"></div>
+
+        }
+
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/pages/sh-dash.js" asp-append-version="true"></script>
+}

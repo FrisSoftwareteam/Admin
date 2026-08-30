@@ -1,0 +1,97 @@
+﻿@model User
+
+<div class="modal fade" id="diag_shareholder" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-650px">
+        <div class="modal-content rounded">
+            <div class="modal-header pb-0 border-0 justify-content-end">
+                <div class="btn btn-sm btn-icon btn-active-color-primary" data-bs-dismiss="modal">
+                    <span class="svg-icon svg-icon-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                            <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000">
+                                <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" />
+                                <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" />
+                            </g>
+                        </svg>
+                    </span>
+                </div>
+            </div>
+            <div class="modal-body scroll-y px-10 px-lg-15 pt-0 pb-15">
+
+                <form class="form form-loader" asp-controller="Shareholder" asp-action="AddAccount">
+                    <div class="mb-13 text-center">
+                        <h1 class="mb-3">Add New Shareholder Account</h1>
+                        <div class="text-muted fw-bold fs-5">
+                            Add a new shareholder account to your group account.
+                        </div>
+                    </div>
+                    <input type="hidden" name="UserId" value="@Model.Id" />
+                    <div class="col">
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="LastName">Surname:</label>
+                                <input type="text" name="LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter surname" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="FirstName">Other names:</label>
+                                <input name="FirstName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" required />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="Email">Clearing no:</label>
+                                <input name="ClearingNo" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. C100000AB" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="MobileNo">Primary phone:</label>
+                                <input name="MobileNo" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="SecondaryPhone">Secondary phone:</label>
+                                <input name="SecondaryPhone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="Street">Street Address:</label>
+                                <input name="Street" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="City">City:</label>
+                                <input name="City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="State">State:</label>
+                                <input name="State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="Country">Country:</label>
+                                <input name="Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" for="PostCode">Post code:</label>
+                                <input name="PostCode" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 101263" required />
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">
+                                            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary">Cancel</button>
+                                </div>
+                                <div class="col-lg-6 text-lg-end">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>

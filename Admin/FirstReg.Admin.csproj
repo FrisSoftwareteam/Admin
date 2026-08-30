@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+	<PropertyGroup>
+		<TargetFramework>net8.0</TargetFramework>
+		<UserSecretsId>aspnet-FirstReg.Admin-F91B8FCF-BF13-4897-BC60-68C72E206376</UserSecretsId>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.8" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Core\FirstReg.Core.csproj" />
+	</ItemGroup>
+
+</Project>

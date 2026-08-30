@@ -1,0 +1,190 @@
+﻿@model SecurityDetailsModel
+
+@{
+    ViewData["Title"] = "Account Details";
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">@Model.Company</h1>
+
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>Account:</span>
+                            <span>#@Model.AccountNo - @Model.Holder</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    <a asp-action="Details" asp-route-code="@Model.ShareholderCode" class="btn btn-primary pe-7">
+                        <span class="svg-icon svg-icon-2 me-0">
+                            <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                    <polygon points="0 0 24 0 24 24 0 24" />
+                                    <path d="M6.70710678,15.7071068 C6.31658249,16.0976311 5.68341751,16.0976311 5.29289322,15.7071068 C4.90236893,15.3165825 4.90236893,14.6834175 5.29289322,14.2928932 L11.2928932,8.29289322 C11.6714722,7.91431428 12.2810586,7.90106866 12.6757246,8.26284586 L18.6757246,13.7628459 C19.0828436,14.1360383 19.1103465,14.7686056 18.7371541,15.1757246 C18.3639617,15.5828436 17.7313944,15.6103465 17.3242754,15.2371541 L12.0300757,10.3841378 L6.70710678,15.7071068 Z" fill="#000000" fill-rule="nonzero" transform="translate(12.000003, 11.999999) scale(-1, 1) rotate(-270.000000) translate(-12.000003, -11.999999) " />
+                                </g>
+                            </svg>
+                        </span>
+                        Back
+                    </a>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-body py-10">
+        <h2 class="mb-9">Account Summary</h2>
+        <p class="fs-5 fw-bold text-gray-600">
+            Here's a summary of your account at @Model.Company. This page also shows the
+            details of your transaction as well as your dividend history.
+        </p>
+        <div class="row py-6">
+            <div class="col">
+                <div class="card card-dashed flex-center min-w-175px my-3 p-6">
+                    <span class="fs-4 fw-bold text-success pb-1 px-2">Total Bought</span>
+                    <span class="fs-lg-2tx fw-bolder d-flex justify-content-center">
+                        <span data-kt-countup="true" data-kt-countup-value="@Model.TotalnitsIn" class="counted">@Model.TotalnitsInString</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-dashed flex-center min-w-175px my-3 p-6">
+                    <span class="fs-4 fw-bold text-danger pb-1 px-2">Total Sold</span>
+                    <span class="fs-lg-2tx fw-bolder d-flex justify-content-center">
+                        <span data-kt-countup="true" data-kt-countup-value="@Model.TotalnitsOut" class="counted">@Model.TotalnitsOutString</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-dashed flex-center min-w-175px my-3 p-6">
+                    <span class="fs-4 fw-bold text-info pb-1 px-2">Units Balance</span>
+                    <span class="fs-lg-2tx fw-bolder d-flex justify-content-center">
+                        <span data-kt-countup="true" data-kt-countup-value="@Model.UnitsBalance" class="counted">@Model.UnitsBalanceString</span>
+                    </span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card card-dashed flex-center min-w-175px my-3 p-6">
+                    <span class="fs-4 fw-bold text-primary pb-1 px-2">Total Dividend</span>
+                    <span class="fs-lg-2tx fw-bolder d-flex justify-content-center">
+                        <span data-kt-countup="true" data-kt-countup-value="@Model.TotalDividend" class="counted">@Model.TotalDividendString</span>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (Model.Transactions.Count() > 0)
+{
+    <div class="card mb-5 bg-transparent shadow-none px-0">
+        <div class="card-header border-0 px-0">
+            <div class="card-title">
+                <h3 class="fw-bolder m-0">Accounts Details</h3>
+            </div>
+        </div>
+        <div class="card-body pt-0 px-0">
+            <table id="tb_transactions" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list">
+                <thead class="d-none fs-7 text-gray-400 text-uppercase">
+                    <tr>
+                        <th class="min-w-250px">Reference</th>
+                        <th class="min-w-90px">Units</th>
+                        <th class="min-w-90px">Balance</th>
+                    </tr>
+                </thead>
+                <tbody class="fs-6">
+                    @foreach (var item in Model.Transactions)
+                    {
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <a href="" class="mb-1 fs-5 text-gray-800 text-hover-primary">@item.Reference</a>
+                                        <div class="fw-bold fs-6 text-gray-400">@item.Date.ToString("dd MMM, yyy")</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <div class="mb-1 text-@item.UnitsCSS text-hover-primary">@item.UnitsString</div>
+                                        <div class="fw-bold fs-6 text-gray-400">@item.Description</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="d-flex flex-column justify-content-center">
+                                        <div class="mb-1 text-gray-800 text-hover-primary">@item.Balance.ToString("N2")</div>
+                                        <div class="fw-bold fs-6 text-gray-400">Units left</div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@if (Model.Dividends.Count() > 0)
+{
+    <div class="card mb-5 bg-transparent shadow-none px-0">
+        <div class="card-header border-0 px-0">
+            <div class="card-title">
+                <h3 class="fw-bolder m-0">Dividend History</h3>
+            </div>
+        </div>
+        <div class="card-body pt-0 px-0">
+            <table id="tb_dividends" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list">
+                <thead class="d-none fs-7 text-gray-400 text-uppercase">
+                    <tr>
+                        <th class="min-w-250px">Manager</th>
+                        <th class="min-w-90px">Amount</th>
+                        <th class="min-w-90px">Amount</th>
+                        <th class="min-w-50px text-end">Status</th>
+                    </tr>
+                </thead>
+                <tbody class="fs-6">
+                    @foreach (var item in Model.Dividends)
+                    {
+                        <tr>
+                            <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-h5">@item.Date.ToString("dd MMM yyy")</span>
+                                <small class="text-muted font-weight-normal">Div No: @item.DivNo</small>
+                            </td>
+                            <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-h5">@item.Type</span>
+                                <small class="text-muted font-weight-normal">Warrant No: @item.WarrantNo</small>
+                            </td>
+                            <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-h5">@item.Holding</span>
+                                <small class="text-muted font-weight-normal">units</small>
+                            </td>
+                            <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-h5">@item.Gross.ToString("N2")</span>
+                                <small class="text-muted font-weight-normal">@item.Tax.ToString("N2") tax</small>
+                            </td>
+                            <td>
+                                <span class="text-dark-75 font-weight-bolder d-block font-size-h5">@item.Net.ToString("N2")</span>
+                                <small class="text-muted font-weight-normal">Net</small>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+
+@section scripts {
+    <script src="~/pages/acc-details.js" asp-append-version="true"></script>
+} 

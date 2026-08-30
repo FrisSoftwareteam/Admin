@@ -1,0 +1,13 @@
+{
+  "profiles": {
+    "FirstReg.OnlineAccess": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "applicationUrl": "http://localhost:5092",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SKIP_DB_MIGRATION": "true"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+﻿@model ShareOffer
+
+@{
+    ViewData["Title"] = Model.Description;
+}
+
+<div class="mt-lg-10">
+    <h1 class="fw-bolder fs-2qx text-gray-800 mb-7">@ViewBag.Title</h1>
+    <div class="fw-bold fs-3 text-gray-800 mb-15">
+        <h2 class="mb-5">Considering investing? Fidelity Bank PLC has a new public offer!</h2>
+        <p>Fidelity Bank PLC is inviting you to participate in their latest public offering. Here are the details:</p>
+        <ul>
+            @if (Model.AllowPublicOffer)
+            {
+                <li>Public Offer: at 5.00 per share.</li>
+            }
+            @if (Model.AllowRightIssue)
+            {
+                <li>Right Issue: purchase @Model.RightIssue.Rights for every @Model.RightIssue.NoOfShares units at 5.00 per share.</li>
+            }
+            <li>The offer is valid from @Model.StartDate.ToString("dddd dd MMMM yyy") till @Model.EndDate.ToString("dddd dd MMMM yyy").</li>
+        </ul>
+        <div class="d-flex flex-stack flex-wrapr">
+            <div class="d-block">
+                @if (Model.AllowPublicOffer)
+                {
+                    <a asp-action="PublicOffer" asp-route-code="@Model.UniqueKey" class="btn btn-primary me-2">Subscribe for Public offer</a>
+                }
+                @if (Model.AllowRightIssue)
+                {
+                    <a asp-action="RightIssue" asp-route-code="@Model.UniqueKey" class="btn btn-primary me-2">Subscribe for Right issue</a>
+                }
+                <a asp-action="Subscription" class="btn btn-primary me-2">Continue my Application</a>
+            </div>
+        </div>
+    </div>
+</div>

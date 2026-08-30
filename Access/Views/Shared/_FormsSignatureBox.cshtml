@@ -1,0 +1,56 @@
+﻿<div class="card p-0">
+    <div class="card-header card-header-stretch">
+        <h3 class="card-title">Signature</h3>
+        <div class="card-toolbar">
+            <ul class="nav nav-tabs nav-line-tabs nav-stretch fs-6 border-0">
+                <li class="nav-item">
+                    <a class="nav-link active" data-bs-toggle="tab" href="#tab_signature_upload">Upload</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-bs-toggle="tab" href="#tab_signature_draw">Draw</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="tab-content" id="tab_signature">
+            <div class="tab-pane fade show active" id="tab_signature_upload" role="tabpanel">
+                <div class="mb-13 text-center">
+                    <h1 class="mb-3">Upload a New Signature</h1>
+                    <div class="text-gray-400 fw-bold fs-5">
+                        Use the form below to upload your signature for verification.
+                    </div>
+                </div>
+
+                <div class="form-group row">
+                    <div class="col">
+                        <label class="fs-6 fw-bold mb-2">Select File</label>
+                        <input type="file" class="form-control form-control-solid" placeholder="Select a file" name="signatureFile" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="tab_signature_draw" role="tabpanel">
+                <div class="mb-13 text-center">
+                    <h1 class="mb-3">Draw your Signature</h1>
+                    <div class="text-gray-400 fw-bold fs-5">
+                        Use the pad below to draw your signature.
+                    </div>
+                </div>
+
+                <div class="d-flex flex-column mb-8 fv-row">
+                    <input type="hidden" id="hd_sign" name="signatureString" required />
+                    <div class="form-group text-center">
+                        <div class="signature-wrp">
+                            <canvas id="signature-pad" class="signature-pad border" width=600 height=300></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center p-8 pb-0">
+                    <button type="button" id="bt_clear_sign" class="btn btn-secondary">Clear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

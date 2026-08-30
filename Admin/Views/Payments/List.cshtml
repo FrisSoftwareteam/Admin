@@ -1,0 +1,129 @@
+﻿@model string[]
+
+@{
+    ViewData["Title"] = "Payments";
+}
+
+<div class="container">
+    <div class="d-flex flex-wrap flex-stack mb-5">
+        <div class="d-flex flex-column flex-wrap align-items-start my-1">
+            <div class="d-flex my-0">
+                <div class="d-flex align-items-center position-relative my-0 me-5">
+                    <span class="svg-icon svg-icon-3 position-absolute ms-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                            <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                <rect x="0" y="0" width="24" height="24" />
+                                <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                                <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero" />
+                            </g>
+                        </svg>
+                    </span>
+                    <input type="search" id="tb_search" class="form-control form-control-white w-250px ps-9" placeholder="Search" />
+                </div>
+            </div>
+        </div>
+        <div class="d-flex flex-wrap my-1">
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <table id="tb_data" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list" data-url="@Model.First()">
+            <thead class="fs-7 text-gray-400 text-uppercase">
+                <tr class="fw-bold fs-6 text-gray-800">
+                    <th>Ref</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Gateway</th>
+                    <th>Date</th>
+                    <th></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="diag_details" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered mw-750px">
+        <div class="modal-content">
+            <div class="modal-header border-0 p-12" id="diag_activate_header">
+                <div>
+                    <div class="d-flex align-items-sm-center mb-5">
+                        <div class="symbol symbol-45px me-5">
+                            <span class="svg-icon svg-icon-success svg-icon-4hx">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                    <path opacity="0.3" d="M10.3 14.3L11 13.6L7.70002 10.3C7.30002 9.9 6.7 9.9 6.3 10.3C5.9 10.7 5.9 11.3 6.3 11.7L10.3 15.7C9.9 15.3 9.9 14.7 10.3 14.3Z" fill="black" />
+                                    <path d="M22 12C22 17.5 17.5 22 12 22C6.5 22 2 17.5 2 12C2 6.5 6.5 2 12 2C17.5 2 22 6.5 22 12ZM11.7 15.7L17.7 9.70001C18.1 9.30001 18.1 8.69999 17.7 8.29999C17.3 7.89999 16.7 7.89999 16.3 8.29999L11 13.6L7.70001 10.3C7.30001 9.89999 6.69999 9.89999 6.29999 10.3C5.89999 10.7 5.89999 11.3 6.29999 11.7L10.3 15.7C10.5 15.9 10.8 16 11 16C11.2 16 11.5 15.9 11.7 15.7Z" fill="black" />
+                                </svg>
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center flex-row-fluid flex-wrap">
+                            <div class="flex-grow-1 me-2">
+                                <h2 class="fw-bolder mb-1">Payment Details</h2>
+                                <span class="text-gray-800 fw-bolder d-block fs-5"><span id="pay_description">--</span></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="diag_activate_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
+                    <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
+                </div>
+            </div>
+            <div class="modal-body p-15 pt-0">
+                <div class="m-0">
+                    <div class="fw-bolder fs-3 text-gray-800 mb-8">Tranx Ref #<span id="pay_id">--</span></div>
+                    <div class="row g-5 mb-11">
+                        <div class="col-sm-6">
+                            <div class="fw-bold fs-7 text-gray-600 mb-0">Amount Paid:</div>
+                            <div class="d-flex align-items-center">
+                                <span class="fs-2hx fw-bolder text-dark me-2 lh-1">₦<span id="pay_amount">--</span></span>
+                                <span id="pay_status" class="badge fs-6 lh-1 py-1 px-2 d-flex flex-center" style="height: 22px">
+                                    --
+                                </span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="fw-bold fs-7 text-gray-600 mb-1">Payment Date:</div>
+                            <div class="fw-bolder fs-6 text-gray-800 d-flex align-items-center flex-wrap">
+                                <span id="pay_date" class="pe-2">--</span>
+                                <span class="fs-7 text-info d-flex align-items-center">
+                                    <span class="bullet bullet-dot bg-info me-2"></span>
+                                    <span id="pay_timeago">--</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-5 mb-12">
+                        <div class="col-sm-6">
+                            <div class="fw-bold fs-7 text-gray-600 mb-1">Payment from:</div>
+                            <div id="pay_name" class="fw-bolder fs-6 text-gray-800">--</div>
+                            <div class="fw-bold fs-7 text-gray-600">
+                                <span id="pay_email">--</span>
+                                <br><span id="pay_phone">--</span>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="fw-bold fs-7 text-gray-600 mb-1">Paid Through:</div>
+                            <div id="pay_paidto" class="fw-bolder fs-6 text-gray-800">--</div>
+                            <div id="pay_payref" class="fw-bold fs-7 text-gray-600">
+                                --
+                            </div>
+                        </div>
+                    </div>
+                    <button type="button" id="a_confirm" data-url="@Model[1]" class="btn btn-sm btn-primary mb-5">
+                        <span class="indicator-label">Confirm Payment</span>
+                        <span class="indicator-progress">Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    </button>
+                    <button type="button" id="a_cancel" data-url="@Model[2]" class="btn btn-sm btn-danger mb-5 ms-1">
+                        <span class="indicator-label">Cancel Payment</span>
+                        <span class="indicator-progress">Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts {
+<script src="~/pages/payments.js" asp-append-version="true"></script>
+}

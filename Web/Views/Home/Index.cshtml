@@ -1,0 +1,397 @@
+﻿@model HomePage
+
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+@functions {
+    private string ExtractYouTubeId(string url)
+    {
+        if (string.IsNullOrWhiteSpace(url)) return null;
+
+        try
+        {
+            var uri = new Uri(url);
+            var host = uri.Host.ToLowerInvariant();
+
+            if (uri.Query?.Contains("v=") == true)
+            {
+                var query = uri.Query.TrimStart('?').Split('&', StringSplitOptions.RemoveEmptyEntries);
+                foreach (var part in query)
+                {
+                    var kv = part.Split('=', 2);
+                    if (kv.Length == 2 && kv[0].Equals("v", StringComparison.OrdinalIgnoreCase))
+                        return kv[1];
+                }
+            }
+
+            if (host.Contains("youtu.be") || host.Contains("youtube.com"))
+            {
+                var segments = uri.AbsolutePath.Trim('/').Split('/', StringSplitOptions.RemoveEmptyEntries);
+                if (segments.Length > 0)
+                {
+                    if (segments[0].Equals("live", StringComparison.OrdinalIgnoreCase) && segments.Length > 1)
+                        return segments[1];
+
+                    return segments[^1];
+                }
+            }
+        }
+        catch
+        {
+            // ignore parsing issues and fall back to provided banner
+        }
+
+        return null;
+    }
+
+    private string ResolveBanner(FirstReg.Web.Video item)
+    {
+        if (!string.IsNullOrWhiteSpace(item.Banner) && item.Banner.StartsWith("http", StringComparison.OrdinalIgnoreCase))
+            return item.Banner;
+
+        var ytId = ExtractYouTubeId(item.Url);
+        if (!string.IsNullOrEmpty(ytId))
+            return $"https://img.youtube.com/vi/{ytId}/hqdefault.jpg";
+
+        if (!string.IsNullOrWhiteSpace(item.Banner))
+            return $"/img/media/{item.Banner}";
+
+        return "/img/media/default-media.jpg";
+    }
+}
+
+<!-- ======= Hero Slider ======= -->
+<div id="home_slider" class="carousel slide" data-bs-ride="carousel" data-bs-interval="5000" data-bs-pause="false">
+
+    <div class="carousel-inner">
+        <!-- Slide 1 -->
+        <div class="carousel-item active">
+            <section class="hero-section h-slide ptb-120 d-flex align-items-center bg-dark text-white position-relative overflow-hidden"
+                     style="background: url('/img/web-banner.jpg') no-repeat center center; background-size: cover;">
+                <div class="container ptb-60">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="px-5 col-12 col-sm-10 col-lg-6">
+                            <div class="hero-content-wrap">
+                                <h5 class="text-warning">Season's Greetings</h5>
+                                <h2 class="fw-bold">Wishing you joy, peace, and prosperity</h2>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Slide 2 -->
+        <div class="carousel-item">
+            <section class="hero-section h-slide ptb-120 d-flex align-items-center bg-dark text-white position-relative overflow-hidden"
+                     style="background: url('/img/slide-2.jpg') no-repeat top right; background-size: cover;">
+                <div class="container ptb-60">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="px-5 col-12 col-sm-10 col-lg-6">
+                            <div class="hero-content-wrap">
+                                <h5 class="text-warning">The Leading Registrar</h5>
+                                <h2 class="fw-bold">The Best Share Registration & Data Management Service</h2>
+                                <p class="lead">
+                                    We create excellent customer experience through innovation and superior service delivery that connects people to their wealth.
+                                </p>
+                                <div class="action-btns mt-5">
+                                    <a href="/about" class="btn btn-info me-3">About Us</a>
+                                    @* <a href="/service" class="btn btn-outline-light">Our Services</a> *@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Slide 3 -->
+        <div class="carousel-item">
+            <section class="hero-section h-slide ptb-120 d-flex align-items-center bg-dark text-white position-relative overflow-hidden"
+                     style="background: url('/img/slide-1.jpg') no-repeat top center; background-size: cover;">
+                <div class="container ptb-60">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="px-5 col-12 col-sm-10 col-lg-6">
+                            <div class="hero-content-wrap">
+                                <h5 class="text-warning">Online Access</h5>
+                                <h2 class="fw-bold">Take control of your share accounts with just a click.</h2>
+                                <p class="lead">
+                                    An internet window that allows shareholders online access to their share accounts with First Registrars.
+                                </p>
+                                <div class="action-btns mt-5">
+                                    <a href="/access" target="_blank" class="btn btn-primary me-3 mb-0">Login Now</a>
+                                    <a href="/e-products/online-access" class="btn btn-outline-light">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Slide 4 -->
+        <div class="carousel-item">
+            <section class="hero-section h-slide ptb-120 d-flex align-items-center bg-dark text-white position-relative overflow-hidden"
+                     style="background: url('/img/slide-3.jpg') no-repeat top right; background-size: cover;">
+                <div class="container ptb-60">
+                    <div class="row justify-content-between align-items-center">
+                        <div class="px-5 col-12 col-sm-10 col-lg-6">
+                            <div class="hero-content-wrap">
+                                <h5 class="text-warning">e-Share Notifier</h5>
+                                <h2 class="fw-bold">Never miss vital information about your investment</h2>
+                                <p class="lead">
+                                    Receive SMS alerts right on your mobile phones on information, transactions and updates.
+                                </p>
+                                <div class="action-btns mt-5">
+                                    <a href="/e-products/e-share-notifier" class="btn btn-outline-light">Learn More</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <button class="carousel-control-prev" type="button" data-bs-target="#home_slider" data-bs-slide="prev">
+        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Previous</span>
+    </button>
+    <button class="carousel-control-next" type="button" data-bs-target="#home_slider" data-bs-slide="next">
+        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+        <span class="visually-hidden">Next</span>
+    </button>
+</div>
+
+<!-- ======= Core Services ======= -->
+<section class="promo-section ptb-60">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-10">
+                <div class="section-heading text-center">
+                    <h2>Our Core Services</h2>
+                    <p>Outstanding quality service offerings that extend world-class excellence to your esteemed customers.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Registrar Services -->
+            <div class="col-lg-4 col-md-6">
+                <div class="promo-single position-relative text-center bg-white custom-shadow rounded-custom p-5 mb-4 d-flex flex-column h-100">
+                    <div class="promo-icon mb-32">
+                        <i class="fas fa-wifi text-primary fa-3x"></i>
+                    </div>
+                    <div class="promo-info">
+                        <h3 class="h5">Registrar Services</h3>
+                        <p class="mb-0">Management of Client Companies Register of Shareholders, Payment of Dividends, Share Transfers...</p>
+                    </div>
+                    <a href="/services/register-management" class="btn btn-primary d-block mt-5">Learn More</a>
+                </div>
+            </div>
+
+            <!-- KYC Services -->
+            <div class="col-lg-4 col-md-6">
+                <div class="promo-single position-relative text-center bg-white custom-shadow rounded-custom p-5 mb-4 d-flex flex-column h-100">
+                    <div class="promo-icon mb-32">
+                        <i class="fas fa-user-friends text-success fa-3x"></i>
+                    </div>
+                    <div class="promo-info">
+                        <h3 class="h5">KYC/Address Verification</h3>
+                        <p class="mb-0">
+                            We undertake the process of Address, Documents and Identity Verification on behalf of all our clients.
+                        </p>
+                    </div>
+                    <a href="/services/kyc-verification" class="btn btn-primary d-block mt-5">Learn More</a>
+                </div>
+            </div>
+
+            <!-- e-Voting -->
+            <div class="col-lg-4 col-md-6">
+                <div class="promo-single position-relative text-center bg-white custom-shadow rounded-custom p-5 mb-4 d-flex flex-column h-100">
+                    <div class="promo-icon mb-32">
+                        <i class="fas fa-bezier-curve text-danger fa-3x"></i>
+                    </div>
+                    <div class="promo-info">
+                        <h3 class="h5">Electronic Voting</h3>
+                        <p class="mb-0">We offer bespoke electronic Voting Technology for Voting process, Votes Collation and Reporting at AGM's.</p>
+                    </div>
+                    <a href="/services/electronic-voting" class="btn btn-primary d-block mt-5">Learn More</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<partial name="_DeapAgm244" />
+
+<!-- ======= Clients Section ======= -->
+<section class="cutomer-review-app-two ptb-60">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-7 col-12">
+                <div class="mb-4 mb-sm-5">
+                    <h4>Trusted by More than 70+ Companies.</h4>
+                    <p class="m-0">
+                        Our client base proudly consists of established conglomerates, investment management companies,
+                        and SMEs that desire cutting-edge, customer-centric services that sustain their brands.
+                    </p>
+                </div>
+            </div>
+            <div class="col-lg-5 col-12 text-end d-none d-lg-block">
+                <div class="appTwoReviewSwiper-Controller ms-md-auto position-relative">
+                    <span class="swiper-button-next"></span>
+                    <span class="swiper-button-prev"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="swiper-container appTwoReviewSwiper">
+                    <div class="swiper-wrapper">
+                        @foreach (var client in Model.Clients)
+                        {
+                            <div class="swiper-slide">
+                                <div class="p-3 bg-white rounded">
+                                    <img src="/img/clients/@client.Logo" alt="@client.Name" class="img-fluid rounded-custom" />
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ======= Blog Section ======= -->
+@if (Model.RecentPosts.Any())
+{
+    <section class="home-blog-section ptb-60 bg-light">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-6 col-md-12">
+                    <div class="section-heading text-center">
+                        <h4 class="h3">Latest News / Update</h4>
+                        <p>Get up-to-date with the latest information from our content team.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                @foreach (var post in Model.RecentPosts)
+                {
+                    <div class="col-lg-4 col-md-6">
+                        <div class="single-article rounded-custom mb-4 mb-lg-0">
+                            <a href="/post/@post.Code" class="article-img">
+                                <img src="@FirstReg.Tools.GetBlobFilePath(FirstReg.blobfolder.posts, post.Thumb)" alt="article" class="img-fluid" />
+                            </a>
+                            <div class="article-content p-4">
+                                <div class="article-category mb-4 d-block">
+                                    <a href="/blog/@post.Category.Code" class="badge bg-warning-soft text-dark">@post.Category.Description</a>
+                                </div>
+                                <a href="/post/@post.Code">
+                                    <h2 class="h5 article-title limit-2-line-text">@post.Title</h2>
+                                </a>
+                                <p class="limit-2-line-text">@post.Brief</p>
+
+                                <div class="d-flex align-items-center pt-4">
+                                    <div class="avatar">
+                                        <img src="/img/a.png" alt="avatar" width="40" class="img-fluid rounded-circle me-3" />
+                                    </div>
+                                    <div class="avatar-info">
+                                        <h6 class="mb-0 avatar-name">@post.Author.Name</h6>
+                                        <span class="small fw-medium text-muted">@post.Date.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="row justify-content-center mt-5">
+                <div class="text-center">
+                    <a href="/blog" class="btn btn-primary">View All Articles</a>
+                </div>
+            </div>
+        </div>
+    </section>
+}
+
+<!-- ======= Media Section ======= -->
+<section class="video-promo-with-icon ptb-60">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6 col-md-10">
+                <div class="section-heading text-center">
+                    <h4>Latest from our Media Gallery</h4>
+                    <p>Information is key. Learn more about your shares and dividends.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            @foreach (var item in Tools.GetMedia().Take(4))
+            {
+                var banner = ResolveBanner(item);
+                <div class="col-sm-6 col-md-3 mb-5">
+                    <div class="video-bg-with-icon"
+                         style="background: url('@banner') no-repeat center center; background-size: cover;">
+                        <a href="@item.Url" class="popup-youtube"><i class="fas fa-play"></i></a>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+
+<!-- ======= Post-Media Text ======= -->
+<div class="container py-3">
+    
+</div>
+
+<!-- ======= Scrolling Registration Notice ======= -->
+<div class="disclaimer-ticker">
+    <p>
+        FIRST REGISTRARS & INVESTOR SERVICES LIMITED IS DULY REGISTERED AND REGULATED BY THE SECURITIES & EXCHANGE COMMISSION, NIGERIA.
+    </p>
+</div>
+
+<style>
+    .disclaimer-ticker {
+        width: 100%;
+        overflow: hidden;
+        background: #002244; /* Deep corporate blue */
+        padding: 12px 0;
+        border-top: 3px solid #ffc107; /* Gold accent */
+        position: relative;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .disclaimer-ticker p {
+        display: inline-block;
+        white-space: nowrap;
+        font-size: 15px;
+        color: #fff;
+        font-weight: 500;
+        letter-spacing: 1px;
+        animation: scrollText 25s linear infinite;
+        margin: 0;
+    }
+
+    @@keyframes scrollText {
+        0% {
+            transform: translateX(100%);
+        }
+        100% {
+            transform: translateX(-100%);
+        }
+    }
+
+    .disclaimer-ticker:hover p {
+        animation-play-state: paused;
+    }
+</style>

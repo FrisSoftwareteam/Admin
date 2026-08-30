@@ -1,0 +1,66 @@
+﻿@model IEnumerable<FaqSection>
+
+@{
+    int index = 0;
+    ViewBag.Title = "Frequently Asked Questions";
+}
+
+<section class="page-header position-relative overflow-hidden ptb-120 bg-dark" style="background: url('assets/img/page-header-bg.svg')no-repeat bottom left">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-12">
+                <div class="text-center">
+                    <h1 class="display-5 fw-bold">@ViewBag.Title</h1>
+                    <p class="lead">
+                        We have compiled a list of questions to allow you easily access 
+                        support without the stress of having to contact a member of our 
+                        team. Click on any question to reveal the answer.
+                    </p>
+                </div>
+            </div>
+        </div>
+        <div class="bg-circle rounded-circle circle-shape-3 position-absolute bg-dark-light right-5"></div>
+    </div>
+</section>
+
+@foreach (var item in Model)
+{
+
+    { index++; }
+
+    <section class="app-two-feature-three bg-light border-bottom ptb-60">
+        <div class="container">
+            <div class="row align-items-center justify-content-lg-between">
+                <div class="col-lg-5 col-sm-12">
+                    <div class="app-content-feature-wrap">
+                        <h2>@item.Description</h2>
+                    </div>
+                </div>
+                <div class="col-lg-7 col-sm-12">
+                    <div class="app-two-feature-three-left">
+                        <div class="accordion faq-accordion" id="section-@item.Id">
+
+                            @foreach (var faq in item.Faqs)
+                            {
+                                <div class="accordion-item border-0">
+                                    <h5 class="accordion-header" id="faq-@faq.Id">
+                                        <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@faq.Id" aria-expanded="true">
+                                            <i class="far fa-bell pe-3"></i> @faq.Question?
+                                        </button>
+                                    </h5>
+                                    <div id="collapse-@faq.Id" class="accordioncollapse collapse" aria-labelledby="faq-@faq.Id" data-bs-parent="#section-@item.Id" style="">
+                                        <div class="accordion-body">
+                                            @Html.Raw(faq.Html)
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+}

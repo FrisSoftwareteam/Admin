@@ -1,0 +1,83 @@
+﻿@model StockBrokerDashboardModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex flex-wrap flex-stack my-5">
+    <h2 class="fw-bolder my-2">
+        E-cert Requests
+    </h2>
+    @*<div class="d-flex my-2">
+        <div class="d-flex align-items-center position-relative me-4">
+            <span class="svg-icon svg-icon-3 position-absolute ms-3 mt-n1">
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                        <rect x="0" y="0" width="24" height="24"></rect>
+                        <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3"></path>
+                        <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero"></path>
+                    </g>
+                </svg>
+            </span>
+            <input type="text" id="kt_filter_search" class="form-control form-control-sm form-control-solid bg-body fw-bold fs-7 w-150px ps-9" placeholder="Search">
+        </div>
+        <a href="#" class="btn btn-primary btn-sm fw-bolder">File Manager</a>
+    </div>*@
+</div>
+
+<div class="row g-6 g-xl-9 mb-6 mb-xl-9">
+
+    <div class="col-sm-8 col-md-6 col-lg-6 col-xl-6 col-xxl-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <a href="#" class="text-gray-800 text-hover-primary d-flex flex-column">
+                    <div class="fs-5 fw-bolder mb-2"></div>
+                </a>
+                <a href="#" class="card-title fw-bolder text-primary fs-3 mb-3 d-block">Summary</a>
+                <div class="py-1">
+                    <span class="text-dark fs-1 fw-bolder me-2">@Model.PercentComplete.ToString("N0")%</span>
+                    <span class="fw-bold text-muted fs-7">@Model.Completed.ToString("N0") completed out of @Model.Total.ToString("N0") requests</span>
+                </div>
+                <div class="progress h-7px bg-primary bg-opacity-50 mt-7">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: @Model.PercentComplete%" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @foreach (var itm in Model.Requests)
+    {
+
+        <div class="col-6 col-sm-4 col-md-3 col-lg-3 col-xl-3 col-xxl-2">
+            <div class="card h-100">
+
+                <div class="card-header ribbon ribbon-top mh-10px h-10px border-0" style="min-height: 0px;">
+                    <div class="ribbon-label bg-@itm.Color">@itm.Status</div>
+                </div>
+
+                <div class="card-body d-flex justify-content-center text-center flex-column p-8">
+                    <a asp-action="ViewCertRequest" asp-route-code="@itm.Code" class="text-gray-800 text-hover-primary d-flex flex-column">
+                        <div class="symbol symbol-60px mb-5">
+                            <img src="~/assets/media/svg/files/xml.svg" alt="">
+                        </div>
+                        <div class="fs-5 fw-bolder mb-2">@itm.Description</div>
+                    </a>
+                    <div class="fs-7 fw-bold text-gray-400">@Clear.Tools.StringUtility.TimeSince(itm.Date)</div>
+                </div>
+            </div>
+        </div>
+
+    }
+
+    <div class="col-md-6 col-lg-4 col-xl-3 col-xxl-2">
+        <div class="card h-100 flex-center bg-light-primary border-primary border border-dashed p-8">
+            <img src="assets/media/svg/files/upload.svg" class="mb-4" alt="Upload"/>
+            <a href="javascript:;" class="text-hover-primary fs-5 fw-bolder mb-2"
+                data-bs-toggle="modal" data-bs-target="#new_cert_modal">Create New</a>
+            <div class="fs-7 fw-bold text-gray-400">Click here to start a new request</div>
+        </div>
+    </div>
+
+</div>
+
+<partial name="_AddCertRequestModal" model="new ECertRequest()" />

@@ -1,0 +1,179 @@
+﻿@model DataUpdateModel
+
+@{
+    ViewData["Title"] = "Profile";
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">Dividend Card Form</h1>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>Review the details of your profile, use the form to make changes as need.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    <a asp-controller="Shareholder" asp-action="Index" class="btn btn-info">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-header">
+        <div class="card-title">
+            <h3>Dividend Card</h3>
+        </div>
+        <div class="card-toolbar">
+        </div>
+    </div>
+    <div class="card-body py-10">
+        <form class="form form-loader" asp-action="UpdateProfile">
+            <div class="card-body">  
+                <input type="hidden" asp-for="Id" />
+                <div class="row justify-content-center py-5">
+                    <div class="col-lg-9 col-md-10">
+
+                        <h3 class="pb-5 mt-0 mb-9 border-bottom">Basic Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="LastName">Surname:</label>
+                                <input type="text" asp-for="LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter surname" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="OtherName">Other names:</label>
+                                <input asp-for="OtherName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">New Address</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NewAddress.Address">Address:</label>
+                                <input asp-for="NewAddress.Address" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NewAddress.City">City:</label>
+                                <input asp-for="NewAddress.City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NewAddress.State">State:</label>
+                                <input asp-for="NewAddress.State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NewAddress.Country">Country:</label>
+                                <input asp-for="NewAddress.Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Previous Address</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.Address">Address:</label>
+                                <input asp-for="PreviousAddress.Address" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.City">City:</label>
+                                <input asp-for="PreviousAddress.City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.State">State:</label>
+                                <input asp-for="PreviousAddress.State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.Country">Country:</label>
+                                <input asp-for="PreviousAddress.Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Contact Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="Phone">Phone Number:</label>
+                                <input asp-for="Phone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="Mobile">Mobile Number:</label>
+                                <input asp-for="Mobile" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="Email">Email address:</label>
+                                <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" readonly required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Other Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="ClearingNo">Clearing No:</label>
+                                <input asp-for="ClearingNo" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. CH3874234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NIN">Primary phone:</label>
+                                <input asp-for="NIN" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="TIN">Secondary phone:</label>
+                                <input asp-for="TIN" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="Nationality">Secondary phone:</label>
+                                <input asp-for="Nationality" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="StateOfOrigin">Secondary phone:</label>
+                                <input asp-for="StateOfOrigin" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="DateOfBirth">Secondary phone:</label>
+                                <input asp-for="DateOfBirth" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Next of kin</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NextOfKin">Clearing No:</label>
+                                <input asp-for="NextOfKin" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. CH3874234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NextOfKinPhone">Primary phone:</label>
+                                <input asp-for="NextOfKinPhone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">
+                                            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
+                                </div>
+                                <div class="col-lg-6 text-lg-end">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@*<partial name="_SignatureModal" />*@
+
+@section scripts  {
+    <script src="~/assets/plugins/signature/signature_pad.min.js"></script>
+    <script src="~/pages/data-update.js" asp-append-version="true"></script>
+}

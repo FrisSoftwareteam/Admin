@@ -1,0 +1,116 @@
+﻿@model SubscribeModel
+
+@{
+    ViewData["Title"] = "Subscribe";
+}
+
+<div class="container">
+    <div class="card shadow-none bg-transparent">
+        <div class="card-body p-0">
+            <div class="card-px text-center py-20 my-10 pt-0 mt-0">
+                <div class="text-center px-5 mb-10">
+                    <img src="assets/media/illustrations/presentation.png" alt="" class="mw-100 mh-300px">
+                </div>
+
+                <div class="text-center w-md-500px mx-auto">
+                    <h2 class="fs-2x fw-bolder mb-10">
+                        Subscribe Now!
+                    </h2>
+                    <p class="text-gray-700 fs-5 fw-bold mb-13">
+                        You do not have an active subscription. To subscribe now
+                        select the number of years you wish to subscribe for and
+                        click the <span class="fw-bold">Subscribe Now</span> button below.
+                    </p>
+                    <label class="d-block fs-3 mb-4">Select number of years</label>
+                    <div class="d-inline-block">
+                        <div class="position-relative w-md-300px" data-kt-dialer="true" data-kt-dialer-min="1" data-kt-dialer-max="100" data-kt-dialer-step="1" data-kt-dialer-suffix=" yrs" data-kt-dialer-decimals="0">
+                            <button type="button" class="btn btn-icon btn-active-color-gray-700 position-absolute translate-middle-y top-50 start-0" data-kt-dialer-control="decrease">
+                                <span class="svg-icon svg-icon-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path opacity="0.25" d="M6.54184 2.36899C4.34504 2.65912 2.65912 4.34504 2.36899 6.54184C2.16953 8.05208 2 9.94127 2 12C2 14.0587 2.16953 15.9479 2.36899 17.4582C2.65912 19.655 4.34504 21.3409 6.54184 21.631C8.05208 21.8305 9.94127 22 12 22C14.0587 22 15.9479 21.8305 17.4582 21.631C19.655 21.3409 21.3409 19.655 21.631 17.4582C21.8305 15.9479 22 14.0587 22 12C22 9.94127 21.8305 8.05208 21.631 6.54184C21.3409 4.34504 19.655 2.65912 17.4582 2.36899C15.9479 2.16953 14.0587 2 12 2C9.94127 2 8.05208 2.16953 6.54184 2.36899Z" fill="#12131A"></path>
+                                        <path d="M8 13C7.44772 13 7 12.5523 7 12C7 11.4477 7.44772 11 8 11H16C16.5523 11 17 11.4477 17 12C17 12.5523 16.5523 13 16 13H8Z" fill="#12131A"></path>
+                                    </svg>
+                                </span>
+                            </button>
+
+                            <input type="text" id="tx_years" class="form-control form-control-solid border-0 ps-12 text-center"
+                                   data-kt-dialer-control="input" placeholder="Amount" name="manageBudget" readonly="readonly" value="1">
+
+                            <button type="button" class="btn btn-icon btn-active-color-gray-700 position-absolute translate-middle-y top-50 end-0" data-kt-dialer-control="increase">
+                                <span class="svg-icon svg-icon-1">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none">
+                                        <path opacity="0.25" fill-rule="evenodd" clip-rule="evenodd" d="M6.54184 2.36899C4.34504 2.65912 2.65912 4.34504 2.36899 6.54184C2.16953 8.05208 2 9.94127 2 12C2 14.0587 2.16953 15.9479 2.36899 17.4582C2.65912 19.655 4.34504 21.3409 6.54184 21.631C8.05208 21.8305 9.94127 22 12 22C14.0587 22 15.9479 21.8305 17.4582 21.631C19.655 21.3409 21.3409 19.655 21.631 17.4582C21.8305 15.9479 22 14.0587 22 12C22 9.94127 21.8305 8.05208 21.631 6.54184C21.3409 4.34504 19.655 2.65912 17.4582 2.36899C15.9479 2.16953 14.0587 2 12 2C9.94127 2 8.05208 2.16953 6.54184 2.36899Z" fill="#12131A"></path>
+                                        <path fill-rule="evenodd" clip-rule="evenodd" d="M12 17C12.5523 17 13 16.5523 13 16V13H16C16.5523 13 17 12.5523 17 12C17 11.4477 16.5523 11 16 11H13V8C13 7.44772 12.5523 7 12 7C11.4477 7 11 7.44772 11 8V11H8C7.44772 11 7 11.4477 7 12C7 12.5523 7.44771 13 8 13H11V16C11 16.5523 11.4477 17 12 17Z" fill="#12131A"></path>
+                                    </svg>
+                                </span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="d-block mt-10">
+                        <button type="button" id="bt_subscribe" class="btn btn-primary er fs-6 px-8 py-4 disabled" onclick="payWithPaystack()">
+                            <span class="indicator-label">
+                                Subscribe Now
+                            </span>
+                            <span class="indicator-progress">
+                                Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                            </span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@*
+@section scripts {
+
+    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <script>
+        var cnt = 1;
+        var button = document.querySelector("#bt_subscribe");
+
+        function payWithPaystack() {
+
+            button.setAttribute("data-kt-indicator", "on");
+
+            cnt += 1;
+            var typ = @((int)PaymentItem.Subscription);
+            var amt = @Model.Amount.ToString("N2").Replace(",", "");
+            var ref = '@Model.Reference' + cnt;
+            var years = $('#tx_years').val().replace(' yrs', '');
+
+            var handler = PaystackPop.setup({
+              key: '@Model.PaymentSettings.PublicKey',
+              email: '@Model.User.Email',
+              ref: ref,
+              amount: amt * years * 100,
+              quantity: years,
+              metadata: {
+                 custom_fields: [
+                    {
+                        display_name: "Payment Item",
+                        variable_name: "@CustomField.pay_item.ToString()",
+                        value: typ
+                    },
+                    {
+                        display_name: "No of Years",
+                        variable_name: "@CustomField.years.ToString()",
+                        value: years
+                    }
+                 ]
+              },
+                callback: function (response) {
+                    window.location.href = `/subscribing/${response.reference}`;
+              },
+              onClose: function(){
+                  button.setAttribute("data-kt-indicator", "off");
+                  //alert('window closed');
+              }
+            });
+            handler.openIframe();
+          }
+    </script>
+
+}*@

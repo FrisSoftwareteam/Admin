@@ -1,0 +1,114 @@
+﻿@model FaqPageModel
+
+@{
+    ViewData["Title"] = Model.Id > 0 ? "Update Faq" : "Create Faq";
+}
+
+<div class="d-flex flex-column-fluid">
+    <!--begin::Container-->
+    <div class="container">
+        <!--begin::Card-->
+        <div class="card card-custom gutter-b example example-compact">
+            <div class="card-header">
+                <div class="card-title">
+                    <h3 class="card-label">
+                        @ViewBag.Title
+                    </h3>
+                </div>
+
+            </div>
+            <!--begin::Form-->
+            <form id="frm" class="form" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+            
+                <div class="card-body">
+                    <div class="my-5 mx-8">
+                        <h3 class="text-dark font-weight-bold mb-10">Post Details:</h3>
+                        <div class="form-group mb-6">
+                            <label>Question:</label>
+                            <input type="text" asp-for="Question" class="form-control form-control-solid" placeholder="Enter Question" required />
+                        </div>
+                        <div class="form-group row mb-6">
+                            <div class="col-lg-6">
+                                <label>Section:</label>
+                                <select asp-for="SectionId" class="form-control form-control-solid" asp-items="@Model.Sections" required></select>
+                            </div>
+                           
+                        </div>
+                     
+                        <div class="separator separator-dashed my-10"></div>
+                        <div class="my-5">
+                            <h3 class="text-dark font-weight-bold mb-10 text-center">Create Content Below:</h3>
+                            <input type="hidden" id="output" asp-for="Html" />
+                            <div class="form-group">
+                                <div id="editorjs"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer mt-5">
+                        <div class="row">
+                            <div class="col-lg-6">
+                                <button type="submit" id="save-button" class="btn btn-primary mr-2">Save</button>
+                                <button type="reset" class="btn btn-secondary">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <!--end::Form-->
+        </div>
+        <!--end::Card-->
+    </div>
+    <!--end::Container-->
+</div>
+<!--end::Entry-->
+
+@section scripts {
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/editorjs@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/header@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/simple-image@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/link@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/list@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/checklist@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/embed@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@@editorjs/quote@latest"></script>
+
+    <script>
+
+        const editor = new EditorJS({
+            tools: {
+                header: Header,
+                image: SimpleImage,
+                embed: Embed,
+                quote: Quote,
+                list: {
+                    class: List,
+                    inlineToolbar: true,
+                },
+                checklist: {
+                    class: Checklist,
+                    inlineToolbar: true,
+                },
+                linkTool: {
+                    class: LinkTool,
+                    config: {
+                        endpoint: '/fetch-url', // Your backend endpoint for url data fetching
+                    }
+                }
+            },
+            holderId: 'editorjs',
+            data: @Html.Raw(Model.Html ?? "{}"),
+        });
+
+        const saveButton = document.getElementById('save-button');
+        const output = document.getElementById('output');
+
+        saveButton.addEventListener('click', () => {
+            editor.save().then(savedData => {
+                output.value = JSON.stringify(savedData, null, 4);
+                //frm.submit();
+            })
+        });
+    </script>
+
+}

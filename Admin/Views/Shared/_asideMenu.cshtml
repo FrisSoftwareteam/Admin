@@ -1,0 +1,441 @@
+﻿@model User
+@inject Service _service
+
+@{
+    var today = DateTime.Now.Date;
+    var offers = (await _service.Data.Find<ShareOffer>(x => x.StartDate.Date <= today && x.EndDate.Date >= today)).Select(x => new { x.UniqueKey, x.Description });
+}
+
+<div class="aside-menu flex-column-fluid">
+    <div class="hover-scroll-overlay-y my-5 my-lg-5" id="kt_aside_menu_wrapper" data-kt-scroll="true" data-kt-scroll-activate="{default: false, lg: true}" data-kt-scroll-height="auto" data-kt-scroll-dependencies="#kt_aside_logo, #kt_aside_footer" data-kt-scroll-wrappers="#kt_aside_menu" data-kt-scroll-offset="0">
+        <div class="menu menu-column menu-title-gray-800 menu-state-title-primary menu-state-icon-primary menu-state-bullet-primary menu-arrow-gray-500" id="#kt_aside_menu" data-kt-menu="true">
+            <div class="menu-item">
+                <a class="menu-link active" asp-controller="Home" asp-action="Index"> <span class="menu-icon"> <span class="svg-icon svg-icon-2"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <path d="M3,16 L5,16 C5.55228475,16 6,15.5522847 6,15 C6,14.4477153 5.55228475,14 5,14 L3,14 L3,12 L5,12 C5.55228475,12 6,11.5522847 6,11 C6,10.4477153 5.55228475,10 5,10 L3,10 L3,8 L5,8 C5.55228475,8 6,7.55228475 6,7 C6,6.44771525 5.55228475,6 5,6 L3,6 L3,4 C3,3.44771525 3.44771525,3 4,3 L10,3 C10.5522847,3 11,3.44771525 11,4 L11,19 C11,19.5522847 10.5522847,20 10,20 L4,20 C3.44771525,20 3,19.5522847 3,19 L3,16 Z" fill="#000000" opacity="0.3" /> <path d="M16,3 L19,3 C20.1045695,3 21,3.8954305 21,5 L21,15.2485298 C21,15.7329761 20.8241635,16.200956 20.5051534,16.565539 L17.8762883,19.5699562 C17.6944473,19.7777745 17.378566,19.7988332 17.1707477,19.6169922 C17.1540423,19.602375 17.1383289,19.5866616 17.1237117,19.5699562 L14.4948466,16.565539 C14.1758365,16.200956 14,15.7329761 14,15.2485298 L14,5 C14,3.8954305 14.8954305,3 16,3 Z" fill="#000000" /> </svg> </span> </span> <span class="menu-title">Dashboard</span> </a>
+            </div>
+
+            <div class="menu-item">
+                <div class="menu-content pt-8 pb-2">
+                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Accounts</span>
+                </div>
+            </div>
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.Shareholders))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Shareholders</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="ShareHolders" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">View All</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="ShareHolders" asp-action="Pending"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Pending Accounts</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="ShareHolders" asp-action="Active"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Active Accounts</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="ShareHolders" asp-action="Expired"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Expired Accounts</span></a></div>
+                        @*<div class="menu-item"><a class="menu-link" asp-controller="ShareHoldings" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Holdings</span></a></div>*@
+                        @*<div class="menu-item"><a class="menu-link" asp-controller="ShareHolders" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Address Requests</span></a></div>*@
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.StockBrokers))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Stock Brokers</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="StockBrokers" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">View All</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="ECertRequests" asp-action="Pending"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Pending Requests</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="ECertRequests" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">All Requests</span></a></div>
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.Registers))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="Registers" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Registers</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.FRAdmin))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="FrAdmin" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">FR Admin</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.SysAdmin))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="SysAdmin" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Sys Admin</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.UserManager))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="Users" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">User Manager</span>
+                    </a>
+                </div>
+
+            }
+
+            <div class="menu-item">
+                <div class="menu-content pt-8 pb-0">
+                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Content</span>
+                </div>
+            </div>
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.Blog, Roles.Events))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Blog & Events</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="Posts" asp-action="Index" asp-route-type="@PostType.blog"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Blog Posts</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Posts" asp-action="Index" asp-route-type="@PostType.events"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Event Stories</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Posts" asp-action="Categories"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Categories</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Posts" asp-action="Authors"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Authors</span></a></div>
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.AnnualReports))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="AnnualReports" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Annual Reports</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.ShareOffers))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Share Offers</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="ShareOffers" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">All Offers</span></a></div>
+                        @foreach (var offer in offers)
+                        {
+                            <div class="menu-item"><a class="menu-link" asp-controller="ShareOffers" asp-action="Details" asp-route-code="@offer.UniqueKey"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">@offer.Description</span></a></div>
+                        }
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.FormResponses))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="FormResponses" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Form Responses</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.FAQs))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">FAQs</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="Faqs" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">FAQs</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Faqs" asp-action="Sections"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">FAQs Sections</span></a></div>
+                    </div>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.FileManager))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="Files" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">File Manager</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.SupportTickets))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="Tickets" asp-action="Index">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Support Tickets</span>
+                    </a>
+                </div>
+
+            }
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.AuditLogs))
+            {
+
+                <div class="menu-item">
+                    <a class="menu-link" asp-controller="Home" asp-action="AuditLogs">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Audit Logs</span>
+                    </a>
+                </div>
+
+            }
+
+            <div class="menu-item">
+                <div class="menu-content pt-8 pb-0">
+                    <span class="menu-section text-muted text-uppercase fs-8 ls-1">Transactions</span>
+                </div>
+            </div>
+
+            @if (Model.IsSuper() || Model.HasAccess(Roles.Payments))
+            {
+
+                <div data-kt-menu-trigger="click" class="menu-item menu-accordion">
+                    <span class="menu-link">
+                        <span class="menu-icon">
+                            <span class="svg-icon svg-icon-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                    <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                        <rect x="0" y="0" width="24" height="24" />
+                                        <rect fill="#000000" x="4" y="4" width="7" height="7" rx="1.5" />
+                                        <path d="M5.5,13 L9.5,13 C10.3284271,13 11,13.6715729 11,14.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,14.5 C4,13.6715729 4.67157288,13 5.5,13 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,9.5 C20,10.3284271 19.3284271,11 18.5,11 L14.5,11 C13.6715729,11 13,10.3284271 13,9.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z M14.5,13 L18.5,13 C19.3284271,13 20,13.6715729 20,14.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,14.5 C13,13.6715729 13.6715729,13 14.5,13 Z" fill="#000000" opacity="0.3" />
+                                    </g>
+                                </svg>
+                            </span>
+                        </span>
+                        <span class="menu-title">Payments</span>
+                        <span class="menu-arrow"></span>
+                    </span>
+                    <div class="menu-sub menu-sub-accordion menu-active-bg">
+                        <div class="menu-item"><a class="menu-link" asp-controller="Payments" asp-action="Pending"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">View Pending</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Payments" asp-action="Online"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Online Payments</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Payments" asp-action="Bank"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">Bank Payments</span></a></div>
+                        <div class="menu-item"><a class="menu-link" asp-controller="Payments" asp-action="Index"><span class="menu-bullet"><span class="bullet bullet-dot"></span></span><span class="menu-title">All Payments</span></a></div>
+                    </div>
+                </div>
+
+            }
+
+            <div class="menu-item">
+                <div class="menu-content">
+                    <div class="separator mx-1 my-4"></div>
+                </div>
+            </div>
+
+            <div class="menu-item">
+                <a class="menu-link" data-bs-toggle="modal" data-bs-target="#diag_update_profile">
+                    <span class="menu-icon">
+                        <span class="svg-icon svg-icon-2"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <rect x="0" y="0" width="24" height="24" /> <path d="M5.5,4 L9.5,4 C10.3284271,4 11,4.67157288 11,5.5 L11,6.5 C11,7.32842712 10.3284271,8 9.5,8 L5.5,8 C4.67157288,8 4,7.32842712 4,6.5 L4,5.5 C4,4.67157288 4.67157288,4 5.5,4 Z M14.5,16 L18.5,16 C19.3284271,16 20,16.6715729 20,17.5 L20,18.5 C20,19.3284271 19.3284271,20 18.5,20 L14.5,20 C13.6715729,20 13,19.3284271 13,18.5 L13,17.5 C13,16.6715729 13.6715729,16 14.5,16 Z" fill="#000000" /> <path d="M5.5,10 L9.5,10 C10.3284271,10 11,10.6715729 11,11.5 L11,18.5 C11,19.3284271 10.3284271,20 9.5,20 L5.5,20 C4.67157288,20 4,19.3284271 4,18.5 L4,11.5 C4,10.6715729 4.67157288,10 5.5,10 Z M14.5,4 L18.5,4 C19.3284271,4 20,4.67157288 20,5.5 L20,12.5 C20,13.3284271 19.3284271,14 18.5,14 L14.5,14 C13.6715729,14 13,13.3284271 13,12.5 L13,5.5 C13,4.67157288 13.6715729,4 14.5,4 Z" fill="#000000" opacity="0.3" /> </g> </svg> </span>
+                    </span>
+                    <span class="menu-title">Profile</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a class="menu-link" data-bs-toggle="modal" data-bs-target="#diag_update_profile">
+                    <span class="menu-icon">
+                        <span class="svg-icon svg-icon-2"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <rect x="0" y="0" width="24" height="24" /> <path d="M5,3 L6,3 C6.55228475,3 7,3.44771525 7,4 L7,20 C7,20.5522847 6.55228475,21 6,21 L5,21 C4.44771525,21 4,20.5522847 4,20 L4,4 C4,3.44771525 4.44771525,3 5,3 Z M10,3 L11,3 C11.5522847,3 12,3.44771525 12,4 L12,20 C12,20.5522847 11.5522847,21 11,21 L10,21 C9.44771525,21 9,20.5522847 9,20 L9,4 C9,3.44771525 9.44771525,3 10,3 Z" fill="#000000" /> <rect fill="#000000" opacity="0.3" transform="translate(17.825568, 11.945519) rotate(-19.000000) translate(-17.825568, -11.945519)" x="16.3255682" y="2.94551858" width="3" height="18" rx="1" /> </g> </svg> </span>
+                    </span>
+                    <span class="menu-title">Change Password</span>
+                </a>
+            </div>
+            <div class="menu-item">
+                <a class="menu-link" asp-controller="Auth" asp-action="Logout">
+                    <span class="menu-icon">
+                        <span class="svg-icon svg-icon-2"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd"> <polygon points="0 0 24 0 24 24 0 24" /> <path d="M5.85714286,2 L13.7364114,2 C14.0910962,2 14.4343066,2.12568431 14.7051108,2.35473959 L19.4686994,6.3839416 C19.8056532,6.66894833 20,7.08787823 20,7.52920201 L20,20.0833333 C20,21.8738751 19.9795521,22 18.1428571,22 L5.85714286,22 C4.02044787,22 4,21.8738751 4,20.0833333 L4,3.91666667 C4,2.12612489 4.02044787,2 5.85714286,2 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" /> <rect fill="#000000" x="6" y="11" width="9" height="2" rx="1" /> <rect fill="#000000" x="6" y="15" width="5" height="2" rx="1" /> </g> </svg> </span>
+                    </span>
+                    <span class="menu-title">Log out</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="aside-footer flex-column-auto" id="kt_aside_footer"></div>

@@ -1,0 +1,91 @@
+﻿@model FirstReg.Bson.RegSummary
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="d-flex flex-wrap flex-stack">
+    <div class="d-flex flex-column flex-wrap align-items-start my-1">
+        <h1 class="page-header-title">Dashboard</h1>
+    </div>
+    <div class="d-flex flex-wrap my-1">
+        <a id="bt_export_all" target="_blank" class="btn btn-dark btn-active-dark me-1" asp-action="DownloadAllShareholderLists">
+            <span>Download All</span>
+        </a>
+    </div>
+</div>
+
+<div class="my-5">
+    <div class="row gy-5 g-xl-10">
+
+        <div class="col-md-4 mb-xl-10">
+            <div class="card h-md-100" dir="ltr">
+                <div class="card-body d-flex flex-column flex-center">
+                    <div class="mb-2">
+                        <div class="pb-10 text-center">
+                            <img src="/access/img/compsec-dash.png" class="theme-light-show w-200px" alt="">
+                        </div>
+                    </div>
+                    <div class="text-center mb-1">
+                        <a class="btn btn-primary" asp-action="Shareholders">
+                            Start Search
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-5 mb-xl-10">
+
+            <div class="card overflow-hidden h-md-100 mb-5 mb-xl-10">
+                <div class="card-body d-flex justify-content-between flex-column">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-2hx fw-bold text-gray-800 me-2 lh-1 ls-n2">@Model.ShareholdersCount?.ToString("N0")</span>
+                        </div>
+                        <span class="fs-6 fw-semibold text-gray-600">Total Shareholders</span>
+                    </div>
+
+                    <div class="d-flex align-items-center flex-column mt-3 w-100">
+                        <div class="d-flex justify-content-between w-100 mt-auto mb-2">
+                            <span class="fw-bolder fs-6 text-dark">@Model.ShareholdersWithUnitCount?.ToString("N0") active shareholders</span>
+                            <span class="fw-bold fs-6 text-gray-600">@Model.GetShareholdersPercentage().ToString("N1")%</span>
+                        </div>
+
+                        <div class="h-8px mx-3 w-100 bg-light-primary rounded">
+                            <div class="bg-primary rounded h-8px" role="progressbar" style="width: @Model.GetShareholdersPercentage().ToString("N1")%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="col-md-4 mb-md-5 mb-xl-10">
+
+            <div class="card overflow-hidden h-md-100 mb-5 mb-xl-10">
+                <div class="card-body d-flex justify-content-between flex-column">
+                    <div class="mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="fs-2hx fw-bold text-gray-800 me-2 lh-1 ls-n2">@Model.TotalUnits?.ToString("N0")</span>
+                        </div>
+                        <span class="fs-6 fw-semibold text-gray-600">Share Capital</span>
+                    </div>
+@*
+                    <div class="d-flex align-items-center flex-column mt-3 w-100">
+                        <div class="d-flex justify-content-between w-100 mt-auto mb-2">
+                            <span class="fw-bolder fs-6 text-dark">@Model.AverageUnit?.ToString("N0") highest unit</span>
+                            <span class="fw-bold fs-6 text-gray-600">@Model.GetUnitsPercentage().ToString("N1")%</span>
+                        </div>
+
+                        <div class="h-8px mx-3 w-100 bg-light-primary rounded">
+                            <div class="bg-primary rounded h-8px" role="progressbar" style="width: @Model.GetUnitsPercentage().ToString("N1")%;" aria-valuenow="50" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>*@
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,201 @@
+﻿@model DataUpdateModel
+@inject FirstReg.Service _service
+
+@{
+    ViewData["Title"] = "Data Update Form";
+    var regs = await _service.Data.Get<Register>();
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">@ViewData["Title"]</h1>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>Review the details of your profile, use the form to make changes as need.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    <a href="@Tools.FormsPageLink" class="btn btn-info">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-body py-10">
+        <form id="frm_with_sign_pad" class="form form-loader" method="post" enctype="multipart/form-data">
+            <div class="card-body">  
+                <input type="hidden" asp-for="Id" />
+                <div class="row justify-content-center py-5">
+                    <div class="col-lg-9 col-md-10">
+
+                        <h3 class="pb-5 mt-0 mb-9 border-bottom">Basic Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="LastName">Surname:</label>
+                                <input type="text" asp-for="LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter surname" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="OtherName">Other names:</label>
+                                <input asp-for="OtherName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Gender">Gender:</label>
+                                <select asp-for="Gender" class="form-select form-control-solid h-auto py-4 px-7" aria-label="Select Gender" required>
+                                    <option></option>
+                                    <option value="@Gender.Male">Male</option>
+                                    <option value="@Gender.Female">Female</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="AgeRange">Age range:</label>
+                                <select asp-for="AgeRange" class="form-select form-control-solid h-auto py-4 px-7" aria-label="Select Age" required>
+                                    <option></option>
+                                    <option value="@AgeRange.Age18To30">18 - 30</option>
+                                    <option value="@AgeRange.Age31To45">31 - 45</option>
+                                    <option value="@AgeRange.Age46To60">46 - 60</option>
+                                    <option value="@AgeRange.Above60">Above 60</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">New Address</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NewAddress.Address">Address:</label>
+                                <input asp-for="NewAddress.Address" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NewAddress.City">City:</label>
+                                <input asp-for="NewAddress.City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Ikeja" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NewAddress.State">State:</label>
+                                <input asp-for="NewAddress.State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Lagos" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NewAddress.Country">Country:</label>
+                                <input asp-for="NewAddress.Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Nigeria" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Any Previous Address?</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.Address">Address:</label>
+                                <input asp-for="PreviousAddress.Address" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.City">City:</label>
+                                <input asp-for="PreviousAddress.City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Ikeja" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.State">State:</label>
+                                <input asp-for="PreviousAddress.State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Lagos" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="PreviousAddress.Country">Country:</label>
+                                <input asp-for="PreviousAddress.Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Nigeria" />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Contact Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Phone">Primary Number:</label>
+                                <input asp-for="Phone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="Mobile">Secondary Number:</label>
+                                <input asp-for="Mobile" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" />
+                            </div>
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Email">Email address:</label>
+                                <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Other Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="ClearingNo">Clearing No:</label>
+                                <input asp-for="ClearingNo" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. CH87654321" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="NIN">National Identification Number (NIN):</label>
+                                <input asp-for="NIN" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 00000000" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="TIN">Tax Identification Number (TIN):</label>
+                                <input asp-for="TIN" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 0000000" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Nationality">Nationality:</label>
+                                <input asp-for="Nationality" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Nigerian" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="StateOfOrigin">State of Origin:</label>
+                                <input asp-for="StateOfOrigin" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Oyo" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="DateOfBirth">Date of Birth:</label>
+                                <input asp-for="DateOfBirth" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. DD/MMM/YYYY" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Next of kin</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NextOfKin">Full Name:</label>
+                                <input asp-for="NextOfKin" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. John Bull" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NextOfKinPhone">Phone Number:</label>
+                                <input asp-for="NextOfKinPhone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Certificates</h3>
+                        <div class="mb-10">
+                            <partial name="_HoldingsForm" model="regs" />
+                        </div>
+
+                        <partial name="_FormsSignatureBox" />
+
+                        <div class="separator my-10"></div>
+
+                        <div class="mt-10">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">
+                                            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <a href="@Tools.FormsPageLink" class="btn btn-secondary">Cancel</a>
+                                </div>
+                                <div class="col-lg-6 text-lg-end">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts  {
+    <script src="~/assets/plugins/custom/formrepeater/formrepeater.bundle.js"></script>
+    <script src="~/assets/plugins/signature/signature_pad.min.js"></script>
+    <script src="~/pages/forms-signature-pad.js" asp-append-version="true"></script>
+    <script src="~/pages/data-update.js" asp-append-version="true"></script>
+}

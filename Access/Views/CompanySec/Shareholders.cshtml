@@ -1,0 +1,131 @@
+﻿@model RegisterSHSumm
+
+@{
+    ViewData["Title"] = "Shareholders";
+}
+
+<div id="v_list" class="v-block">
+    <div class="d-flex flex-wrap flex-stack">
+        <div class="d-flex flex-column flex-wrap align-items-start my-1">
+            <h1 class="page-header-title">Shareholders</h1>
+            <div>Only 10,000 items are displayed per time, but you can export all items using the <span class="fw-bolder">Export All</span> button, even when they are not listed.</div>
+        </div>
+        <div class="d-flex flex-wrap my-1">
+            <a id="bt_export_all" target="_blank" class="btn btn-dark btn-active-dark me-1" asp-action="DownloadAllShareholderLists">
+                <span>Export All</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="my-5 p-10 bg-light rounded">
+        <label class="h4 mb-5">Server Filter</label>
+
+        <div class="d-none">
+            <div id="kt_slider_basic"></div>
+
+            <input type="hidden" value="@Math.Floor(Model.MinUnits)" id="hd_min" />
+            <input type="hidden" value="@Math.Ceiling(Model.MaxUnits)" id="hd_max" />
+
+            <div class="pt-5 d-flex justify-content-between">
+                <div class="fw-bold mb-2">Min: <span id="kt_slider_basic_min"></span></div>
+                <div class="fw-bold mb-2">Max: <span id="kt_slider_basic_max"></span></div>
+            </div>
+            <hr />
+        </div>
+
+        <form method="get">
+            <div class="form-group">
+                <div class="form-group row">
+                    <div class="col row">
+                        <div class="col-md-6 mb-5">
+                            <label class="form-label">Name:</label>
+                            <div class="d-flex align-items-center position-relative my-0 ms-0">
+                                <span class="svg-icon svg-icon-3 position-absolute ms-3">
+                                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                                            <rect x="0" y="0" width="24" height="24" />
+                                            <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                                            <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero" />
+                                        </g>
+                                    </svg>
+                                </span>
+                                <input type="search" class="form-control form-control-white ps-9" name="s" value="@Model.S" placeholder="Search with anything..." />
+                            </div>
+                            @*<input type="email" class="form-control mb-2 mb-md-0" placeholder="Enter full name" />*@
+                        </div>
+                        <div class="col-md-3 mb-5">
+                            <label class="form-label">From:</label>
+                            <input type="number" class="form-control mb-2 mb-md-0" name="min" value="@Model.Min" />
+                        </div>
+                        <div class="col-md-3 mb-5">
+                            <label class="form-label">To:</label>
+                            <input type="number" class="form-control mb-2 mb-md-0" name="max" value="@Model.Max" />
+                        </div>
+                        <div class="col-md-3 mb-5">
+                            <label class="form-label">From:</label>
+                            <input type="date" class="form-control mb-2 mb-md-0" name="mindate" value="@Model.MinDate?.ToString("yyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-3 mb-5">
+                            <label class="form-label">To:</label>
+                            <input type="date" class="form-control mb-2 mb-md-0" name="maxdate" value="@Model.MaxDate?.ToString("yyy-MM-dd")" />
+                        </div>
+                        <div class="col-md-6 mb-5 text-end">
+                            <button type="submit" href="javascript:;" class="bt-submit btn btn-primary mt-3 mt-md-8">
+                                <i class="la la-search"></i>
+                                <span class="indicator-label">Search</span> <span class="indicator-progress">Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span></span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+
+    </div>
+
+    <div class="d-flex flex-wrap flex-stack my-10">
+        <div class="d-flex flex-column flex-wrap align-items-start my-1">
+            <div class="d-flex align-items-center position-relative my-0">
+                <span class="svg-icon svg-icon-3 position-absolute ms-3">
+                    <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1">
+                        <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+                            <rect x="0" y="0" width="24" height="24" />
+                            <path d="M14.2928932,16.7071068 C13.9023689,16.3165825 13.9023689,15.6834175 14.2928932,15.2928932 C14.6834175,14.9023689 15.3165825,14.9023689 15.7071068,15.2928932 L19.7071068,19.2928932 C20.0976311,19.6834175 20.0976311,20.3165825 19.7071068,20.7071068 C19.3165825,21.0976311 18.6834175,21.0976311 18.2928932,20.7071068 L14.2928932,16.7071068 Z" fill="#000000" fill-rule="nonzero" opacity="0.3" />
+                            <path d="M11,16 C13.7614237,16 16,13.7614237 16,11 C16,8.23857625 13.7614237,6 11,6 C8.23857625,6 6,8.23857625 6,11 C6,13.7614237 8.23857625,16 11,16 Z M11,18 C7.13400675,18 4,14.8659932 4,11 C4,7.13400675 7.13400675,4 11,4 C14.8659932,4 18,7.13400675 18,11 C18,14.8659932 14.8659932,18 11,18 Z" fill="#000000" fill-rule="nonzero" />
+                        </g>
+                    </svg>
+                </span>
+                <input type="search" id="tb_holdings_search" class="form-control form-control-white w-250px ps-9" placeholder="Search Results" />
+            </div>
+        </div>
+        <div class="d-flex flex-wrap my-1">
+            <div class="d-flex my-0">
+                <a id="bt_export" target="_blank" class="btn btn-primary btn-active-dark" href="@Model.ExportUrl">
+                    <span>Export to Excel</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="mb-5">
+        <input id="hd_details_url" type="hidden" value="@Model.DetailsUrl" />
+        <table id="tb_holdings" class="table-row-bordered table-row-dashed gy-4 align-middle fw-bolder data-list" data-url="@Model.ListUrl">
+            <thead class="fs-7 text-gray-700 text-uppercase">
+                <tr>
+                    <th class="m-2">Account</th>
+                    <th class="m-2">Name</th>
+                    <th class="m-2 text-right">Units</th>
+                    <th class="m-2 d-none d-md-table-cell">Contact</th>
+                    <th class="m-2"></th>
+                </tr>
+            </thead>
+        </table>
+    </div>
+</div>
+
+<div id="v_details" class="v-block print-section" style="display: none;">
+    <partial name="_CoShareholderAccountModal" />
+</div>
+
+@section scripts {
+    <script src="~/pages/co-shareholders.js" asp-append-version="true"></script>
+}

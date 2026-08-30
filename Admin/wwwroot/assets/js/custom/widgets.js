@@ -1,0 +1,1 @@
+/* Compatibility placeholder for missing admin widgets bundle. */

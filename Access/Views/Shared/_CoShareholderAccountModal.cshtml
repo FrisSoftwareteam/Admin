@@ -1,0 +1,90 @@
+﻿<div class="d-flex flex-wrap flex-stack mb-7">
+    <div class="d-flex flex-column flex-wrap align-items-start my-1">
+        <h1 class="page-header-title">Statement of account as at @DateTime.Now.ToString("dd-MMM-yyy")</h1>
+        @*<div>
+            <span id="sp_count">...</span> transaction<span id="sp_units_s">s</span>
+            The transactions reflect the details of account
+        </div>*@
+    </div>
+    <div class="d-flex flex-wrap my-1 no-print">
+        <a id="bt_export_acc" href="javascript:;" target="_blank" class="btn btn-dark btn-active-dark ms-1">
+            <span>Export</span>
+        </a>
+        <a id="bt_print" href="javascript:;" target="_blank" class="btn btn-dark btn-active-dark ms-1">
+            <span>Print</span>
+        </a>
+        <button id="bt_close" class="btn btn-danger btn-active-dark ms-1">
+            <span>Close</span>
+        </button>
+    </div>
+</div>
+
+<div>
+    <div class="d-flex flex-wrap">
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">Register:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_register">...</span></div>
+            </div>
+        </div>
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">Name:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_name">...</span></div>
+            </div>
+        </div>
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">CSCS No:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_cscs">...</span></div>
+            </div>
+        </div>
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">Acc No:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_acc">...</span></div>
+            </div>
+        </div>
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">Old Acc:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_oldacc">...</span></div>
+            </div>
+        </div>
+
+        <div class="min-w-75px pe-4 me-6 mb-3">
+            <div class="fw-semibold fs-6 text-gray-400">Address:</div>
+            <div class="d-flex align-items-center">
+                <div class="fs-4 fw-bold"><span id="sp_address">...</span></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div class="mt-5">
+    <table class="table table-striped data-list fs-6 fw-bold gy-3 gs-5">
+        <thead>
+            <tr class="fw-bolder fs-6 text-dark border-bottom border-gray-200">
+                <th>S/N</th>
+                <th>Cert. No</th>
+                <th>Old Cert. No</th>
+                <th>Trans Date</th>
+                <th>Narration</th>
+                <th class="text-end">Buy</th>
+                <th class="text-end">Sell</th>
+                <th class="text-end">Balance</th>
+                <th class="text-center">Status</th>
+            </tr>
+        </thead>
+        <tbody id="t_body">
+        </tbody>
+        <tfoot id="t_foot">
+        </tfoot>
+    </table>
+</div>

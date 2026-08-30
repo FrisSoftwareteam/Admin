@@ -1,0 +1,69 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base href="~/">
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title | First Registrars</title>
+    <meta name="description" content="First Registrars Online Access allow shareholders, stock brokers manage their portfolio online from any internet enabled device." />
+    <meta name="keywords" content="First Registrars, Online Access, MAccess, E-Lodgment, E-Certificate" />
+    <link rel="canonical" href="https://firstregistrarsnigeria.com/products/online-access" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="shortcut icon" href="assets/media/logos/favicon.ico" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    <link href="~/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    
+    <link rel="apple-touch-icon" sizes="120x120" href="~/icons/apple-touch-icon.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/icons/favicon-16x16.png">
+    <link rel="manifest" href="~/icons/site.webmanifest">
+    <link rel="mask-icon" href="~/icons/safari-pinned-tab.svg" color="#c49b36">
+    <meta name="msapplication-TileColor" content="#12416f">
+    <meta name="theme-color" content="#12416f">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="~/icons/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="~/icons/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="~/icons/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="~/icons/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="~/icons/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="~/icons/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="~/icons/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="~/icons/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="~/icons/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="~/icons/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="~/icons/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="~/icons/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="~/icons/favicon-16x16.png">
+    <link rel="manifest" href="~/icons/manifest.json">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="~/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    @RenderSection("styles", required: false)
+
+    <link href="~/custom.css" rel="stylesheet" asp-append-version="true" />
+</head>
+
+<body id="kt_body" class="bg-body">
+    <div class="d-flex flex-column flex-root">
+        @RenderBody()
+    </div>
+    <script src="~/assets/plugins/global/plugins.bundle.js"></script>
+    <script src="~/assets/js/scripts.bundle.js"></script>
+    <script src="~/custom.js" asp-append-version="true"></script>
+    @RenderSection("scripts", required: false)
+    <script>
+        var error = '@TempData["error"]';
+        if (error) toastr.error(error);
+
+        var success = '@TempData["success"]';
+        if (success) toastr.success(success);
+
+        var info = '@TempData["info"]';
+        if (info) toastr.info(info);
+
+        var warning = '@TempData["warning"]';
+        if (warning) toastr.warning(warning);
+    </script>
+</body>
+</html>

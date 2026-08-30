@@ -1,0 +1,4 @@
+{
+  "LocalString": "Data Source=.;Initial Catalog=Estock;Integrated Security=True",
+  "ApiUrl": "https://localhost:44382/api"
+}

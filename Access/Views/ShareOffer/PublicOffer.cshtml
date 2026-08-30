@@ -1,0 +1,311 @@
+﻿@model PublicOfferModel
+@inject FirstReg.Service _service
+
+@{
+    var regs = await _service.Data.Get<Register>();
+}
+
+<div class="page-header mb-15">
+    <div class="media mb-3">
+        <div class="media-body">
+            <div class="row">
+                <div class="col-lg mb-3 mb-lg-0">
+                    <h1 class="page-header-title">@ViewData["Title"]</h1>
+                    <div class="row align-items-center">
+                        <div class="col-auto">
+                            <span>Please use the form below to register your interest in @ViewBag.Title. Payment will be required afterwards.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-lg-auto">
+                    <a asp-action="Index" asp-route-code="@ViewBag.Code" class="btn btn-info">Cancel</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mb-5 mb-xl-10">
+    <div class="card-body py-10">
+        <form id="frm_with_sign_pad" class="form form-loader" method="post" enctype="multipart/form-data">
+
+            <input type="hidden" asp-for="OfferId" />
+
+            <div class="card-body">
+                <input type="hidden" asp-for="Id" />
+                <div class="row justify-content-center py-5">
+                    <div class="col-lg-9 col-md-10">
+
+                        <div class="rounded-3 border-2 bg-gray-100 p-8 mb-10">
+                            <div class="d-flex justify-content-between">
+                                <div class="fw-semibold">
+                                    <label class="fs-3 fw-bold">Select application type</label>
+                                    <div class="fs-5 text-muted">
+                                        Turn this on for corporate application
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="nav-group nav-group-outline mx-auto" data-kt-buttons="true" data-kt-initialized="1">
+                                        <button type="button" class="btn btn-color-gray-700 btn-active btn-active-secondary px-6 py-3 me-2 active"
+                                                data-option="application-type" data-option-value="personal">
+                                            Personal
+                                        </button>
+                                        <button type="button" class="btn btn-color-gray-700 btn-active btn-active-secondary px-6 py-3"
+                                                data-option="application-type" data-option-value="corporate">
+                                            Corporate
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Select Shares</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Phone">Number of shares:</label>
+                                <div class="input-group"
+                                     data-kt-dialer="true"
+                                     data-kt-dialer-currency="true"
+                                     data-kt-dialer-min="@Model.Minimum"
+                                     data-kt-dialer-max="@int.MaxValue"
+                                     data-kt-dialer-step="@Model.Factor">
+
+                                    <button class="btn btn-secondary" type="button" data-kt-dialer-control="decrease">
+                                        <i class="las la-minus fs-2"></i>
+                                    </button>
+                                    <input type="text" class="form-control form-control-solid h-auto fs-3 py-4 px-7" 
+                                        readonly placeholder="Amount" data-kt-dialer-control="input" asp-for="NoOfShares" />
+                                    <button class="btn btn-secondary" type="button" data-kt-dialer-control="increase">
+                                        <i class="las la-plus fs-2"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Basic Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8" data-option-view="personal-only">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Title">Title:</label>
+                                <input type="text" asp-for="Title" list="titleOptions" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Mr" required />
+                                <datalist id="titleOptions">
+                                    <option value="Mr"></option>
+                                    <option value="Ms"></option>
+                                    <option value="Mrs"></option>
+                                    <option value="Miss"></option>
+                                    <option value="Dr"></option>
+                                    <option value="Prof"></option>
+                                </datalist>
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="LastName" data-option-view="personal-only">Surname:</label>
+                                <label class="fs-6 fw-bold mb-2 required d-none" asp-for="LastName" data-option-view="corporate-only">Name:</label>
+                                <input type="text" asp-for="LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter name" required />
+                            </div>
+                            <div class="col-lg-6 mb-8" data-option-view="personal-only">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="OtherName">Other names:</label>
+                                <input asp-for="OtherName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" required />
+                            </div>
+                            <div class="col-lg-6 mb-8 d-none" data-option-view="corporate-only">
+                                <label class="fs-6 fw-bold mb-2" asp-for="RCNumber">RC Number:</label>
+                                <input asp-for="RCNumber" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" />
+                            </div>
+                            <div class="col-lg-6 mb-8" data-option-view="personal-only">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="DateOfBirth">Date of Birth:</label>
+                                <input asp-for="DateOfBirth" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. DD/MMM/YYYY" data-mask="date" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Postal Address</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-12 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="PostalAddress.Address">Address:</label>
+                                <input asp-for="PostalAddress.Address" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="12 Clearwox Drive" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="PostalAddress.City">City:</label>
+                                <input asp-for="PostalAddress.City" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Ikeja" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="PostalAddress.State">State:</label>
+                                <input asp-for="PostalAddress.State" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Lagos" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="PostalAddress.Country">Country:</label>
+                                <input asp-for="PostalAddress.Country" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Nigeria" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Contact Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Phone">Phone Number:</label>
+                                <input asp-for="Phone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="Email">Email address:</label>
+                                <input asp-for="Email" type="email" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. user@email.com" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom" data-option-view="personal-only">Next of kin</h3>
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom d-none" data-option-view="corporate-only">Contact Person</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NextOfKin">Full Name:</label>
+                                <input asp-for="NextOfKin" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. John Bull" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="NextOfKinPhone">Phone Number:</label>
+                                <input asp-for="NextOfKinPhone" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 08012341234" required />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Other Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="ClearingNo">Clearing No:</label>
+                                <input asp-for="ClearingNo" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. CH87654321" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="CSCSNumber">CSCS Number:</label>
+                                <input asp-for="CSCSNumber" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 00000000" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="StockBroker">Stock Broker:</label>
+                                <input asp-for="StockBroker" type="tel" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 0000000" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="MemberCode">Member Code:</label>
+                                <input asp-for="MemberCode" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Nigerian" />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Other Applicant (For joint application)</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="OtherApplicant.Title">Title:</label>
+                                <input type="text" asp-for="OtherApplicant.Title" list="titleOptions" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. Mr" />
+                                <datalist id="titleOptions">
+                                    <option value="Mr"></option>
+                                    <option value="Ms"></option>
+                                    <option value="Mrs"></option>
+                                    <option value="Miss"></option>
+                                    <option value="Dr"></option>
+                                    <option value="Prof"></option>
+                                </datalist>
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="OtherApplicant.LastName">Surname:</label>
+                                <input type="text" asp-for="OtherApplicant.LastName" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter surname" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="OtherApplicant.OtherName">Other names:</label>
+                                <input asp-for="OtherApplicant.OtherName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Enter first & middle names" />
+                            </div>
+                        </div>
+
+                        <h3 class="pb-5 mt-10 mb-9 border-bottom">Bank Information</h3>
+                        <div class="form-group row">
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2" asp-for="BVN">Primary Bank Verification Number (BVN):</label>
+                                <input asp-for="BVN" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 00000000" />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="BankAccountNumber">Account Number:</label>
+                                <input asp-for="BankAccountNumber" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Account Number" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="BankName">Bank Name:</label>
+                                <input asp-for="BankName" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Bank Name" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="BankBranch">Bank Branch:</label>
+                                <input asp-for="BankBranch" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Bank Branch" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="BankCity">Bank City:</label>
+                                <input asp-for="BankCity" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Bank Address" required />
+                            </div>
+                            <div class="col-lg-6 mb-8">
+                                <label class="fs-6 fw-bold mb-2 required" asp-for="BankState">Bank State:</label>
+                                <input asp-for="BankState" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="Bank Address" required />
+                            </div>
+                            <div class="col-lg-6 mb-8 d-none" data-option-view="corporate-only">
+                                <label class="fs-6 fw-bold mb-2" asp-for="BVN2">Second Bank Verification Number (BVN):</label>
+                                <input asp-for="BVN2" type="text" class="form-control form-control-solid h-auto py-4 px-7" placeholder="e.g. 00000000" />
+                            </div>
+                        </div>
+
+                        <partial name="_FormsSignatureBox" />
+
+                        <div class="separator my-10"></div>
+
+                        <div class="d-block">
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We am/are 18 years of age or over
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We note that allotment will only be electronically to the CSCS accounts of allotees and no physical share certificate would be issued
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We note that Fidelity Bank PLC and the Issuing Houses are entitled in their absolute discretion to accept or reject this application
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We attach the amount payable in full on application for the number of ordinary shares in Fidelity Bank PLC
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We agree to accept the same or any smaller number of units in respect of which allotment may be made upon the terms of the Prospectus
+                                </label>
+                            </div>
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" required />
+                                <label class="form-check-label" for="flexCheckDefault">
+                                    We declare that we have read a copy of the Prospectus, issued by the Issuing Houses on behalf Fidelity Bank PLC
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="mt-10">
+                            <div class="row">
+                                <div class="col-lg-6">
+                                    <button type="submit" class="btn btn-primary me-2 bt-submit">
+                                        <span class="indicator-label">Submit</span>
+                                        <span class="indicator-progress">
+                                            Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span>
+                                        </span>
+                                    </button>
+                                    <a asp-action="Index" asp-route-code="@ViewBag.Code" class="btn btn-secondary">Cancel</a>
+                                </div>
+                                <div class="col-lg-6 text-lg-end">
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section scripts {
+    <script src="~/assets/plugins/custom/formrepeater/formrepeater.bundle.js"></script>
+    <script src="~/assets/plugins/signature/signature_pad.min.js"></script>
+    <script src="~/pages/forms-signature-pad.js" asp-append-version="true"></script>
+    <script src="~/pages/data-update.js" asp-append-version="true"></script>
+}
