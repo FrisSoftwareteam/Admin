@@ -435,7 +435,13 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                     x.Hidden && x.RegisterId == regid && x.AccountNo == accNo.ToString());
                 if (existingHidden != null)
                 {
-                    rejected++;
+                    if (staging == null || !Tools.StagingRowBelongsToShareholder(sh, staging))
+                    {
+                        rejected++;
+                        continue;
+                    }
+                    existingHidden.Hidden = false;
+                    added++;
                     continue;
                 }
 

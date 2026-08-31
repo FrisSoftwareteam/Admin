@@ -795,8 +795,10 @@ public static class Tools
             var t1 = nameTokens[1];
             var t2 = nameTokens.Length > 2 ? nameTokens[2] : null;
             var byName = t2 == null
-                ? await data.Find<ShareholderStaging>(x => x.Names.Contains(t0) && x.Names.Contains(t1))
-                : await data.Find<ShareholderStaging>(x => x.Names.Contains(t0) && x.Names.Contains(t1) && x.Names.Contains(t2));
+                ? await data.Find<ShareholderStaging>(x =>
+                    x.Names.ToUpper().Contains(t0) && x.Names.ToUpper().Contains(t1))
+                : await data.Find<ShareholderStaging>(x =>
+                    x.Names.ToUpper().Contains(t0) && x.Names.ToUpper().Contains(t1) && x.Names.ToUpper().Contains(t2));
             fetched = fetched
                 .Concat(byName)
                 .GroupBy(x => (x.RegisterCode, x.AccountNumber))
@@ -849,8 +851,7 @@ public static class Tools
                 x.RegisterId == row.RegisterCode && SameAccountNo(x.AccountNo, row.AccountNumber));
             if (existing != null)
             {
-                if (existing.Hidden)
-                    continue;
+                existing.Hidden = false;
                 existing.AccountNo = accountNo;
                 existing.AccountName = row.Names;
                 existing.Units = units;
