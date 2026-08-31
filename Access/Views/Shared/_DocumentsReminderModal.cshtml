@@ -42,11 +42,9 @@
                         <div class="col-md-4" id="docs_card_photo" style="@(Model.MissingPhoto ? "" : "display:none;")">
                             <div class="docs-doc-card h-100">
                                 <div class="fw-bolder text-dark mb-4">Profile picture</div>
-                                <input type="file" id="docs_file_photo" class="d-none" accept="image/*" data-doc="photo" />
-                                <label for="docs_file_photo" class="btn btn-primary">Choose file</label>
-                                <div class="mt-3">
-                                    <a href="javascript:;" class="docs-take-photo link-primary fw-bold" data-doc="photo">Take photo</a>
-                                </div>
+                                <input type="file" id="docs_file_photo" class="d-none" accept="image/*" capture="user" data-doc="photo" />
+                                <button type="button" class="btn btn-primary docs-take-photo" data-doc="photo">Take photo</button>
+                                <div class="text-muted fs-8 mt-3">Use your camera. File upload is not allowed.</div>
                                 <div class="text-muted fs-8 mt-3" id="docs_file_status_photo"></div>
                                 <div class="docs-doc-preview mt-3" id="docs_preview_photo_wrp" style="display:none;">
                                     <img id="docs_preview_photo" alt="Profile picture" />
@@ -86,7 +84,7 @@
                             </div>
                         </div>
                     </div>
-                    <div class="text-muted fs-7 mt-5">You can choose a file or take a live photo with your phone, tablet or laptop camera.</div>
+                    <div class="text-muted fs-7 mt-5">Profile picture must be taken with the camera. For passport/NIN and signature you can choose a file or take a photo.</div>
                 </div>
 
                 <div id="docs_camera_panel" class="text-center" style="display:none;">

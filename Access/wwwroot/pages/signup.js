@@ -169,7 +169,7 @@ function openSignupCamera(key) {
             input.setAttribute('capture', key === 'photo' ? 'user' : 'environment');
             input.click();
         } else {
-            toastr.error('Could not open the camera. Please choose a file instead.');
+            toastr.error('Could not open the camera. Please allow camera access and try again.');
         }
     });
 }

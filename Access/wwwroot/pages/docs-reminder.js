@@ -145,11 +145,14 @@
         }).catch(function () {
             stopCamera();
             var input = document.getElementById('docs_file_' + key);
-            if (input) {
-                input.setAttribute('capture', key === 'photo' ? 'user' : 'environment');
+            if (input && key !== 'photo') {
+                input.setAttribute('capture', 'environment');
+                input.click();
+            } else if (input && key === 'photo') {
+                input.setAttribute('capture', 'user');
                 input.click();
             } else {
-                toastr.error('Could not open the camera. Please choose a file instead.');
+                toastr.error('Could not open the camera. Please allow camera access and try again.');
             }
         });
     }
