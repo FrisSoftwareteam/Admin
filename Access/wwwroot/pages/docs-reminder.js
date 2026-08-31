@@ -3,6 +3,7 @@
     if (!el) return;
 
     var INTERVAL_MS = 7 * 60 * 1000;
+    var STORAGE_KEY = 'fr_docs_reminder_at';
     var labels = { photo: 'Profile picture', passport: 'Passport / NIN', signature: 'Signature' };
     var pending = { photo: '', passport: '', signature: '' };
     var missing = {
@@ -13,7 +14,6 @@
     var uploadUrl = el.getAttribute('data-upload-url');
     var cameraStream = null;
     var cameraDoc = null;
-    var allowClose = false;
 
     function stillMissing() {
         return missing.photo || missing.passport || missing.signature;
@@ -21,13 +21,24 @@
 
     function getModal() {
         if (!window.bootstrap || !bootstrap.Modal) return null;
-        return bootstrap.Modal.getOrCreateInstance(el, { backdrop: 'static', keyboard: false });
+        return bootstrap.Modal.getOrCreateInstance(el);
     }
 
     function showReminder() {
         if (!stillMissing()) return;
         var modal = getModal();
         if (modal) modal.show();
+        try { sessionStorage.setItem(STORAGE_KEY, String(Date.now())); } catch (e) { }
+    }
+
+    function scheduleReminder() {
+        var last = 0;
+        try { last = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10) || 0; } catch (e) { last = 0; }
+        var wait = last ? Math.max(0, INTERVAL_MS - (Date.now() - last)) : 0;
+        setTimeout(function tick() {
+            showReminder();
+            setTimeout(tick, INTERVAL_MS);
+        }, wait);
     }
 
     function applyDoc(key, dataUrl, isPdf) {
@@ -196,11 +207,7 @@
         stopCamera();
     });
 
-    $('#diag_docs_reminder').on('hide.bs.modal', function (e) {
-        if (stillMissing() && !allowClose) {
-            e.preventDefault();
-            return;
-        }
+    $('#diag_docs_reminder').on('hidden.bs.modal', function () {
         stopCamera();
     });
 
@@ -240,7 +247,6 @@
                 toastr.success('Your documents have been updated');
 
                 if (!stillMissing()) {
-                    allowClose = true;
                     var modal = getModal();
                     if (modal) modal.hide();
                 }
@@ -256,6 +262,5 @@
         });
     });
 
-    showReminder();
-    setInterval(showReminder, INTERVAL_MS);
+    scheduleReminder();
 })();

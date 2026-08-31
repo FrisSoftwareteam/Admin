@@ -1,6 +1,6 @@
 @model DocumentsReminderModel
 
-<div class="modal fade" id="diag_docs_reminder" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
+<div class="modal fade" id="diag_docs_reminder" tabindex="-1" aria-hidden="true"
      data-upload-url="@Model.UploadUrl"
      data-missing-photo="@Model.MissingPhoto.ToString().ToLowerInvariant()"
      data-missing-passport="@Model.MissingPassport.ToString().ToLowerInvariant()"
@@ -9,10 +9,11 @@
         <div class="modal-content rounded">
             <div class="modal-header border-0 pb-0">
                 <h2 class="fw-bolder mb-0">Update your documents</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body pt-5">
                 <p class="text-muted fs-6 mb-8">
-                    Your account is missing required documents. You must upload them before you can continue.
+                    Your account is missing one or more documents. You can upload them now, or continue and do it later.
                 </p>
 
                 <div class="mb-8">
@@ -99,6 +100,7 @@
                 </div>
             </div>
             <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal" id="docs_remind_later">Remind me later</button>
                 <button type="button" class="btn btn-primary" id="docs_save">Upload documents</button>
             </div>
         </div>
