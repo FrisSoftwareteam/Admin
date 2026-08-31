@@ -425,7 +425,10 @@ namespace FirstReg.Admin.Controllers
         {
             try
             {
-                var hs = await _service.Data.Find<Shareholder>(x => x.Code.ToLower() == code.ToLower());
+                var hs = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.Holdings)
+                    .Where(x => x.Code.ToLower() == code.ToLower())
+                    .ToListAsync();
 
                 if (!hs.Any())
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
@@ -439,16 +442,23 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    var regids = (await _service.Data.FromSql<RegisterIdModel>("SELECT Id FROM Registers"));
-                    //var regids = (await _service.Data.Get<Register>()).Select(x => x.Id).ToList();
+                    sh = await RefreshHoldingsFromStaging(sh);
+                }
+                catch (Exception vex)
+                {
+                    TempData["error"] = $"Could not retrieve shareholder details from the register:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
+                }
 
-                    // call api
+                try
+                {
+                    var regids = (await _service.Data.FromSql<RegisterIdModel>("SELECT Id FROM Registers"));
                     sh = await Tools.UpdateAccountDetails(sh, regids.Select(x => x.Id).ToList(), _apiClient, _apiUrl, _mondgodb);
                     await _service.Data.UpdateAsync(sh);
                 }
                 catch (Exception vex)
                 {
-                    TempData["error"] = $"Could not retrieve shareholder details from the API:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
+                    if (TempData["error"] == null)
+                        TempData["error"] = $"Could not retrieve shareholder details from the API:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
                 }
             }
             catch (Exception ex)

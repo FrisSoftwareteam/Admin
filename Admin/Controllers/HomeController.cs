@@ -67,6 +67,17 @@ namespace FirstReg.Admin.Controllers
                 ? (thisMonthAmount > 0 ? 100 : 0)
                 : (int)Math.Round((double)((thisMonthAmount - lastMonthAmount) / lastMonthAmount * 100m));
 
+            var recentCerts = await _service.Data.GetAsQueryable<ECertRequest>()
+                .Include(x => x.StockBroker)
+                    .ThenInclude(x => x.User)
+                .OrderByDescending(x => x.Date)
+                .Take(5)
+                .ToListAsync();
+            var recentUsers = await _service.Data.GetAsQueryable<User>()
+                .OrderByDescending(x => x.Id)
+                .Take(5)
+                .ToListAsync();
+
             return View(new DashboardModel
             {
                 Shareholders = _service.Data.Count<User>(x => x.Type == UserType.Shareholder),
@@ -76,10 +87,10 @@ namespace FirstReg.Admin.Controllers
                 SystemAdmins = _service.Data.Count<User>(x => x.Type == UserType.SystemAdmin),
                 MonthlySales = monthlySales,
                 MonthlySalesLabels = monthlySalesLabels,
-                CertRequests = (await _service.Data.Get<ECertRequest>()).OrderByDescending(x => x.Date).Take(5)
-                                    .Select(x => new DashCert(x.Description, x.StockBroker.User.FullName, Clear.Tools.StringUtility.TimeSince(x.Date))).ToList(),
-                Users = (await _service.Data.Get<User>()).OrderByDescending(x => x.Id).Take(5)
-                                    .Select(x => new DashUser(x.FullName, x.Email, x.Type)).ToList(),
+                CertRequests = recentCerts
+                    .Select(x => new DashCert(x.Description, x.StockBroker?.User?.FullName, Clear.Tools.StringUtility.TimeSince(x.Date))).ToList(),
+                Users = recentUsers
+                    .Select(x => new DashUser(x.FullName, x.Email, x.Type)).ToList(),
                 ThisMonth = Tools.Shorten((double)thisMonthAmount),
                 Percentage = percentage,
                 Active = activeShareholders + activeBrokers,

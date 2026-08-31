@@ -691,13 +691,25 @@ public static class Tools
         return true;
     }
 
-    static string NormalizePersonName(string name)
+    static readonly HashSet<string> NameSalutations = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "MR", "MRS", "MISS", "MS", "DR"
+    };
+
+    static string[] SignificantNameTokens(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            return "";
-        return string.Join(" ", name.Trim().ToUpperInvariant()
-            .Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
+            return Array.Empty<string>();
+
+        return name.Trim().ToUpperInvariant()
+            .Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim('.', ',', ';', ':'))
+            .Where(t => t.Length > 0 && !NameSalutations.Contains(t))
+            .ToArray();
     }
+
+    static string NormalizePersonName(string name) =>
+        string.Join(" ", SignificantNameTokens(name));
 
     static bool NamesLikelySame(string left, string right)
     {
@@ -717,8 +729,8 @@ public static class Tools
     }
 
     /// <summary>
-    /// Staging rows belong to this profile only when CHN matches, or (if CHN is missing) the names match.
-    /// Account number alone is not enough — that would attach another person's holding.
+    /// Staging rows belong to this profile when the CHN matches, or the names match
+    /// after ignoring salutations such as Mr/Mrs. Account number alone is not enough.
     /// </summary>
     public static bool StagingRowBelongsToShareholder(Shareholder sh, ShareholderStaging row)
     {
@@ -728,8 +740,9 @@ public static class Tools
         var shChn = IsRealClearingNo(sh.ClearingNo);
         var rowChn = IsRealClearingNo(row.ClearingNo);
 
-        if (shChn && rowChn)
-            return string.Equals(sh.ClearingNo.Trim(), row.ClearingNo.Trim(), StringComparison.OrdinalIgnoreCase);
+        if (shChn && rowChn &&
+            string.Equals(sh.ClearingNo.Trim(), row.ClearingNo.Trim(), StringComparison.OrdinalIgnoreCase))
+            return true;
 
         return NamesLikelySame(sh.FullName, row.Names);
     }
@@ -763,17 +776,33 @@ public static class Tools
 
         var hasChn = IsRealClearingNo(sh.ClearingNo);
         var chn = hasChn ? sh.ClearingNo.Trim() : null;
+        var nameTokens = SignificantNameTokens(sh.FullName);
 
-        if (!hasChn && accountNos.Count == 0)
+        if (!hasChn && accountNos.Count == 0 && nameTokens.Length < 2)
             return sh;
 
-        List<ShareholderStaging> fetched;
+        List<ShareholderStaging> fetched = new();
         if (hasChn && accountNos.Count > 0)
             fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn || accountNos.Contains(x.AccountNumber));
         else if (hasChn)
             fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn);
-        else
+        else if (accountNos.Count > 0)
             fetched = await data.Find<ShareholderStaging>(x => accountNos.Contains(x.AccountNumber));
+
+        if (nameTokens.Length >= 2)
+        {
+            var t0 = nameTokens[0];
+            var t1 = nameTokens[1];
+            var t2 = nameTokens.Length > 2 ? nameTokens[2] : null;
+            var byName = t2 == null
+                ? await data.Find<ShareholderStaging>(x => x.Names.Contains(t0) && x.Names.Contains(t1))
+                : await data.Find<ShareholderStaging>(x => x.Names.Contains(t0) && x.Names.Contains(t1) && x.Names.Contains(t2));
+            fetched = fetched
+                .Concat(byName)
+                .GroupBy(x => (x.RegisterCode, x.AccountNumber))
+                .Select(g => g.First())
+                .ToList();
+        }
 
         var foreign = sh.Holdings.Where(h =>
         {
@@ -792,6 +821,7 @@ public static class Tools
                 (hasChn && string.Equals((x.ClearingNo ?? "").Trim(), chn, StringComparison.OrdinalIgnoreCase))
                 || holdingKeys.Any(k => k.RegisterId == x.RegisterCode && k.AccountNo == x.AccountNumber)
                 || (profileAcc.HasValue && x.AccountNumber == profileAcc.Value)
+                || NamesLikelySame(sh.FullName, x.Names)
             )
         ).ToList();
 
