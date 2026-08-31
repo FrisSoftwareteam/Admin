@@ -132,6 +132,15 @@ namespace FirstReg.Data
             ? (int)ExpiryDate.Value.Subtract(Tools.Now).TotalDays
             : 0;
         public double Percentage => TotalDays <= 0 ? 0 : DaysSpent * 100.0 / TotalDays;
+
+        [NotMapped]
+        public bool HasPhoto => !string.IsNullOrWhiteSpace(Photo);
+        [NotMapped]
+        public bool HasPassport => !string.IsNullOrWhiteSpace(Passport);
+        [NotMapped]
+        public bool HasSignatureDoc => !string.IsNullOrWhiteSpace(Signature);
+        [NotMapped]
+        public bool HasRequiredDocuments => HasPhoto && HasPassport && HasSignatureDoc;
     }
 
     public partial class StockBroker

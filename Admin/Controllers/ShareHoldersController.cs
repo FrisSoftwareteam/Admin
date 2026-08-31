@@ -442,7 +442,7 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh);
+                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: true);
                 }
                 catch (Exception vex)
                 {
@@ -504,7 +504,7 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh);
+                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: true);
                 }
                 catch (Exception vex)
                 {
@@ -719,14 +719,14 @@ namespace FirstReg.Admin.Controllers
             }
         }
 
-        private async Task<Shareholder> RefreshHoldingsFromStaging(Shareholder sh)
+        private async Task<Shareholder> RefreshHoldingsFromStaging(Shareholder sh, bool restoreHidden = false)
         {
             sh = await _service.Data.GetAsQueryable<Shareholder>()
                 .Include(x => x.Holdings)
                 .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
 
             var regids = (await _service.Data.Get<Register>()).Select(x => x.Id).ToList();
-            sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, _service.Data);
+            sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, _service.Data, restoreHidden);
             await _service.Data.UpdateAsync(sh);
             return sh;
         }

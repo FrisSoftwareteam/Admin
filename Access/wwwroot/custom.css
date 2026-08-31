@@ -590,6 +590,31 @@ table.data-list {
     }
 }
 
+.docs-doc-card {
+    border: 1px solid #e4e6ef;
+    background: #f9f9fb;
+    border-radius: 8px;
+    padding: 1.5rem 1.25rem;
+}
+
+.docs-doc-preview img {
+    width: 100%;
+    max-width: 160px;
+    height: 120px;
+    object-fit: cover;
+    border: 1px solid #e4e6ef;
+    border-radius: 4px;
+    background: #111;
+}
+
+#diag_docs_reminder {
+    z-index: 11000;
+}
+
+body:has(#diag_docs_reminder.show) .modal-backdrop {
+    z-index: 10990;
+}
+
 @media print {
     body, .no-print {
         visibility: hidden;

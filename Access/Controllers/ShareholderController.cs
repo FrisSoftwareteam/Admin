@@ -393,6 +393,29 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
         return Redirect(GetReferrerUrl());
     }
 
+    [HttpPost("holding/hide/{id}")]
+    public async Task<IActionResult> HideHolding(int id)
+    {
+        try
+        {
+            var user = await service.Data.Get<User>(x => x.UserName.ToLower() == User.Identity.Name.ToLower());
+            var holding = await service.Data.GetAsQueryable<ShareHolding>()
+                .FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null || holding == null || !user.VisibleShareholders.Any(x => x.Id == holding.ShareHolderId))
+                throw new InvalidOperationException("Shareholding was not found");
+
+            holding.Hidden = true;
+            await service.Data.UpdateAsync(holding);
+            TempData["success"] = "The holding was removed from the portfolio";
+        }
+        catch (Exception ex)
+        {
+            TempData["error"] = Clear.Tools.GetAllExceptionMessage(ex);
+        }
+        return Redirect(GetReferrerUrl());
+    }
+
     [HttpPost("add-holdings")]
     public async Task<IActionResult> AddHoldings(int id)
     {
@@ -563,6 +586,7 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
             var sh = await service.Data.Get<Shareholder>(x =>
                 x.Id == model.Id && x.User.UserName.ToLower() == User.Identity.Name.ToLower());
 
+            var previousChn = sh.ClearingNo;
             sh.FullName = model.FullName.Trim();
             sh.Street = model.Street.Trim();
             sh.City = model.City.Trim();
@@ -580,7 +604,20 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                 sh.User.PhoneNumber = model.MobileNo.Trim();
             }
 
+            var chnChanged = !sh.Verified &&
+                !string.Equals((previousChn ?? "").Trim(), (sh.ClearingNo ?? "").Trim(), StringComparison.OrdinalIgnoreCase);
+
             await service.Data.UpdateAsync(sh);
+
+            if (chnChanged)
+            {
+                var loaded = await service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.Holdings)
+                    .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
+                var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
+                loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+                await service.Data.UpdateAsync(loaded);
+            }
 
             TempData["success"] = "Your profile was updated";
 
@@ -607,11 +644,18 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
             holder.ClearingNo = model.ClearingNo;
             holder.ActionRequired = false;
 
-            await service.Data.UpdateAsync(holder);
+            var loaded = await service.Data.GetAsQueryable<Shareholder>()
+                .Include(x => x.Holdings)
+                .FirstOrDefaultAsync(x => x.Id == holder.Id) ?? holder;
+            loaded.ClearingNo = holder.ClearingNo;
+            loaded.ActionRequired = holder.ActionRequired;
+            var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
+            loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+            await service.Data.UpdateAsync(loaded);
 
             TempData["success"] = "Your clearing house number has been updated";
 
-            return RedirectToAction(nameof(Activate), new { code = holder.Code });
+            return RedirectToAction(nameof(Activate), new { code = loaded.Code });
         }
         catch (Exception ex)
         {
@@ -646,6 +690,84 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
         {
             TempData["error"] = Clear.Tools.GetAllExceptionMessage(ex);
             return Redirect(GetReferrerUrl());
+        }
+    }
+
+    [HttpPost("documents")]
+    [RequestSizeLimit(20_000_000)]
+    public async Task<IActionResult> UploadDocuments([FromBody] DocumentUploadModel model)
+    {
+        try
+        {
+            model ??= new DocumentUploadModel();
+
+            var user = await service.Data.Get<User>(x => x.UserName.ToLower() == User.Identity.Name.ToLower());
+            if (user == null || user.Type != UserType.Shareholder)
+                return Unauthorized(new { ok = false, error = "Your account could not be loaded. Please sign in again." });
+
+            var holders = user.VisibleShareholders.ToList();
+            if (holders.Count == 0)
+                return BadRequest(new { ok = false, error = "No shareholder profile is currently available for this account." });
+
+            var photo = string.IsNullOrWhiteSpace(model.Photo) ? null : model.Photo.Trim();
+            var passport = string.IsNullOrWhiteSpace(model.Passport) ? null : model.Passport.Trim();
+            var signature = string.IsNullOrWhiteSpace(model.Signature) ? null : model.Signature.Trim();
+
+            if (photo != null && !ShareholderDocumentRules.IsImageDataUrl(photo))
+                return BadRequest(new { ok = false, error = "Please upload an image for your profile picture." });
+            if (passport != null && !ShareholderDocumentRules.IsPassportDataUrl(passport))
+                return BadRequest(new { ok = false, error = "Please upload an image or PDF for your passport / NIN." });
+            if (signature != null && !ShareholderDocumentRules.IsImageDataUrl(signature))
+                return BadRequest(new { ok = false, error = "Please upload an image for your signature." });
+
+            if (photo == null && passport == null && signature == null)
+                return BadRequest(new { ok = false, error = "Please choose a file or take a photo for the missing documents." });
+
+            var updated = 0;
+            foreach (var holder in holders)
+            {
+                var changed = false;
+                if (photo != null && !holder.HasPhoto)
+                {
+                    holder.Photo = photo;
+                    changed = true;
+                }
+                if (passport != null && !holder.HasPassport)
+                {
+                    holder.Passport = passport;
+                    changed = true;
+                }
+                if (signature != null && !holder.HasSignatureDoc)
+                {
+                    holder.Signature = signature;
+                    holder.ActionRequired = false;
+                    changed = true;
+                }
+
+                if (!changed)
+                    continue;
+
+                await service.Data.UpdateAsync(holder);
+                updated++;
+            }
+
+            if (updated == 0)
+                return BadRequest(new { ok = false, error = "Those documents are already on file." });
+
+            await LogAuditAction(AuditLogType.ProfileUpdate, "Shareholder uploaded missing profile documents");
+
+            return Ok(new
+            {
+                ok = true,
+                missingPhoto = holders.Any(x => !x.HasPhoto),
+                missingPassport = holders.Any(x => !x.HasPassport),
+                missingSignature = holders.Any(x => !x.HasSignatureDoc)
+            });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(ex, "Document upload failed for {User}", User.Identity?.Name);
+            return BadRequest(new { ok = false, error = Clear.Tools.GetAllExceptionMessage(ex) });
         }
     }
 

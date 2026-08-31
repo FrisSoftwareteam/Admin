@@ -107,6 +107,8 @@ public class ShareholderModel
         SecondaryPhone = shareholder.SecondaryPhone;
         PostCode = shareholder.PostCode;
         Signature = shareholder.Signature;
+        Photo = shareholder.Photo;
+        Passport = shareholder.Passport;
 
         IsGroup = shareholder.User?.AllowGroup ?? false;
 
@@ -159,6 +161,8 @@ public class ShareholderModel
     public bool EmailConfirmed { get; set; }
     public bool PhoneConfirmed { get; set; }
     public string Signature { get; set; }
+    public string Photo { get; set; }
+    public string Passport { get; set; }
 
     public bool IsGroup { get; set; }
 
@@ -434,8 +438,10 @@ public class SecurityModel
         Holder = holding.AccountName;
         Status = holding.Status;
         Units = holding.Units;
+        Id = holding.Id;
     }
 
+    public int Id { get; set; }
     public string ShareholderCode { get; set; }
     public string Company { get; set; }
     public string AccountNo { get; set; }
@@ -613,4 +619,38 @@ public record PaymentModel
             PreviousPayment = previousPayment
         };
     }
+}
+
+public class DocumentUploadModel
+{
+    public string Photo { get; set; }
+    public string Passport { get; set; }
+    public string Signature { get; set; }
+}
+
+public class DocumentsReminderModel
+{
+    public bool MissingPhoto { get; set; }
+    public bool MissingPassport { get; set; }
+    public bool MissingSignature { get; set; }
+    public string UploadUrl { get; set; }
+}
+
+public static class ShareholderDocumentRules
+{
+    public const int MaxDataUrlLength = 8_000_000;
+
+    public static bool IsProvided(string value) => !string.IsNullOrWhiteSpace(value);
+
+    public static bool IsImageDataUrl(string value) =>
+        IsDataUrl(value, "data:image/");
+
+    public static bool IsPassportDataUrl(string value) =>
+        IsImageDataUrl(value) || IsDataUrl(value, "data:application/pdf");
+
+    static bool IsDataUrl(string value, string prefix) =>
+        IsProvided(value)
+        && value.StartsWith(prefix, StringComparison.OrdinalIgnoreCase)
+        && value.Contains(";base64,", StringComparison.OrdinalIgnoreCase)
+        && value.Length <= MaxDataUrlLength;
 }

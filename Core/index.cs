@@ -753,7 +753,7 @@ public static class Tools
     /// the staging row also belongs to this shareholder.
     /// </summary>
     public static async Task<Shareholder> UpdateAccountDetailsFromStaging(
-        Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data)
+        Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data, bool restoreHidden = false)
     {
         sh.LastUpdate = Now;
 
@@ -851,7 +851,8 @@ public static class Tools
                 x.RegisterId == row.RegisterCode && SameAccountNo(x.AccountNo, row.AccountNumber));
             if (existing != null)
             {
-                existing.Hidden = false;
+                if (restoreHidden)
+                    existing.Hidden = false;
                 existing.AccountNo = accountNo;
                 existing.AccountName = row.Names;
                 existing.Units = units;

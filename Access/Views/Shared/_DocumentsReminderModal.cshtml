@@ -1,0 +1,108 @@
+@model DocumentsReminderModel
+
+<div class="modal fade" id="diag_docs_reminder" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false"
+     data-upload-url="@Model.UploadUrl"
+     data-missing-photo="@Model.MissingPhoto.ToString().ToLowerInvariant()"
+     data-missing-passport="@Model.MissingPassport.ToString().ToLowerInvariant()"
+     data-missing-signature="@Model.MissingSignature.ToString().ToLowerInvariant()">
+    <div class="modal-dialog modal-dialog-centered modal-lg modal-dialog-scrollable">
+        <div class="modal-content rounded">
+            <div class="modal-header border-0 pb-0">
+                <h2 class="fw-bolder mb-0">Update your documents</h2>
+            </div>
+            <div class="modal-body pt-5">
+                <p class="text-muted fs-6 mb-8">
+                    Your account is missing required documents. You must upload them before you can continue.
+                </p>
+
+                <div class="mb-8">
+                    <div class="fw-bolder fs-5 mb-4">Documents</div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Profile picture</span>
+                        <span id="docs_status_photo" class="@(Model.MissingPhoto ? "text-danger" : "text-success") fw-bold">
+                            @(Model.MissingPhoto ? "Not provided" : "Provided")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2 border-bottom">
+                        <span>Passport / NIN</span>
+                        <span id="docs_status_passport" class="@(Model.MissingPassport ? "text-danger" : "text-success") fw-bold">
+                            @(Model.MissingPassport ? "Not provided" : "Provided")
+                        </span>
+                    </div>
+                    <div class="d-flex justify-content-between py-2">
+                        <span>Signature</span>
+                        <span id="docs_status_signature" class="@(Model.MissingSignature ? "text-danger" : "text-success") fw-bold">
+                            @(Model.MissingSignature ? "Not provided" : "Provided")
+                        </span>
+                    </div>
+                </div>
+
+                <div id="docs_upload_cards">
+                    <div class="row g-5">
+                        <div class="col-md-4" id="docs_card_photo" style="@(Model.MissingPhoto ? "" : "display:none;")">
+                            <div class="docs-doc-card h-100">
+                                <div class="fw-bolder text-dark mb-4">Profile picture</div>
+                                <input type="file" id="docs_file_photo" class="d-none" accept="image/*" data-doc="photo" />
+                                <label for="docs_file_photo" class="btn btn-primary">Choose file</label>
+                                <div class="mt-3">
+                                    <a href="javascript:;" class="docs-take-photo link-primary fw-bold" data-doc="photo">Take photo</a>
+                                </div>
+                                <div class="text-muted fs-8 mt-3" id="docs_file_status_photo"></div>
+                                <div class="docs-doc-preview mt-3" id="docs_preview_photo_wrp" style="display:none;">
+                                    <img id="docs_preview_photo" alt="Profile picture" />
+                                    <button type="button" class="btn btn-sm btn-light-danger mt-3 docs-delete-doc" data-doc="photo">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="docs_card_passport" style="@(Model.MissingPassport ? "" : "display:none;")">
+                            <div class="docs-doc-card h-100">
+                                <div class="fw-bolder text-dark mb-4">Passport / NIN</div>
+                                <input type="file" id="docs_file_passport" class="d-none" accept="image/*,.pdf,application/pdf" data-doc="passport" />
+                                <label for="docs_file_passport" class="btn btn-primary">Choose file</label>
+                                <div class="mt-3">
+                                    <a href="javascript:;" class="docs-take-photo link-primary fw-bold" data-doc="passport">Take photo</a>
+                                </div>
+                                <div class="text-muted fs-8 mt-3" id="docs_file_status_passport"></div>
+                                <div class="docs-doc-preview mt-3" id="docs_preview_passport_wrp" style="display:none;">
+                                    <img id="docs_preview_passport" alt="Passport / NIN" />
+                                    <div class="text-muted fs-8 mt-2" id="docs_preview_passport_file" style="display:none;">PDF selected</div>
+                                    <button type="button" class="btn btn-sm btn-light-danger mt-3 docs-delete-doc" data-doc="passport">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4" id="docs_card_signature" style="@(Model.MissingSignature ? "" : "display:none;")">
+                            <div class="docs-doc-card h-100">
+                                <div class="fw-bolder text-dark mb-4">Signature</div>
+                                <input type="file" id="docs_file_signature" class="d-none" accept="image/*" data-doc="signature" />
+                                <label for="docs_file_signature" class="btn btn-primary">Choose file</label>
+                                <div class="mt-3">
+                                    <a href="javascript:;" class="docs-take-photo link-primary fw-bold" data-doc="signature">Take photo</a>
+                                </div>
+                                <div class="text-muted fs-8 mt-3" id="docs_file_status_signature"></div>
+                                <div class="docs-doc-preview mt-3" id="docs_preview_signature_wrp" style="display:none;">
+                                    <img id="docs_preview_signature" alt="Signature" />
+                                    <button type="button" class="btn btn-sm btn-light-danger mt-3 docs-delete-doc" data-doc="signature">Delete</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="text-muted fs-7 mt-5">You can choose a file or take a live photo with your phone, tablet or laptop camera.</div>
+                </div>
+
+                <div id="docs_camera_panel" class="text-center" style="display:none;">
+                    <h3 class="fw-bolder mb-5" id="docs_camera_title">Take photo</h3>
+                    <video id="docs_camera_video" autoplay playsinline muted style="width:100%; max-height:360px; background:#111; border-radius:8px;"></video>
+                    <canvas id="docs_camera_canvas" class="d-none"></canvas>
+                    <div class="text-muted fs-7 mt-3">Allow camera access, then capture the photo.</div>
+                    <div class="mt-6">
+                        <button type="button" class="btn btn-light me-3" id="docs_camera_cancel">Cancel</button>
+                        <button type="button" class="btn btn-primary" id="docs_camera_capture">Capture</button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-primary" id="docs_save">Upload documents</button>
+            </div>
+        </div>
+    </div>
+</div>
