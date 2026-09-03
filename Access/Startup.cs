@@ -45,7 +45,19 @@ public class Startup
             // Production json previously used "&wmajority" (invalid); Mongo requires "&w=majority".
             url = url.Replace("&wmajority", "&w=majority", StringComparison.OrdinalIgnoreCase)
                      .Replace("?wmajority", "?w=majority", StringComparison.OrdinalIgnoreCase);
-            return new MongoClient(url);
+
+            // Fix (Sep 2026): the driver's default server-selection/connect timeout is 30s.
+            // Mongo.cs calls the driver synchronously, so a slow/failing-over cluster was
+            // blocking ASP.NET request threads for up to 30s each, starving the thread pool
+            // and hanging the whole app (0 completed requests, CPU pegged). Fail fast instead.
+            var settings = MongoClientSettings.FromConnectionString(url);
+            settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+            settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+            settings.SocketTimeout = TimeSpan.FromSeconds(10);
+            settings.MaxConnectionPoolSize = 100;
+            settings.RetryReads = true;
+            settings.RetryWrites = true;
+            return new MongoClient(settings);
         });
 
         Console.WriteLine("Startup: registering API helpers");

@@ -40,7 +40,20 @@ namespace FirstReg.Admin
             services.AddSingleton<IMongoClient, MongoClient>(s =>
             {
                 var url = s.GetRequiredService<IConfiguration>()[Common.MongoUriSettingName];
-                return string.IsNullOrEmpty(url) ? new() : new(url);
+                if (string.IsNullOrEmpty(url))
+                    return new MongoClient();
+
+                // Fix (Sep 2026): default driver timeout is 30s per call, and Mongo.cs calls
+                // the driver synchronously, so a slow/failing-over cluster blocked request
+                // threads for up to 30s each, starving the thread pool and hanging the app.
+                var settings = MongoClientSettings.FromConnectionString(url);
+                settings.ServerSelectionTimeout = TimeSpan.FromSeconds(5);
+                settings.ConnectTimeout = TimeSpan.FromSeconds(5);
+                settings.SocketTimeout = TimeSpan.FromSeconds(10);
+                settings.MaxConnectionPoolSize = 100;
+                settings.RetryReads = true;
+                settings.RetryWrites = true;
+                return new MongoClient(settings);
             });
 
             services.AddSingleton(new EStockApiUrl(Configuration.GetValue<string>(Common.APISettingName)));
