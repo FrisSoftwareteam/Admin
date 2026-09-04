@@ -623,6 +623,10 @@ namespace FirstReg.Admin.Controllers
                     x.ActionRequired ||
                     (x.Signature != null && x.Signature != "")));
 
+                // Unverified accounts older than 14 days stay off these lists.
+                var pendingCutoff = Tools.Now.Date.AddDays(-14);
+                query = query.Where(x => x.Verified || (x.CreatedOn ?? x.Date) >= pendingCutoff);
+
                 var draw = int.TryParse(Request.Query["draw"], out var drawValue) ? drawValue : 1;
                 var start = int.TryParse(Request.Query["start"], out var startValue) ? startValue : 0;
                 var length = int.TryParse(Request.Query["length"], out var lengthValue) ? lengthValue : 25;
@@ -640,12 +644,8 @@ namespace FirstReg.Admin.Controllers
 
                 if (recent == true)
                 {
-                    var now = Tools.Now;
-                    var daysSinceMonday = ((int)now.DayOfWeek + 6) % 7;
-                    var thisWeekStart = now.Date.AddDays(-daysSinceMonday);
-                    var lastWeekStart = thisWeekStart.AddDays(-7);
-
-                    query = query.Where(x => (x.CreatedOn ?? x.Date) >= lastWeekStart);
+                    var recentCutoff = Tools.Now.Date.AddDays(-14);
+                    query = query.Where(x => (x.CreatedOn ?? x.Date) >= recentCutoff);
                 }
 
                 if (v == false || recent == true)
