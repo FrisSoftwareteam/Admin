@@ -37,21 +37,21 @@ namespace FirstReg.Admin.Controllers
 
         public IActionResult Index() => View("List", new string[]
         {
-            Url.Action(nameof(GetLists)),
+            Url.Action(nameof(GetLists), new { v = true }),
             Url.Action(nameof(SwitchGroup)),
         });
 
         [HttpGet("pending")]
         public IActionResult Pending() => View("List", new string[]
         {
-            Url.Action(nameof(GetLists), new { v = false, recent = true }),
+            Url.Action(nameof(GetLists), new { v = false }),
             Url.Action(nameof(SwitchGroup)),
         });
 
         [Route("expired")]
         public IActionResult Expired() => View("List", new string[]
         {
-            Url.Action(nameof(GetLists), new { s = false }),
+            Url.Action(nameof(GetLists), new { v = true, s = false }),
             Url.Action(nameof(SwitchGroup)),
         });
 
