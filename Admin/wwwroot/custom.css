@@ -481,3 +481,24 @@ table.data-list {
         margin-left: 0;
     }
 }
+
+.js-doc-zoom {
+    cursor: zoom-in;
+}
+
+.doc-preview-stage {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: auto;
+    background: #f5f8fa;
+    border-radius: 8px;
+}
+
+.doc-preview-stage img {
+    max-width: 100%;
+    max-height: 70vh;
+    object-fit: contain;
+    transform-origin: center center;
+}
