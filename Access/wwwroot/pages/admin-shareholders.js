@@ -1,5 +1,7 @@
 "use strict";
 
+var detailsLoading = false;
+
 var page = {
     init: function () {
         ! function () {
@@ -51,9 +53,15 @@ var page = {
                     if (hasDetails) {
                         $('td', row).eq(4).html(
                             `<a class="btn btn-sm btn-light btn-active-light-primary a_details" data-id="${data[5]}" 
-                                data-accno="${data[4]}" data-reg="${data[6]}" onclick="ViewShareholderDetails(${data[5]}, ${data[6]}, ${data[4]})">
+                                data-accno="${data[4]}" data-reg="${data[6]}" href="javascript:;" onclick="ViewShareholderDetails(${data[5]}, ${data[6]}, ${data[4]}); return false;">
                                 <span class="fw-bolder">Details</span>
                             </a>`);
+                        if (detailsLoading) {
+                            $('td', row).eq(4).find('.a_details')
+                                .addClass('disabled')
+                                .attr({ 'aria-disabled': 'true', tabindex: '-1' })
+                                .css('pointer-events', 'none');
+                        }
                     } else {
                         $('td', row).eq(4).html(
                             `<span class="btn btn-sm btn-light disabled" title="This match came from an offline shareholder list and has no live holding details.">
@@ -101,16 +109,34 @@ if (closeButtonDivi) {
     });
 }
 
+function lockDetailsButtons($loadingBtn, showSpinner) {
+    var $all = $('.a_details');
+    $all.addClass('disabled')
+        .attr({ 'aria-disabled': 'true', tabindex: '-1' })
+        .css('pointer-events', 'none');
+
+    if (showSpinner && $loadingBtn && $loadingBtn.length) {
+        $loadingBtn.addClass('is-loading')
+            .html('<span class="spinner-border spinner-border-sm me-1"></span>Loading...');
+    }
+}
+
+function unlockDetailsButtons() {
+    $('.a_details')
+        .removeClass('disabled is-loading')
+        .removeAttr('aria-disabled tabindex')
+        .css('pointer-events', '')
+        .html('<span class="fw-bolder">Details</span>');
+}
+
 var ViewShareholderDetails = function (id, reg, accno) {
+    if (detailsLoading) return;
 
     let url = $('#hd_details_url').val();
     var $btn = $(`.a_details[data-id="${id}"][data-reg="${reg}"][data-accno="${accno}"]`).first();
 
-    if ($btn.hasClass('is-loading')) return;
-
-    $btn.addClass('is-loading disabled')
-        .attr('aria-disabled', 'true')
-        .html('<span class="spinner-border spinner-border-sm me-1"></span>Loading...');
+    detailsLoading = true;
+    lockDetailsButtons($btn, true);
 
     toastr.info('Loading shareholder details, please wait...', '', { timeOut: 10000, extendedTimeOut: 0 });
 
@@ -120,6 +146,9 @@ var ViewShareholderDetails = function (id, reg, accno) {
         cache: false,
         success: function (json) {
             toastr.clear();
+            json = json || {};
+            json.units = Array.isArray(json.units) ? json.units : [];
+            json.dividends = Array.isArray(json.dividends) ? json.dividends : [];
             setAccountStatement(json, url, reg, accno);
             setDividendHistory(json, url, reg, accno);
             switchBlock('v_details', 'v-block');
@@ -130,9 +159,8 @@ var ViewShareholderDetails = function (id, reg, accno) {
             toastr.error(msg.length > 200 ? 'Could not fetch shareholder details. Please try again.' : msg);
         },
         complete: function () {
-            $btn.removeClass('is-loading disabled')
-                .removeAttr('aria-disabled')
-                .html('<span class="fw-bolder">Details</span>');
+            detailsLoading = false;
+            unlockDetailsButtons();
         }
     });
 }

@@ -109,8 +109,8 @@ public class RegisterHolderModel
         TotalUnits = sh.TotalUnits;
         Date = DateTime.Now;
 
-        Units = sh.Units.OrderBy(x => x.Id).ToList();
-        Dividends = sh.Dividends.OrderBy(x => x.Id).ToList();
+        Units = (sh.Units ?? new List<Bson.Unit>()).OrderBy(x => x.Id).ToList();
+        Dividends = (sh.Dividends ?? new List<Bson.Dividend>()).OrderBy(x => x.Id).ToList();
     }
 
     public int Id { get; }

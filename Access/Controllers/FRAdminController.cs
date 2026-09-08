@@ -45,24 +45,6 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                 return value;
         }
 
-        private async Task<int> GetDefaultRegisterId()
-        {
-                var matches = await service.Data.GetAsQueryable<Register>().AsNoTracking()
-                        .Where(x => x.Name.Contains("Fidelity"))
-                        .Select(x => new { x.Id, x.Name })
-                        .ToListAsync();
-
-                var selected = matches.FirstOrDefault(x =>
-                                x.Name.Equals("Fidelity Bank Plc", StringComparison.OrdinalIgnoreCase))
-                        ?? matches.FirstOrDefault(x =>
-                                x.Name.Contains("Fidelity Bank Plc", StringComparison.OrdinalIgnoreCase)
-                                && !x.Name.Contains("Accumul", StringComparison.OrdinalIgnoreCase)
-                                && !x.Name.Contains("Right", StringComparison.OrdinalIgnoreCase)
-                                && !x.Name.Contains("Offer", StringComparison.OrdinalIgnoreCase));
-
-                return selected?.Id ?? 0;
-        }
-
         private sealed class FallbackShareholderRecord
         {
                 public string SerialNo { get; set; }
@@ -143,19 +125,27 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
 
         private async Task<RegSH> GetShareholderDetailsModel(int regid, int accno)
         {
+                var acc = accno.ToString();
+                var accountCandidates = new[]
+                {
+                        acc,
+                        acc.PadLeft(6, '0'),
+                        acc.PadLeft(8, '0'),
+                        acc.PadLeft(10, '0'),
+                        acc.PadLeft(12, '0')
+                }.Distinct().ToArray();
+
                 var holdingsQuery = service.Data.GetAsQueryable<ShareHolding>()
+                        .AsNoTracking()
                         .Include(x => x.Register)
                         .Include(x => x.Shareholder)
                         .ThenInclude(x => x.User)
                         .Where(x => x.RegisterId == regid);
 
+                // Keep this filter in SQL. AsEnumerable() previously loaded every holding
+                // for the register into memory, so Details never returned.
                 var holding = await holdingsQuery
-                        .FirstOrDefaultAsync(x => x.AccountNo == accno.ToString());
-
-                // Some account numbers are stored with leading zeroes while the UI passes them as numbers.
-                holding ??= holdingsQuery
-                        .AsEnumerable()
-                        .FirstOrDefault(x => int.TryParse(x.AccountNo, out var dbAccNo) && dbAccNo == accno);
+                        .FirstOrDefaultAsync(x => accountCandidates.Contains(x.AccountNo));
 
                 // List is sourced from Shareholders_staging — fall back there when live ShareHoldings has no row.
                 if (holding == null)
@@ -188,26 +178,33 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
 
                 if (holding.ShareHolderId > 0)
                 {
-                        var bsonShareholder = mongo.Find<Bson.Shareholder, int>(holding.ShareHolderId, MongoTables.Shareholders)
-                                .FirstOrDefault();
-
-                        var bsonHolding = bsonShareholder?.Holdings?.FirstOrDefault(x =>
-                                x.RegCode == regid &&
-                                string.Equals(x.AccountNo, holding.AccountNo, StringComparison.OrdinalIgnoreCase));
-
-                        if (bsonHolding != null)
+                        try
                         {
-                                model.ClearingNo = string.IsNullOrWhiteSpace(model.ClearingNo)
-                                        ? DisplayClearingNo(bsonHolding.ClearingNo)
-                                        : model.ClearingNo;
-                                model.FirstName = string.IsNullOrWhiteSpace(model.FirstName) ? bsonHolding.FirstName : model.FirstName;
-                                model.MiddleName = string.IsNullOrWhiteSpace(model.MiddleName) ? bsonHolding.MiddleName : model.MiddleName;
-                                model.LastName = string.IsNullOrWhiteSpace(model.LastName) ? bsonHolding.LastName : model.LastName;
-                                model.Address1 = string.IsNullOrWhiteSpace(model.Address1) ? bsonHolding.Address1 : model.Address1;
-                                model.Address2 = string.IsNullOrWhiteSpace(model.Address2) ? bsonHolding.Address2 : model.Address2;
-                                model.Units = bsonHolding.Units ?? new List<Bson.Unit>();
-                                model.Dividends = bsonHolding.Dividends ?? new List<Bson.Dividend>();
-                                model.TotalUnits = model.Units.Any() ? model.Units.Sum(x => x.TotalUnits) : holding.Units;
+                                var bsonShareholder = mongo.Find<Bson.Shareholder, int>(holding.ShareHolderId, MongoTables.Shareholders)
+                                        .FirstOrDefault();
+
+                                var bsonHolding = bsonShareholder?.Holdings?.FirstOrDefault(x =>
+                                        x.RegCode == regid &&
+                                        string.Equals(x.AccountNo, holding.AccountNo, StringComparison.OrdinalIgnoreCase));
+
+                                if (bsonHolding != null)
+                                {
+                                        model.ClearingNo = string.IsNullOrWhiteSpace(model.ClearingNo)
+                                                ? DisplayClearingNo(bsonHolding.ClearingNo)
+                                                : model.ClearingNo;
+                                        model.FirstName = string.IsNullOrWhiteSpace(model.FirstName) ? bsonHolding.FirstName : model.FirstName;
+                                        model.MiddleName = string.IsNullOrWhiteSpace(model.MiddleName) ? bsonHolding.MiddleName : model.MiddleName;
+                                        model.LastName = string.IsNullOrWhiteSpace(model.LastName) ? bsonHolding.LastName : model.LastName;
+                                        model.Address1 = string.IsNullOrWhiteSpace(model.Address1) ? bsonHolding.Address1 : model.Address1;
+                                        model.Address2 = string.IsNullOrWhiteSpace(model.Address2) ? bsonHolding.Address2 : model.Address2;
+                                        model.Units = bsonHolding.Units ?? new List<Bson.Unit>();
+                                        model.Dividends = bsonHolding.Dividends ?? new List<Bson.Dividend>();
+                                        model.TotalUnits = model.Units.Any() ? model.Units.Sum(x => x.TotalUnits) : holding.Units;
+                                }
+                        }
+                        catch (Exception ex)
+                        {
+                                logger.LogWarning($"Mongo shareholder lookup failed: {Clear.Tools.GetAllExceptionMessage(ex)}");
                         }
                 }
 
@@ -235,6 +232,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
         private async Task<RegSH> GetShareholderDetailsFromStaging(int regid, int accno)
         {
                 var staging = await service.Data.GetAsQueryable<ShareholderStaging>()
+                        .AsNoTracking()
                         .FirstOrDefaultAsync(x => x.RegisterCode == regid && x.AccountNumber == accno);
 
                 if (staging == null)
@@ -368,7 +366,7 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
         {
                 try
                 {
-                        var selectedRegId = regid ?? await GetDefaultRegisterId();
+                        var selectedRegId = regid.GetValueOrDefault();
 
                         logger.LogWarning($"FRADMIN DEBUG: Shareholders hit. IsAuthenticated={User.Identity.IsAuthenticated}, Name={User.Identity.Name}");
                         await LogAuditAction(AuditLogType.Search,
