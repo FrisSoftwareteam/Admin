@@ -23,8 +23,16 @@
             </div>
         </div>
         <div class="d-flex flex-wrap my-1">
+            <div class="dropdown">
+                <button class="btn btn-primary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    Export
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    <li><a class="dropdown-item js-export-contacts" href="javascript:;" data-format="xlsx">Excel (.xlsx)</a></li>
+                    <li><a class="dropdown-item js-export-contacts" href="javascript:;" data-format="pdf">PDF (.pdf)</a></li>
+                </ul>
+            </div>
             <a href="javascript:;" class="btn btn-info btn-sm ms-3" data-mode="full-modal" data-target="diag_user"><span class="me-2">+</span> Add New</a>
-            @*<a href="javascript:;" class="btn btn-info btn-sm ms-3" data-mode="full-modal" data-target="diag_user"><span class="me-2">+</span> Add New</a>*@
         </div>
     </div>
 

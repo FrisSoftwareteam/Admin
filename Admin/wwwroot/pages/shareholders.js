@@ -88,6 +88,36 @@ KTUtil.onDOMContentLoaded((function () {
     page.init()
 }));
 
+function shareholderExportUrl(format) {
+    var table = document.getElementById("tb_data");
+    if (!table) return "";
+
+    var listUrl = new URL(table.getAttribute("data-url"), window.location.origin);
+    var url = new URL(listUrl.href.replace(/\/list\b/i, "/export"));
+    url.searchParams.set("format", format);
+
+    var search = document.getElementById("tb_search");
+    if (search && search.value.trim())
+        url.searchParams.set("search", search.value.trim());
+
+    var verified = $("#cb_verified").val();
+    if (verified === "1" || verified === "0")
+        url.searchParams.set("v", verified);
+    var subscribed = $("#cb_subscribed").val();
+    if (subscribed === "1" || subscribed === "0")
+        url.searchParams.set("s", subscribed);
+
+    return url.toString();
+}
+
+$(document).on("click", ".js-export-contacts", function (e) {
+    e.preventDefault();
+    var format = $(this).data("format") || "xlsx";
+    var url = shareholderExportUrl(format);
+    if (!url) return;
+    window.location.href = url;
+});
+
 var openSh = function (modal, url) {
 
     var c = $(this);

@@ -7,6 +7,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="8.0.8" />
+		<PackageReference Include="QuestPDF" Version="2025.7.2" />
 	</ItemGroup>
 
 	<ItemGroup>

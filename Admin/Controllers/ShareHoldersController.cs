@@ -1,4 +1,5 @@
-﻿using DocumentFormat.OpenXml.EMMA;
+﻿using ClosedXML.Excel;
+using DocumentFormat.OpenXml.EMMA;
 using DocumentFormat.OpenXml.ExtendedProperties;
 using FirstReg.Data;
 using Microsoft.AspNetCore.Authorization;
@@ -7,7 +8,12 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using QuestPDF.Helpers;
+using QuestPDF.Infrastructure;
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -606,92 +612,108 @@ namespace FirstReg.Admin.Controllers
             }
         }
 
+        [HttpGet("export")]
+        public async Task<IActionResult> ExportContacts(string format, bool? v, bool? s, bool? a, bool? recent, string search, bool? verified, bool? subscribed)
+        {
+            try
+            {
+                v ??= verified;
+                s ??= subscribed;
+                search = (search ?? Request.Query["search[value]"].ToString()).Trim();
+
+                var rows = await ProjectShareholderList(BuildShareholderListQuery(v, s, a, recent, search))
+                    .OrderBy(x => x.FullName == null || x.FullName == "" ? 1 : 0)
+                    .ThenBy(x => x.FullName)
+                    .Select(x => new { Name = x.FullName, Email = x.Email ?? "" })
+                    .ToListAsync();
+
+                var stamp = DateTime.Now.ToString("yyyyMMdd");
+                var kind = (format ?? "xlsx").Trim().ToLowerInvariant();
+
+                if (kind is "pdf")
+                {
+                    QuestPDF.Settings.License = LicenseType.Community;
+                    var pdf = Document.Create(container =>
+                    {
+                        container.Page(page =>
+                        {
+                            page.Margin(30);
+                            page.Size(PageSizes.A4);
+                            page.Header().Text("Shareholders — names and emails").SemiBold().FontSize(16).FontColor(Colors.Blue.Darken3);
+                            page.Content().PaddingTop(12).Table(table =>
+                            {
+                                table.ColumnsDefinition(c =>
+                                {
+                                    c.RelativeColumn(2);
+                                    c.RelativeColumn(3);
+                                });
+                                table.Header(h =>
+                                {
+                                    h.Cell().BorderBottom(1).Padding(4).Text("Name").SemiBold();
+                                    h.Cell().BorderBottom(1).Padding(4).Text("Email").SemiBold();
+                                });
+                                foreach (var row in rows)
+                                {
+                                    table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(row.Name ?? "");
+                                    table.Cell().BorderBottom(0.5f).BorderColor(Colors.Grey.Lighten2).Padding(4).Text(row.Email ?? "");
+                                }
+                            });
+                            page.Footer().AlignRight().Text(t =>
+                            {
+                                t.Span($"{rows.Count} shareholders  •  ");
+                                t.Span(DateTime.Now.ToString("dd MMM yyyy"));
+                            });
+                        });
+                    }).GeneratePdf();
+
+                    return File(pdf, "application/pdf", $"shareholders-names-emails-{stamp}.pdf");
+                }
+
+                using var workbook = new XLWorkbook();
+                var sheet = workbook.Worksheets.Add("Shareholders");
+                sheet.Cell(1, 1).Value = "Name";
+                sheet.Cell(1, 2).Value = "Email";
+                sheet.Row(1).Style.Font.Bold = true;
+                for (var i = 0; i < rows.Count; i++)
+                {
+                    sheet.Cell(i + 2, 1).Value = rows[i].Name ?? "";
+                    sheet.Cell(i + 2, 2).Value = rows[i].Email ?? "";
+                }
+                sheet.Columns().AdjustToContents();
+                using var stream = new MemoryStream();
+                workbook.SaveAs(stream);
+                return File(stream.ToArray(),
+                    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    $"shareholders-names-emails-{stamp}.xlsx");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Error: {Clear.Tools.GetAllExceptionMessage(ex)};");
+                return StatusCode(StatusCodes.Status500InternalServerError, Clear.Tools.GetAllExceptionMessage(ex));
+            }
+        }
+
         [HttpGet("list")]
         public async Task<IActionResult> GetLists(bool? v, bool? s, bool? a, bool? recent)
         {
             try
             {
-                IQueryable<Shareholder> query = _service.Data.GetAsQueryable<Shareholder>()
-                    .AsNoTracking()
-                    .Include(x => x.User);
-
-                // New accounts stay hidden from admin until the creator adds a signature.
-                // ActionRequired keeps rejected accounts visible (signature may have been cleared).
-                query = query.Where(x =>
-                    !x.Hidden &&
-                    (x.Verified ||
-                    x.ActionRequired ||
-                    (x.Signature != null && x.Signature != "")));
-
-                // Unverified accounts older than 14 days stay off these lists.
-                var pendingCutoff = Tools.Now.Date.AddDays(-14);
-                query = query.Where(x => x.Verified || (x.CreatedOn ?? x.Date) >= pendingCutoff);
-
                 var draw = int.TryParse(Request.Query["draw"], out var drawValue) ? drawValue : 1;
                 var start = int.TryParse(Request.Query["start"], out var startValue) ? startValue : 0;
                 var length = int.TryParse(Request.Query["length"], out var lengthValue) ? lengthValue : 25;
                 var search = Request.Query["search[value]"].ToString().Trim();
 
-                if (v != null)
-                {
-                    query = query.Where(x => x.Verified == v.Value);
-                }
-
-                if (a == true)
-                    query = query.Where(x => x.ActionRequired);
-                else if (a == false)
-                    query = query.Where(x => !x.ActionRequired);
-
-                if (recent == true)
-                {
-                    var recentCutoff = Tools.Now.Date.AddDays(-14);
-                    query = query.Where(x => (x.CreatedOn ?? x.Date) >= recentCutoff);
-                }
-
-                if (v == false || recent == true)
-                {
-                    const string accountNotFound = "ACCOUNT NOT FOUND";
-                    var notFoundTicketIds = _service.Data.GetAsQueryable<Message>()
-                        .Where(m => m.Body.Contains(accountNotFound))
-                        .Select(m => m.TicketId);
-
-                    query = query.Where(x => x.TicketId == 0 || !notFoundTicketIds.Contains(x.TicketId));
-                }
-
-                if (s == true)
-                    query = query.Where(x => x.ExpiryDate > Tools.Now);
-                else if (s == false)
-                    query = query.Where(x => x.ExpiryDate == null || x.ExpiryDate < Tools.Now);
-
+                var query = BuildShareholderListQuery(v, s, a, recent, null);
                 var recordsTotal = await query.CountAsync();
 
-                if (!string.IsNullOrWhiteSpace(search))
-                {
-                    query = query.Where(x =>
-                        x.FullName.Contains(search) ||
-                        x.Code.Contains(search) ||
-                        x.User.Email.Contains(search) ||
-                        (x.PrimaryPhone != null && x.PrimaryPhone.Contains(search)) ||
-                        (x.SecondaryPhone != null && x.SecondaryPhone.Contains(search)));
-                }
-
+                query = BuildShareholderListQuery(v, s, a, recent, search);
                 var recordsFiltered = await query.CountAsync();
 
-                var shs = await query
-                    .OrderBy(x => x.FullName)
+                var shs = await ProjectShareholderList(query)
+                    .OrderBy(x => x.FullName == null || x.FullName == "" ? 1 : 0)
+                    .ThenBy(x => x.FullName)
                     .Skip(start)
                     .Take(length)
-                    .Select(x => new
-                    {
-                        x.FullName,
-                        x.Code,
-                        Email = x.User.Email,
-                        x.PrimaryPhone,
-                        x.SecondaryPhone,
-                        x.Verified,
-                        IsSubscribed = x.ExpiryDate != null && x.ExpiryDate > Tools.Now,
-                        x.Id
-                    })
                     .ToListAsync();
 
                 return Ok(new
@@ -701,7 +723,7 @@ namespace FirstReg.Admin.Controllers
                     recordsFiltered,
                     data = shs.Select(x => new[]
                     {
-                        $"{x.FullName}<br>{x.Code}",
+                        FormatShareholderNameCell(x.FullName, x.Code),
                         $"{x.Email}<br>{$"{x.PrimaryPhone} {x.SecondaryPhone}".Trim()}".Trim(),
                         x.Verified ? "verified" : "pending",
                         x.IsSubscribed ? "active" : "expired",
@@ -717,6 +739,106 @@ namespace FirstReg.Admin.Controllers
                 _logger.LogError($"Error: {Clear.Tools.GetAllExceptionMessage(ex)};");
                 return StatusCode(StatusCodes.Status500InternalServerError, Clear.Tools.GetAllExceptionMessage(ex));
             }
+        }
+
+        private IQueryable<Shareholder> BuildShareholderListQuery(bool? v, bool? s, bool? a, bool? recent, string search)
+        {
+            IQueryable<Shareholder> query = _service.Data.GetAsQueryable<Shareholder>()
+                .AsNoTracking()
+                .Include(x => x.User);
+
+            // New accounts stay hidden from admin until the creator adds a signature.
+            // ActionRequired keeps rejected accounts visible (signature may have been cleared).
+            query = query.Where(x =>
+                !x.Hidden &&
+                (x.Verified ||
+                x.ActionRequired ||
+                (x.Signature != null && x.Signature != "")));
+
+            // Unverified accounts older than 14 days stay off these lists.
+            var pendingCutoff = Tools.Now.Date.AddDays(-14);
+            query = query.Where(x => x.Verified || (x.CreatedOn ?? x.Date) >= pendingCutoff);
+
+            if (v != null)
+                query = query.Where(x => x.Verified == v.Value);
+
+            if (a == true)
+                query = query.Where(x => x.ActionRequired);
+            else if (a == false)
+                query = query.Where(x => !x.ActionRequired);
+
+            if (recent == true)
+            {
+                var recentCutoff = Tools.Now.Date.AddDays(-14);
+                query = query.Where(x => (x.CreatedOn ?? x.Date) >= recentCutoff);
+            }
+
+            if (v == false || recent == true)
+            {
+                const string accountNotFound = "ACCOUNT NOT FOUND";
+                var notFoundTicketIds = _service.Data.GetAsQueryable<Message>()
+                    .Where(m => m.Body.Contains(accountNotFound))
+                    .Select(m => m.TicketId);
+
+                query = query.Where(x => x.TicketId == 0 || !notFoundTicketIds.Contains(x.TicketId));
+            }
+
+            if (s == true)
+                query = query.Where(x => x.ExpiryDate > Tools.Now);
+            else if (s == false)
+                query = query.Where(x => x.ExpiryDate == null || x.ExpiryDate < Tools.Now);
+
+            if (!string.IsNullOrWhiteSpace(search))
+            {
+                query = query.Where(x =>
+                    x.FullName.Contains(search) ||
+                    x.User.FullName.Contains(search) ||
+                    x.Code.Contains(search) ||
+                    x.User.Email.Contains(search) ||
+                    (x.PrimaryPhone != null && x.PrimaryPhone.Contains(search)) ||
+                    (x.SecondaryPhone != null && x.SecondaryPhone.Contains(search)) ||
+                    x.Holdings.Any(h => h.AccountName != null && h.AccountName.Contains(search)));
+            }
+
+            return query;
+        }
+
+        private static IQueryable<ShareholderListRow> ProjectShareholderList(IQueryable<Shareholder> query)
+        {
+            return query.Select(x => new ShareholderListRow
+            {
+                FullName = x.FullName != null && x.FullName != ""
+                    ? x.FullName
+                    : (x.User.FullName != null && x.User.FullName != ""
+                        ? x.User.FullName
+                        : x.Holdings
+                            .Where(h => h.AccountName != null && h.AccountName != "")
+                            .OrderByDescending(h => h.Units)
+                            .Select(h => h.AccountName)
+                            .FirstOrDefault() ?? ""),
+                Code = x.Code,
+                Email = x.User.Email,
+                PrimaryPhone = x.PrimaryPhone,
+                SecondaryPhone = x.SecondaryPhone,
+                Verified = x.Verified,
+                IsSubscribed = x.ExpiryDate != null && x.ExpiryDate > Tools.Now,
+                Id = x.Id
+            });
+        }
+
+        private static string FormatShareholderNameCell(string fullName, string code)
+        {
+            var name = CollapseSpaces(fullName);
+            if (string.IsNullOrEmpty(name) || string.Equals(name, code, StringComparison.OrdinalIgnoreCase))
+                return code ?? "";
+            return $"{name}<br>{code}";
+        }
+
+        private static string CollapseSpaces(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return "";
+            return string.Join(" ", value.Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
         }
 
         private async Task<Shareholder> RefreshHoldingsFromStaging(Shareholder sh, bool restoreHidden = false)
@@ -797,5 +919,17 @@ namespace FirstReg.Admin.Controllers
         }
 
         #endregion
+
+        private sealed class ShareholderListRow
+        {
+            public string FullName { get; set; }
+            public string Code { get; set; }
+            public string Email { get; set; }
+            public string PrimaryPhone { get; set; }
+            public string SecondaryPhone { get; set; }
+            public bool Verified { get; set; }
+            public bool IsSubscribed { get; set; }
+            public int Id { get; set; }
+        }
     }
 }
