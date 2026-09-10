@@ -453,10 +453,28 @@ public class FRAdminController(ILogger<FRAdminController> logger, Service servic
                                 }
                         }
 
-                        // Unfiltered default: TOP 500 with no ORDER BY so SQL does not sort millions of rows.
-                        // Filtered: account order is cheap relative to sorting names.
-                        if (hasFilter)
+                        // Prefer real multi-digit registrar accounts over 1–3 digit placeholders
+                        // (reconstructed-share serials like 1, 3, 4). Searching a specific account
+                        // still returns that number even if it is short.
+                        var explicitAccountSearch =
+                                (!string.IsNullOrWhiteSpace(acc) && int.TryParse(acc, out _))
+                                || (!string.IsNullOrWhiteSpace(global) && int.TryParse(global, out _));
+
+                        if (!hasFilter)
+                        {
+                                // Unfiltered default: TOP 500 with no ORDER BY so SQL does not sort millions of rows.
+                                query = query.Where(x => x.AccountNumber >= 1000);
+                        }
+                        else if (!explicitAccountSearch)
+                        {
+                                query = query
+                                        .OrderByDescending(x => x.AccountNumber >= 1000)
+                                        .ThenByDescending(x => x.AccountNumber);
+                        }
+                        else
+                        {
                                 query = query.OrderBy(x => x.AccountNumber);
+                        }
 
                         var stagingRows = await query
                                 .Take(500)
