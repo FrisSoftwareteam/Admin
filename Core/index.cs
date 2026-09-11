@@ -828,6 +828,18 @@ public static class Tools
             )
         ).ToList();
 
+        if (hasChn)
+        {
+            foreach (var live in await FindLiveRegisterHoldingsByChn(chn, data))
+            {
+                if (!StagingRowBelongsToShareholder(sh, live))
+                    continue;
+                if (rows.Any(r => r.RegisterCode == live.RegisterCode && r.AccountNumber == live.AccountNumber))
+                    continue;
+                rows.Add(live);
+            }
+        }
+
         static decimal ParseUnits(string holdings)
         {
             if (string.IsNullOrWhiteSpace(holdings))
@@ -914,18 +926,107 @@ public static class Tools
         return sh;
     }
 
-    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldings(
-        List<ShareHolding> holdings, FirstReg.Services.DataService data)
+    static string EstockConnectionString(FirstReg.Services.DataService data)
+    {
+        var frdbCs = data.GetConnectionString();
+        if (string.IsNullOrWhiteSpace(frdbCs))
+            return null;
+        return new SqlConnectionStringBuilder(frdbCs) { InitialCatalog = "estock" }.ConnectionString;
+    }
+
+    static async Task<decimal> LiveRegisterUnits(SqlConnection conn, int accountNo, int registerId)
+    {
+        await using var cmd = new SqlCommand(@"
+SELECT TOP 1 SumOfno_of_units
+FROM getSumOfHoldings WITH (NOLOCK)
+WHERE account_no = @acc AND reg_code = @reg", conn)
+        {
+            CommandTimeout = 15
+        };
+        cmd.Parameters.AddWithValue("@acc", accountNo);
+        cmd.Parameters.AddWithValue("@reg", registerId);
+        var value = await cmd.ExecuteScalarAsync();
+        if (value == null || value == DBNull.Value)
+            return 0m;
+        return Convert.ToDecimal(value);
+    }
+
+    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldingsByChn(
+        string chn, FirstReg.Services.DataService data)
     {
         var results = new List<ShareholderStaging>();
-        var frdbCs = data.GetConnectionString();
-        if (string.IsNullOrWhiteSpace(frdbCs) || holdings == null || holdings.Count == 0)
+        var estockCs = EstockConnectionString(data);
+        if (string.IsNullOrWhiteSpace(estockCs) || !IsRealClearingNo(chn))
             return results;
 
         try
         {
-            var builder = new SqlConnectionStringBuilder(frdbCs) { InitialCatalog = "estock" };
-            await using var conn = new SqlConnection(builder.ConnectionString);
+            await using var conn = new SqlConnection(estockCs);
+            await conn.OpenAsync();
+            await using var cmd = new SqlCommand(@"
+SELECT Acctno, regcode,
+    LTRIM(RTRIM(CONCAT(
+        ISNULL(last_nm, ''), ' ',
+        ISNULL(first_nm, ''), ' ',
+        ISNULL(middle_nm, '')
+    ))) AS Names,
+    LTRIM(RTRIM(ISNULL(chn, ''))) AS ClearingNo
+FROM T_shold WITH (NOLOCK)
+WHERE chn = @chn", conn)
+            {
+                CommandTimeout = 30
+            };
+            cmd.Parameters.AddWithValue("@chn", chn.Trim());
+
+            var pending = new List<(int Acc, int Reg, string Names, string ClearingNo)>();
+            await using (var reader = await cmd.ExecuteReaderAsync())
+            {
+                while (await reader.ReadAsync())
+                {
+                    pending.Add((
+                        reader.GetInt32(0),
+                        Convert.ToInt32(reader.GetValue(1)),
+                        reader.IsDBNull(2) ? "" : reader.GetString(2),
+                        reader.IsDBNull(3) ? "" : reader.GetString(3)
+                    ));
+                }
+            }
+
+            foreach (var row in pending.GroupBy(x => (x.Acc, x.Reg)).Select(g => g.First()))
+            {
+                decimal units = 0m;
+                try { units = await LiveRegisterUnits(conn, row.Acc, row.Reg); }
+                catch { /* keep 0 */ }
+
+                results.Add(new ShareholderStaging
+                {
+                    AccountNumber = row.Acc,
+                    RegisterCode = row.Reg,
+                    Names = row.Names,
+                    ClearingNo = row.ClearingNo,
+                    Holdings = units.ToString()
+                });
+            }
+        }
+        catch
+        {
+            return results;
+        }
+
+        return results;
+    }
+
+    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldings(
+        List<ShareHolding> holdings, FirstReg.Services.DataService data)
+    {
+        var results = new List<ShareholderStaging>();
+        var estockCs = EstockConnectionString(data);
+        if (string.IsNullOrWhiteSpace(estockCs) || holdings == null || holdings.Count == 0)
+            return results;
+
+        try
+        {
+            await using var conn = new SqlConnection(estockCs);
             await conn.OpenAsync();
 
             foreach (var h in holdings)
@@ -935,25 +1036,18 @@ public static class Tools
 
                 await using var cmd = new SqlCommand(@"
 SELECT TOP 1
-    s.Acctno,
-    s.regcode,
+    Acctno,
+    regcode,
     LTRIM(RTRIM(CONCAT(
-        ISNULL(s.last_nm, ''), ' ',
-        ISNULL(s.first_nm, ''), ' ',
-        ISNULL(s.middle_nm, '')
+        ISNULL(last_nm, ''), ' ',
+        ISNULL(first_nm, ''), ' ',
+        ISNULL(middle_nm, '')
     ))) AS Names,
-    ISNULL(s.chn, '') AS ClearingNo,
-    CAST(ISNULL((
-        SELECT SUM(u.no_of_units)
-        FROM T_units AS u WITH (NOLOCK)
-        WHERE u.account_no = s.Acctno
-          AND u.reg_code = s.regcode
-          AND ISNULL(u.certificate_status, 0) = 1
-    ), 0) AS varchar(50)) AS Holdings
-FROM T_shold AS s WITH (NOLOCK)
-WHERE s.Acctno = @acc AND s.regcode = @reg", conn)
+    LTRIM(RTRIM(ISNULL(chn, ''))) AS ClearingNo
+FROM T_shold WITH (NOLOCK)
+WHERE Acctno = @acc AND regcode = @reg", conn)
                 {
-                    CommandTimeout = 30
+                    CommandTimeout = 20
                 };
                 cmd.Parameters.AddWithValue("@acc", acc);
                 cmd.Parameters.AddWithValue("@reg", h.RegisterId);
@@ -962,13 +1056,21 @@ WHERE s.Acctno = @acc AND s.regcode = @reg", conn)
                 if (!await reader.ReadAsync())
                     continue;
 
+                var names = reader.IsDBNull(2) ? "" : reader.GetString(2);
+                var clearing = reader.IsDBNull(3) ? "" : reader.GetString(3);
+                await reader.CloseAsync();
+
+                decimal units = 0m;
+                try { units = await LiveRegisterUnits(conn, acc, h.RegisterId); }
+                catch { /* keep 0 */ }
+
                 results.Add(new ShareholderStaging
                 {
-                    AccountNumber = reader.GetInt32(0),
-                    RegisterCode = Convert.ToInt32(reader.GetValue(1)),
-                    Names = reader.IsDBNull(2) ? "" : reader.GetString(2),
-                    ClearingNo = reader.IsDBNull(3) ? "" : reader.GetString(3),
-                    Holdings = reader.IsDBNull(4) ? "0" : reader.GetString(4)
+                    AccountNumber = acc,
+                    RegisterCode = h.RegisterId,
+                    Names = names,
+                    ClearingNo = clearing,
+                    Holdings = units.ToString()
                 });
             }
         }
