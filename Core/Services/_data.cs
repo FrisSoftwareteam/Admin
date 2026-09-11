@@ -101,6 +101,8 @@ IF COL_LENGTH('dbo.Shareholders', 'Passport') IS NULL
         public IQueryable<T> SqlQuery<T>(FormattableString sql) =>
             _db.Database.SqlQuery<T>(sql);
 
+        public string GetConnectionString() => _db.Database.GetConnectionString();
+
         #endregion
     }
 }

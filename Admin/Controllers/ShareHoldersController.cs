@@ -542,24 +542,24 @@ namespace FirstReg.Admin.Controllers
         {
             try
             {
-                var hs = await _service.Data.Find<ShareHolding>(x => x.Id == id);
+                var holding = await _service.Data.GetAsQueryable<ShareHolding>()
+                    .Include(x => x.Shareholder)
+                    .ThenInclude(x => x.Holdings)
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
-                if (!hs.Any())
+                if (holding == null)
                     throw new InvalidOperationException("Shareholder account was not found, please try again.");
 
-                ShareHolding sh = hs.First();
-
-                if (!sh.Shareholder.Verified)
+                if (!holding.Shareholder.Verified)
                     throw new InvalidOperationException($"Cannot continue because the shareholder has not been verified.");
 
-                sh.Status = ShareHoldingStatus.Verified;
+                await RefreshHoldingsFromStaging(holding.Shareholder);
 
-                await _service.Data.UpdateAsync(sh);
-
-                await RefreshHoldingsFromStaging(sh.Shareholder);
-                sh.Shareholder.LastUpdate = Tools.Now;
-
-                await _service.Data.UpdateAsync(sh);
+                var refreshed = holding.Shareholder.Holdings
+                    .FirstOrDefault(x => x.Id == id) ?? holding;
+                refreshed.Status = ShareHoldingStatus.Verified;
+                refreshed.Shareholder.LastUpdate = Tools.Now;
+                await _service.Data.UpdateAsync(refreshed);
             }
             catch (Exception ex)
             {

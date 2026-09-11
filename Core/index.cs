@@ -2,6 +2,7 @@
 using DocumentFormat.OpenXml.Spreadsheet;
 using FirstReg.Data;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Data.SqlClient;
 using SpreadsheetLight;
 using System;
 using System.Collections.Generic;
@@ -704,7 +705,7 @@ public static class Tools
         return name.Trim().ToUpperInvariant()
             .Split((char[])null, StringSplitOptions.RemoveEmptyEntries)
             .Select(t => t.Trim('.', ',', ';', ':'))
-            .Where(t => t.Length > 0 && !NameSalutations.Contains(t))
+            .Where(t => t.Length > 1 && !NameSalutations.Contains(t))
             .ToArray();
     }
 
@@ -874,18 +875,109 @@ public static class Tools
             }
         }
 
-        foreach (var h in sh.Holdings.Where(x => !x.Hidden))
+        var unmatched = sh.Holdings.Where(x => !x.Hidden).Where(h =>
         {
-            var matched = int.TryParse(h.AccountNo, out var acc)
-                && rows.Any(x => x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
-            if (!matched)
+            if (!int.TryParse(h.AccountNo, out var acc))
+                return true;
+            return !rows.Any(x => x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
+        }).ToList();
+
+        if (unmatched.Count > 0)
+        {
+            var liveRows = await FindLiveRegisterHoldings(unmatched, data);
+            foreach (var h in unmatched)
             {
+                if (!int.TryParse(h.AccountNo, out var acc))
+                {
+                    h.Units = 0;
+                    h.Status = ShareHoldingStatus.Pending;
+                    continue;
+                }
+
+                var live = liveRows.FirstOrDefault(x =>
+                    x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
+
+                if (live != null && StagingRowBelongsToShareholder(sh, live))
+                {
+                    h.AccountNo = live.AccountNumber.ToString();
+                    h.AccountName = live.Names;
+                    h.Units = ParseUnits(live.Holdings);
+                    h.Status = ShareHoldingStatus.Verified;
+                    continue;
+                }
+
                 h.Units = 0;
                 h.Status = ShareHoldingStatus.Pending;
             }
         }
 
         return sh;
+    }
+
+    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldings(
+        List<ShareHolding> holdings, FirstReg.Services.DataService data)
+    {
+        var results = new List<ShareholderStaging>();
+        var frdbCs = data.GetConnectionString();
+        if (string.IsNullOrWhiteSpace(frdbCs) || holdings == null || holdings.Count == 0)
+            return results;
+
+        try
+        {
+            var builder = new SqlConnectionStringBuilder(frdbCs) { InitialCatalog = "estock" };
+            await using var conn = new SqlConnection(builder.ConnectionString);
+            await conn.OpenAsync();
+
+            foreach (var h in holdings)
+            {
+                if (!int.TryParse(h.AccountNo, out var acc) || h.RegisterId <= 0)
+                    continue;
+
+                await using var cmd = new SqlCommand(@"
+SELECT TOP 1
+    s.Acctno,
+    s.regcode,
+    LTRIM(RTRIM(CONCAT(
+        ISNULL(s.last_nm, ''), ' ',
+        ISNULL(s.first_nm, ''), ' ',
+        ISNULL(s.middle_nm, '')
+    ))) AS Names,
+    ISNULL(s.chn, '') AS ClearingNo,
+    CAST(ISNULL((
+        SELECT SUM(u.no_of_units)
+        FROM T_units AS u WITH (NOLOCK)
+        WHERE u.account_no = s.Acctno
+          AND u.reg_code = s.regcode
+          AND ISNULL(u.certificate_status, 0) = 1
+    ), 0) AS varchar(50)) AS Holdings
+FROM T_shold AS s WITH (NOLOCK)
+WHERE s.Acctno = @acc AND s.regcode = @reg", conn)
+                {
+                    CommandTimeout = 30
+                };
+                cmd.Parameters.AddWithValue("@acc", acc);
+                cmd.Parameters.AddWithValue("@reg", h.RegisterId);
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                if (!await reader.ReadAsync())
+                    continue;
+
+                results.Add(new ShareholderStaging
+                {
+                    AccountNumber = reader.GetInt32(0),
+                    RegisterCode = Convert.ToInt32(reader.GetValue(1)),
+                    Names = reader.IsDBNull(2) ? "" : reader.GetString(2),
+                    ClearingNo = reader.IsDBNull(3) ? "" : reader.GetString(3),
+                    Holdings = reader.IsDBNull(4) ? "0" : reader.GetString(4)
+                });
+            }
+        }
+        catch
+        {
+            return results;
+        }
+
+        return results;
     }
 }
 
