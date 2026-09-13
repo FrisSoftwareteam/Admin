@@ -82,18 +82,15 @@ namespace FirstReg.Admin.Controllers
                 if (sh == null || sh.Hidden)
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                try
+                if (!sh.Verified)
                 {
-                    sh = await RefreshHoldingsFromStaging(sh);
+                    Tools.RestrictUnverifiedHoldingsToRegistration(sh);
+                    await _service.Data.UpdateAsync(sh);
                     sh = await _service.Data.GetAsQueryable<Shareholder>()
                         .Include(x => x.User)
                         .Include(x => x.Holdings)
                         .ThenInclude(x => x.Register)
                         .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
-                }
-                catch (Exception refreshEx)
-                {
-                    _logger.LogWarning(refreshEx, "Could not refresh holdings from staging for {Code}", code);
                 }
 
                 return View(sh);
@@ -411,7 +408,7 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh, attachNew: true);
+                    sh = await RefreshHoldingsFromStaging(sh);
                 }
                 catch (Exception vex)
                 {
@@ -449,22 +446,15 @@ namespace FirstReg.Admin.Controllers
                 try
                 {
                     sh = await RefreshHoldingsFromStaging(sh, restoreHidden: true);
+                    if (!sh.Verified)
+                    {
+                        Tools.RestrictUnverifiedHoldingsToRegistration(sh);
+                        await _service.Data.UpdateAsync(sh);
+                    }
                 }
                 catch (Exception vex)
                 {
                     TempData["error"] = $"Could not retrieve shareholder details from the register:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
-                }
-
-                try
-                {
-                    var regids = (await _service.Data.FromSql<RegisterIdModel>("SELECT Id FROM Registers"));
-                    sh = await Tools.UpdateAccountDetails(sh, regids.Select(x => x.Id).ToList(), _apiClient, _apiUrl, _mondgodb);
-                    await _service.Data.UpdateAsync(sh);
-                }
-                catch (Exception vex)
-                {
-                    if (TempData["error"] == null)
-                        TempData["error"] = $"Could not retrieve shareholder details from the API:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
                 }
             }
             catch (Exception ex)
@@ -492,42 +482,26 @@ namespace FirstReg.Admin.Controllers
                 var accountNo = (accno ?? "").Trim();
                 sh.AccountNo = string.IsNullOrWhiteSpace(accountNo) ? null : accountNo;
 
-                var visible = sh.Holdings.Where(x => !x.Hidden).ToList();
-                var existingNos = visible
-                    .Select(x => (x.AccountNo ?? "").Trim())
-                    .Where(x => !string.IsNullOrWhiteSpace(x))
-                    .Distinct(StringComparer.OrdinalIgnoreCase)
-                    .ToList();
-                if (!string.IsNullOrWhiteSpace(sh.AccountNo) && existingNos.Count <= 1)
+                if (!sh.Verified)
+                    Tools.RestrictUnverifiedHoldingsToRegistration(sh);
+                else
                 {
-                    foreach (var holding in visible)
-                        holding.AccountNo = sh.AccountNo;
+                    var visible = sh.Holdings.Where(x => !x.Hidden).ToList();
+                    var existingNos = visible
+                        .Select(x => (x.AccountNo ?? "").Trim())
+                        .Where(x => !string.IsNullOrWhiteSpace(x))
+                        .Distinct(StringComparer.OrdinalIgnoreCase)
+                        .ToList();
+                    if (!string.IsNullOrWhiteSpace(sh.AccountNo) && existingNos.Count <= 1)
+                    {
+                        foreach (var holding in visible)
+                            holding.AccountNo = sh.AccountNo;
+                    }
                 }
 
                 await _service.Data.UpdateAsync(sh);
 
                 TempData["success"] = "Account number was successfully updated";
-
-                try
-                {
-                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: true);
-                }
-                catch (Exception vex)
-                {
-                    TempData["error"] = $"Could not retrieve shareholder details from the register:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
-                }
-
-                try
-                {
-                    var regids = (await _service.Data.FromSql<RegisterIdModel>("SELECT Id FROM Registers"));
-                    sh = await Tools.UpdateAccountDetails(sh, regids.Select(x => x.Id).ToList(), _apiClient, _apiUrl, _mondgodb);
-                    await _service.Data.UpdateAsync(sh);
-                }
-                catch (Exception vex)
-                {
-                    if (TempData["error"] == null)
-                        TempData["error"] = $"Could not retrieve shareholder details from the API:\n{Clear.Tools.GetAllExceptionMessage(vex)}";
-                }
             }
             catch (Exception ex)
             {
@@ -630,14 +604,18 @@ namespace FirstReg.Admin.Controllers
         {
             try
             {
-                var hs = await _service.Data.Find<ShareHolding>(x => x.Id == id);
+                var holding = await _service.Data.GetAsQueryable<ShareHolding>()
+                    .Include(x => x.Shareholder)
+                    .FirstOrDefaultAsync(x => x.Id == id);
 
-                if (!hs.Any())
+                if (holding == null)
                     throw new InvalidOperationException("Shareholder account was not found, please try again.");
 
-                var holding = hs.First();
                 holding.Hidden = true;
                 await _service.Data.UpdateAsync(holding);
+
+                if (!string.IsNullOrWhiteSpace(holding.Shareholder?.Code))
+                    return RedirectToAction(nameof(Details), new { code = holding.Shareholder.Code });
             }
             catch (Exception ex)
             {

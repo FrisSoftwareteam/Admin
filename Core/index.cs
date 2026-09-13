@@ -760,6 +760,62 @@ public static class Tools
     }
 
     /// <summary>
+    /// Pending accounts should only keep the registrar(s) and account number entered at signup,
+    /// not extra companies attached later by name or CHN.
+    /// </summary>
+    public static void RestrictUnverifiedHoldingsToRegistration(Shareholder sh)
+    {
+        if (sh == null || sh.Verified || sh.Holdings == null || sh.Holdings.Count == 0)
+            return;
+
+        var holdings = sh.Holdings.ToList();
+        var earliest = holdings.Min(h => h.Date);
+        var firstBatch = holdings.Where(h => h.Date <= earliest.AddSeconds(3)).ToList();
+        var declaredRegs = firstBatch.Select(h => h.RegisterId).Distinct().ToList();
+        if (declaredRegs.Count == 0 || declaredRegs.Count > 5)
+            declaredRegs = [holdings.OrderBy(h => h.Id).First().RegisterId];
+
+        var profileAcc = (sh.AccountNo ?? "").Trim();
+
+        bool SameAcc(string stored)
+        {
+            if (string.IsNullOrWhiteSpace(profileAcc))
+                return true;
+            if (string.IsNullOrWhiteSpace(stored))
+                return false;
+            if (int.TryParse(profileAcc, out var a) && int.TryParse(stored.Trim(), out var b))
+                return a == b;
+            return string.Equals(profileAcc, stored.Trim(), StringComparison.OrdinalIgnoreCase);
+        }
+
+        foreach (var h in holdings)
+        {
+            var belongs = declaredRegs.Contains(h.RegisterId) && SameAcc(h.AccountNo);
+            if (!belongs)
+                h.Hidden = true;
+        }
+
+        if (string.IsNullOrWhiteSpace(profileAcc))
+            return;
+
+        foreach (var regId in declaredRegs)
+        {
+            if (holdings.Any(h => h.RegisterId == regId && SameAcc(h.AccountNo)))
+                continue;
+
+            sh.Holdings.Add(new ShareHolding
+            {
+                Date = Now,
+                RegisterId = regId,
+                AccountNo = profileAcc,
+                AccountName = sh.FullName,
+                Units = 0,
+                Status = ShareHoldingStatus.Pending
+            });
+        }
+    }
+
+    /// <summary>
     /// Staging rows belong to this profile when the CHN matches, or the names match
     /// after ignoring salutations such as Mr/Mrs. Account number alone is not enough.
     /// </summary>
@@ -820,23 +876,6 @@ public static class Tools
             fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn);
         else if (accountNos.Count > 0)
             fetched = await data.Find<ShareholderStaging>(x => accountNos.Contains(x.AccountNumber));
-
-        if (nameTokens.Length >= 2)
-        {
-            var t0 = nameTokens[0];
-            var t1 = nameTokens[1];
-            var t2 = nameTokens.Length > 2 ? nameTokens[2] : null;
-            var byName = t2 == null
-                ? await data.Find<ShareholderStaging>(x =>
-                    x.Names.ToUpper().Contains(t0) && x.Names.ToUpper().Contains(t1))
-                : await data.Find<ShareholderStaging>(x =>
-                    x.Names.ToUpper().Contains(t0) && x.Names.ToUpper().Contains(t1) && x.Names.ToUpper().Contains(t2));
-            fetched = fetched
-                .Concat(byName)
-                .GroupBy(x => (x.RegisterCode, x.AccountNumber))
-                .Select(g => g.First())
-                .ToList();
-        }
 
         var foreign = sh.Holdings.Where(h =>
         {
@@ -910,8 +949,7 @@ public static class Tools
             }
 
             var typed = holdingKeys.Any(k => k.RegisterId == row.RegisterCode && k.AccountNo == row.AccountNumber);
-            var sameChn = hasChn && string.Equals((row.ClearingNo ?? "").Trim(), chn, StringComparison.OrdinalIgnoreCase);
-            if (!canAttach || (!typed && !sameChn))
+            if (!canAttach || !typed)
                 continue;
 
             if (registerIds.Contains(row.RegisterCode) &&
