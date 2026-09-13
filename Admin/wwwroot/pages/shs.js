@@ -101,3 +101,16 @@ $('.bt_h_review').on('click', function () {
         }
     });
 });
+
+$('#bt_add_accno_row').on('click', function () {
+    var row = $('#accno_row_template .accno-row').first().clone();
+    row.find('select').val('');
+    row.find('input').val('');
+    $('#accno_rows').append(row);
+});
+
+$('#accno_rows').on('click', '.bt-remove-accno-row', function () {
+    if ($('#accno_rows .accno-row').length < 2)
+        return;
+    $(this).closest('.accno-row').remove();
+});

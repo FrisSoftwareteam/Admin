@@ -82,7 +82,7 @@ namespace FirstReg.Admin.Controllers
                 if (sh == null || sh.Hidden)
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                if (!sh.Verified)
+                if (!sh.Verified && sh.VisibleHoldings.Count() > 8)
                 {
                     Tools.RestrictUnverifiedHoldingsToRegistration(sh);
                     await _service.Data.UpdateAsync(sh);
@@ -92,6 +92,11 @@ namespace FirstReg.Admin.Controllers
                         .ThenInclude(x => x.Register)
                         .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
                 }
+
+                ViewBag.CertificateRegisters = (await _service.Data.Get<Register>())
+                    .Where(x => Tools.IsCertificateRegister(x.Id))
+                    .OrderBy(x => x.Name)
+                    .ToList();
 
                 return View(sh);
             }
@@ -466,7 +471,7 @@ namespace FirstReg.Admin.Controllers
         }
 
         [HttpPost("update/account-no/{code}")]
-        public async Task<IActionResult> UpdateAccountNo(string code, string accno)
+        public async Task<IActionResult> UpdateAccountNo(string code, int[] registerId, string[] accno)
         {
             try
             {
@@ -479,29 +484,20 @@ namespace FirstReg.Admin.Controllers
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
                 Shareholder sh = hs.First();
-                var accountNo = (accno ?? "").Trim();
-                sh.AccountNo = string.IsNullOrWhiteSpace(accountNo) ? null : accountNo;
+                var ids = registerId ?? [];
+                var numbers = accno ?? [];
+                var count = Math.Min(ids.Length, numbers.Length);
+                var entries = new List<(int RegisterId, string AccountNo)>();
+                for (var i = 0; i < count; i++)
+                    entries.Add((ids[i], numbers[i]));
 
-                if (!sh.Verified)
-                    Tools.RestrictUnverifiedHoldingsToRegistration(sh);
-                else
-                {
-                    var visible = sh.Holdings.Where(x => !x.Hidden).ToList();
-                    var existingNos = visible
-                        .Select(x => (x.AccountNo ?? "").Trim())
-                        .Where(x => !string.IsNullOrWhiteSpace(x))
-                        .Distinct(StringComparer.OrdinalIgnoreCase)
-                        .ToList();
-                    if (!string.IsNullOrWhiteSpace(sh.AccountNo) && existingNos.Count <= 1)
-                    {
-                        foreach (var holding in visible)
-                            holding.AccountNo = sh.AccountNo;
-                    }
-                }
+                if (entries.Count == 0)
+                    throw new InvalidOperationException("Add at least one registrar and account number.");
 
+                Tools.ApplyRegisteredAccounts(sh, entries);
                 await _service.Data.UpdateAsync(sh);
 
-                TempData["success"] = "Account number was successfully updated";
+                TempData["success"] = "Registers and account numbers were successfully updated";
             }
             catch (Exception ex)
             {

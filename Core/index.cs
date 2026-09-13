@@ -788,6 +788,10 @@ public static class Tools
             return string.Equals(profileAcc, stored.Trim(), StringComparison.OrdinalIgnoreCase);
         }
 
+        var visible = holdings.Where(h => !h.Hidden).ToList();
+        if (visible.Count > 0 && visible.Count <= 8)
+            return;
+
         foreach (var h in holdings)
         {
             var belongs = declaredRegs.Contains(h.RegisterId) && SameAcc(h.AccountNo);
@@ -813,6 +817,65 @@ public static class Tools
                 Status = ShareHoldingStatus.Pending
             });
         }
+    }
+
+    public static bool SameShareAccountNo(string left, string right)
+    {
+        if (string.IsNullOrWhiteSpace(left) || string.IsNullOrWhiteSpace(right))
+            return false;
+        if (int.TryParse(left.Trim(), out var a) && int.TryParse(right.Trim(), out var b))
+            return a == b;
+        return string.Equals(left.Trim(), right.Trim(), StringComparison.OrdinalIgnoreCase);
+    }
+
+    /// <summary>
+    /// Sets the visible investments to the registrar + account number pairs supplied by Admin.
+    /// Extra auto-attached companies stay hidden. New rows stay pending for Review.
+    /// </summary>
+    public static void ApplyRegisteredAccounts(Shareholder sh, IEnumerable<(int RegisterId, string AccountNo)> accounts)
+    {
+        if (sh?.Holdings == null)
+            return;
+
+        var entries = (accounts ?? [])
+            .Where(x => x.RegisterId > 0 && IsCertificateRegister(x.RegisterId) && !string.IsNullOrWhiteSpace(x.AccountNo))
+            .Select(x => (x.RegisterId, Acc: x.AccountNo.Trim()))
+            .GroupBy(x => $"{x.RegisterId}:{(int.TryParse(x.Acc, out var n) ? n.ToString() : x.Acc.ToUpperInvariant())}")
+            .Select(g => g.First())
+            .ToList();
+
+        foreach (var h in sh.Holdings)
+        {
+            var keep = entries.Any(e => e.RegisterId == h.RegisterId && SameShareAccountNo(h.AccountNo, e.Acc));
+            h.Hidden = !keep;
+        }
+
+        foreach (var entry in entries)
+        {
+            var match = sh.Holdings.FirstOrDefault(h =>
+                h.RegisterId == entry.RegisterId && SameShareAccountNo(h.AccountNo, entry.Acc));
+            if (match != null)
+            {
+                match.Hidden = false;
+                match.AccountNo = entry.Acc;
+                if (string.IsNullOrWhiteSpace(match.AccountName))
+                    match.AccountName = sh.FullName;
+                continue;
+            }
+
+            sh.Holdings.Add(new ShareHolding
+            {
+                Date = Now,
+                RegisterId = entry.RegisterId,
+                AccountNo = entry.Acc,
+                AccountName = sh.FullName,
+                Units = 0,
+                Status = ShareHoldingStatus.Pending
+            });
+        }
+
+        if (entries.Count > 0)
+            sh.AccountNo = entries[0].Acc;
     }
 
     /// <summary>

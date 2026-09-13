@@ -2,6 +2,10 @@
 
 @{
     ViewBag.Title = "Shareholder Details";
+    var certificateRegisters = (ViewBag.CertificateRegisters as IEnumerable<Register>) ?? Enumerable.Empty<Register>();
+    var accnoRows = Model.VisibleHoldings.Any()
+        ? Model.VisibleHoldings.Select(h => (RegisterId: h.RegisterId, AccountNo: h.AccountNo)).ToList()
+        : new List<(int RegisterId, string AccountNo)> { (0, Model.DisplayAccountNo) };
 }
 
 <div class="post d-flex flex-column-fluid" id="kt_post">
@@ -38,9 +42,19 @@
                         <div id="kt_customer_view_details" class="collapse show">
                             <div class="py-5 fs-6">
 
-                                <div class="fw-bolder mt-5">Account Number</div>
+                                <div class="fw-bolder mt-5">Registers &amp; Account Numbers</div>
                                 <div class="text-gray-600">
-                                    @Model.DisplayAccountNo
+                                    @if (Model.VisibleHoldings.Any())
+                                    {
+                                        foreach (var h in Model.VisibleHoldings)
+                                        {
+                                            <div>@h.Register?.Name @h.AccountNo</div>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        @Model.DisplayAccountNo
+                                    }
                                     <a href="javascript:void;" data-bs-toggle="modal" data-bs-target="#diag_update_accno" class="text-gray-600 text-primary text-hover-primary">update..</a>
                                 </div>
 
@@ -630,34 +644,91 @@
         </div>
 
         <div class="modal fade" id="diag_update_accno" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered mw-500px">
+            <div class="modal-dialog modal-dialog-centered mw-650px">
                 <div class="modal-content">
-                    <form method="post" asp-action="UpdateAccountNo" asp-route-code="@Model.Code" class="form-loader">
+                    <form method="post" asp-action="UpdateAccountNo" asp-route-code="@Model.Code" class="form-loader" id="form_update_accno">
                         <div class="modal-header" id="diag_update_accno_header">
-                            <h2 class="fw-bolder">Update Account Number</h2>
+                            <h2 class="fw-bolder">Update Registers &amp; Account Numbers</h2>
                             <div id="diag_update_accno_close" class="btn btn-icon btn-sm btn-active-icon-primary" data-bs-dismiss="modal">
                                 <span class="svg-icon svg-icon-1"> <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <g transform="translate(12.000000, 12.000000) rotate(-45.000000) translate(-12.000000, -12.000000) translate(4.000000, 4.000000)" fill="#000000"> <rect fill="#000000" x="0" y="7" width="16" height="2" rx="1" /> <rect fill="#000000" opacity="0.5" transform="translate(8.000000, 8.000000) rotate(-270.000000) translate(-8.000000, -8.000000)" x="0" y="7" width="16" height="2" rx="1" /> </g> </svg> </span>
                             </div>
                         </div>
                         <div class="modal-body py-10 px-lg-17">
-                            <div class="d-flex flex-column">
-                                <div>
-                                    <div class="row">
-                                        <div class="col">
-                                            <div class="fv-row mb-5">
-                                                <label class="fs-6 fw-bold mb-2">Account Number</label>
-                                                <input id="tx_accno" type="text" class="form-control form-control-solid" name="accno" placeholder="Account Number" value="@Model.DisplayAccountNo" />
-                                            </div>
+                            <div id="accno_rows">
+                                @foreach (var row in accnoRows)
+                                {
+                                    <div class="accno-row row g-3 mb-4 align-items-end">
+                                        <div class="col-md-6">
+                                            <label class="fs-6 fw-bold mb-2">Register</label>
+                                            <select name="registerId" class="form-select form-control-solid" required>
+                                                <option value="">Select register...</option>
+                                                @foreach (var reg in certificateRegisters)
+                                                {
+                                                    if (reg.Id == row.RegisterId)
+                                                    {
+                                                        <option value="@reg.Id" selected>@reg.Name</option>
+                                                    }
+                                                    else
+                                                    {
+                                                        <option value="@reg.Id">@reg.Name</option>
+                                                    }
+                                                }
+                                            </select>
+                                        </div>
+                                        <div class="col-md-5">
+                                            <label class="fs-6 fw-bold mb-2">Account Number</label>
+                                            <input type="text" class="form-control form-control-solid" name="accno" placeholder="Account Number" value="@row.AccountNo" required />
+                                        </div>
+                                        <div class="col-md-1">
+                                            <button type="button" class="btn btn-icon btn-light-danger bt-remove-accno-row" title="Remove">
+                                                <span class="svg-icon svg-icon-3">
+                                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                        <path d="M5 9C5 8.44772 5.44772 8 6 8H18C18.5523 8 19 8.44772 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z" fill="currentColor"></path>
+                                                        <path opacity="0.5" d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V5C19 5.55228 18.5523 6 18 6H6C5.44772 6 5 5.55228 5 5V5Z" fill="currentColor"></path>
+                                                        <path opacity="0.5" d="M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V4H9V4Z" fill="currentColor"></path>
+                                                    </svg>
+                                                </span>
+                                            </button>
                                         </div>
                                     </div>
-                                </div>
+                                }
                             </div>
+                            <button type="button" class="btn btn-light-primary" id="bt_add_accno_row">Add another register</button>
                         </div>
                         <div class="modal-footer flex-center">
                             <button class="btn btn-light me-3" data-bs-dismiss="modal">Cancel</button>
                             <button type="submit" class="btn btn-success bt-submit"> <span class="indicator-label">Submit</span> <span class="indicator-progress"> Please wait... <span class="spinner-border spinner-border-sm align-middle ms-2"></span> </span> </button>
                         </div>
                     </form>
+                    <div id="accno_row_template" class="d-none">
+                        <div class="accno-row row g-3 mb-4 align-items-end">
+                            <div class="col-md-6">
+                                <label class="fs-6 fw-bold mb-2">Register</label>
+                                <select name="registerId" class="form-select form-control-solid" required>
+                                    <option value="">Select register...</option>
+                                    @foreach (var reg in certificateRegisters)
+                                    {
+                                        <option value="@reg.Id">@reg.Name</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-md-5">
+                                <label class="fs-6 fw-bold mb-2">Account Number</label>
+                                <input type="text" class="form-control form-control-solid" name="accno" placeholder="Account Number" required />
+                            </div>
+                            <div class="col-md-1">
+                                <button type="button" class="btn btn-icon btn-light-danger bt-remove-accno-row" title="Remove">
+                                    <span class="svg-icon svg-icon-3">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M5 9C5 8.44772 5.44772 8 6 8H18C18.5523 8 19 8.44772 19 9V18C19 19.6569 17.6569 21 16 21H8C6.34315 21 5 19.6569 5 18V9Z" fill="currentColor"></path>
+                                            <path opacity="0.5" d="M5 5C5 4.44772 5.44772 4 6 4H18C18.5523 4 19 4.44772 19 5V5C19 5.55228 18.5523 6 18 6H6C5.44772 6 5 5.55228 5 5V5Z" fill="currentColor"></path>
+                                            <path opacity="0.5" d="M9 4C9 3.44772 9.44772 3 10 3H14C14.5523 3 15 3.44772 15 4V4H9V4Z" fill="currentColor"></path>
+                                        </svg>
+                                    </span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
