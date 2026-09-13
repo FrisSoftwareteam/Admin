@@ -52,10 +52,52 @@ $('#chk_allow_group').change(function () {
 })();
 
 $('.bt_h_review').on('click', function () {
-    $('#sp_h_register').html(this.getAttribute('data-reg'));
-    $('#sp_h_accno').html(this.getAttribute('data-accno'));
+    var id = this.getAttribute('data-id');
+    var reg = this.getAttribute('data-reg');
+    var accno = this.getAttribute('data-accno');
+    var url = this.getAttribute('data-review-url') || ('/shareholders/holding/review/' + id);
 
-    $('#tx_h_register').val(this.getAttribute('data-reg'));
-    $('#tx_h_accno').val(this.getAttribute('data-accno'));
-    $('.tx_h_id').val(this.getAttribute('data-id'));
+    $('#sp_h_register').html(reg);
+    $('#sp_h_accno').html(accno);
+    $('#tx_h_register').val(reg);
+    $('#tx_h_accno').val(accno);
+    $('#tx_h_name').val('');
+    $('.tx_h_id').val(id);
+    $('#sp_h_lookup').html('Searching <span class="fw-bolder">' + reg + '</span> for account <span class="fw-bolder">' + accno + '</span>…');
+
+    $.ajax({
+        type: 'GET',
+        url: url,
+        cache: false,
+        success: function (data) {
+            if (!data || !data.found) {
+                $('#tx_h_name').val('Not found');
+                $('#sp_h_lookup').html(
+                    'Account <span class="fw-bolder">' + accno + '</span> was not found in <span class="fw-bolder">' + reg + '</span>. ' +
+                    'The name will not come up. Do not verify — delete it if they selected the wrong registrar.'
+                );
+                return;
+            }
+
+            $('#tx_h_name').val(data.accountName || '');
+            var units = (data.units || 0).toLocaleString();
+            if (data.nameMatches) {
+                $('#sp_h_lookup').html(
+                    'Found <span class="fw-bolder">' + data.accountName + '</span> in ' + reg +
+                    ' with ' + units + ' units. This name matches the applicant.'
+                );
+            } else {
+                $('#sp_h_lookup').html(
+                    'Found <span class="fw-bolder">' + data.accountName + '</span> in ' + reg +
+                    ' with ' + units + ' units. This name does not match the applicant. Do not verify — delete it.'
+                );
+            }
+        },
+        error: function () {
+            $('#tx_h_name').val('');
+            $('#sp_h_lookup').html(
+                'Could not search ' + reg + ' for ' + accno + '. Confirm on estock before you continue.'
+            );
+        }
+    });
 });

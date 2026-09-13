@@ -272,6 +272,7 @@
                                             {
                                                 <button type="button" class="btn btn-sm btn-info bt_h_review"
                                                 data-id="@h.Id" data-reg="@h.Register.Name" data-accno="@h.AccountNo"
+                                                data-review-url="@Url.Action("ReviewHolding", new { id = h.Id })"
                                                 data-bs-toggle="modal" data-bs-target="#diag_verify_holding">
                                                     Review
                                                 </button>
@@ -550,20 +551,18 @@
                                 <span class="svg-icon svg-icon-2tx svg-icon-primary me-4"> <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" viewBox="0 0 24 24" version="1.1"> <circle fill="#000000" opacity="0.3" cx="12" cy="12" r="10" /> <rect fill="#000000" x="11" y="7" width="2" height="8" rx="1" /> <rect fill="#000000" x="11" y="16" width="2" height="2" rx="1" /> </svg> </span>
                                 <div class="d-flex flex-stack flex-grow-1">
                                     <div class="fw-bold">
-                                        <div class="fs-6 text-gray-800">
-                                            You are about to verify that <span class="fw-bolder" id="sp_h_accno"></span>
-                                            in <span class="fw-bolder" id="sp_h_register"></span>
-                                            belongs to @Model.User.FullName, please confirm this on estock before you continue.
-                                            @*<a href="#">Privacy Policy</a>*@
+                                        <div class="fs-6 text-gray-800" id="sp_h_lookup">
+                                            Searching <span class="fw-bolder" id="sp_h_register"></span>
+                                            for account <span class="fw-bolder" id="sp_h_accno"></span>…
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div>
-                                @* <div class="fv-row mb-5">
-                                <label class="fs-6 fw-bold mb-2">Name</label>
-                                <input id="tx_h_name" type="text" class="form-control form-control-solid" placeholder="Shareholder" readonly />
-                                </div>*@
+                                <div class="fv-row mb-5">
+                                    <label class="fs-6 fw-bold mb-2">Name on register</label>
+                                    <input id="tx_h_name" type="text" class="form-control form-control-solid" placeholder="Searching…" readonly />
+                                </div>
                                 <div class="row">
                                     <div class="col-8">
                                         <div class="fv-row mb-5">

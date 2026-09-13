@@ -427,8 +427,6 @@ public class AuthController : BaseController
             });
         }
 
-        var regids = (await _service.Data.Get<Register>()).Select(x => x.Id).ToList();
-        sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, _service.Data);
         await _service.Data.UpdateAsync(sh);
     }
 

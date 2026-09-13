@@ -411,7 +411,7 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh);
+                    sh = await RefreshHoldingsFromStaging(sh, attachNew: true);
                 }
                 catch (Exception vex)
                 {
@@ -537,6 +537,56 @@ namespace FirstReg.Admin.Controllers
             return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
         }
 
+        [HttpGet("holding/review/{id}")]
+        public async Task<IActionResult> ReviewHolding(int id)
+        {
+            try
+            {
+                var holding = await _service.Data.GetAsQueryable<ShareHolding>()
+                    .Include(x => x.Register)
+                    .Include(x => x.Shareholder)
+                    .FirstOrDefaultAsync(x => x.Id == id);
+
+                if (holding == null)
+                    return NotFound(new { found = false, message = "Shareholding was not found." });
+
+                var row = await Tools.FindRegisterAccount(holding.RegisterId, holding.AccountNo, _service.Data);
+                var registerName = holding.Register?.Name ?? "";
+                if (row == null)
+                {
+                    return Ok(new
+                    {
+                        found = false,
+                        register = registerName,
+                        accountNo = holding.AccountNo,
+                        accountName = "",
+                        units = 0m,
+                        nameMatches = false
+                    });
+                }
+
+                return Ok(new
+                {
+                    found = true,
+                    register = registerName,
+                    accountNo = holding.AccountNo,
+                    accountName = row.Names ?? "",
+                    units = Tools.ParseStagingHoldings(row.Holdings),
+                    nameMatches = Tools.NamesLikelySame(holding.Shareholder?.FullName, row.Names)
+                        || Tools.NamesLikelySame(holding.AccountName, row.Names)
+                });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    found = false,
+                    message = Clear.Tools.GetAllExceptionMessage(ex)
+                });
+            }
+        }
+
         [HttpPost("holding/verify")]
         public async Task<IActionResult> VerifyHolding(int id)
         {
@@ -544,22 +594,27 @@ namespace FirstReg.Admin.Controllers
             {
                 var holding = await _service.Data.GetAsQueryable<ShareHolding>()
                     .Include(x => x.Shareholder)
-                    .ThenInclude(x => x.Holdings)
+                    .Include(x => x.Register)
                     .FirstOrDefaultAsync(x => x.Id == id);
 
                 if (holding == null)
                     throw new InvalidOperationException("Shareholder account was not found, please try again.");
 
-                if (!holding.Shareholder.Verified)
-                    throw new InvalidOperationException($"Cannot continue because the shareholder has not been verified.");
+                var row = await Tools.FindRegisterAccount(holding.RegisterId, holding.AccountNo, _service.Data);
+                if (row != null)
+                {
+                    holding.AccountNo = row.AccountNumber.ToString();
+                    holding.AccountName = row.Names;
+                    holding.Units = Tools.ParseStagingHoldings(row.Holdings);
+                }
 
-                await RefreshHoldingsFromStaging(holding.Shareholder);
-
-                var refreshed = holding.Shareholder.Holdings
-                    .FirstOrDefault(x => x.Id == id) ?? holding;
-                refreshed.Status = ShareHoldingStatus.Verified;
-                refreshed.Shareholder.LastUpdate = Tools.Now;
-                await _service.Data.UpdateAsync(refreshed);
+                holding.Status = ShareHoldingStatus.Verified;
+                if (holding.Shareholder != null)
+                    holding.Shareholder.LastUpdate = Tools.Now;
+                await _service.Data.UpdateAsync(holding);
+                TempData["success"] = row == null
+                    ? $"Holding was verified. {holding.AccountNo} was not found in {holding.Register?.Name}."
+                    : $"{holding.Register?.Name} {holding.AccountNo} verified as {holding.AccountName}.";
             }
             catch (Exception ex)
             {
@@ -841,14 +896,14 @@ namespace FirstReg.Admin.Controllers
             return string.Join(" ", value.Split((char[])null, StringSplitOptions.RemoveEmptyEntries));
         }
 
-        private async Task<Shareholder> RefreshHoldingsFromStaging(Shareholder sh, bool restoreHidden = false)
+        private async Task<Shareholder> RefreshHoldingsFromStaging(Shareholder sh, bool restoreHidden = false, bool attachNew = false)
         {
             sh = await _service.Data.GetAsQueryable<Shareholder>()
                 .Include(x => x.Holdings)
                 .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
 
             var regids = (await _service.Data.Get<Register>()).Select(x => x.Id).ToList();
-            sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, _service.Data, restoreHidden);
+            sh = await Tools.UpdateAccountDetailsFromStaging(sh, regids, _service.Data, restoreHidden, attachNew || restoreHidden);
             await _service.Data.UpdateAsync(sh);
             return sh;
         }

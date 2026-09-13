@@ -36,6 +36,8 @@ public static class Tools
     /// Live register codes shown in the Add known certificates Security dropdown.
     /// Older/inactive books are excluded.
     /// </summary>
+    public const int OandoRegisterId = 9;
+
     public static readonly int[] CertificateRegisterIds =
     [
         5, 6, 7, 9, 10, 11, 12, 13, 14, 16, 31, 62, 63, 80, 82, 83, 87,
@@ -656,7 +658,7 @@ public static class Tools
                     AccountName = holdn.GetFullName(),
                     Units = holdn.GetTotalUnits(),
                     Value = 0,
-                    Status = ShareHoldingStatus.Verified,
+                    Status = ShareHoldingStatus.Pending,
                     Date = Now
                 });
             }
@@ -712,7 +714,7 @@ public static class Tools
     static string NormalizePersonName(string name) =>
         string.Join(" ", SignificantNameTokens(name));
 
-    static bool NamesLikelySame(string left, string right)
+    public static bool NamesLikelySame(string left, string right)
     {
         var a = NormalizePersonName(left);
         var b = NormalizePersonName(right);
@@ -727,6 +729,34 @@ public static class Tools
         if (shared >= 2)
             return true;
         return aTokens.All(bTokens.Contains) || bTokens.All(aTokens.Contains);
+    }
+
+    public static decimal ParseStagingHoldings(string holdings)
+    {
+        if (string.IsNullOrWhiteSpace(holdings))
+            return 0m;
+        var cleaned = holdings.Replace(",", "").Trim();
+        return decimal.TryParse(cleaned, out var units) ? units : 0m;
+    }
+
+    /// <summary>
+    /// Looks up one account number in one register (live estock first, then staging).
+    /// </summary>
+    public static async Task<ShareholderStaging> FindRegisterAccount(
+        int registerId, string accountNo, FirstReg.Services.DataService data)
+    {
+        if (registerId <= 0 || !int.TryParse((accountNo ?? "").Trim(), out var acc))
+            return null;
+
+        var live = await FindLiveRegisterHoldings(
+            [new ShareHolding { RegisterId = registerId, AccountNo = acc.ToString() }], data);
+        var row = live.FirstOrDefault();
+        if (row != null)
+            return row;
+
+        var staging = await data.Find<ShareholderStaging>(x =>
+            x.RegisterCode == registerId && x.AccountNumber == acc);
+        return staging.FirstOrDefault();
     }
 
     /// <summary>
@@ -754,7 +784,8 @@ public static class Tools
     /// the staging row also belongs to this shareholder.
     /// </summary>
     public static async Task<Shareholder> UpdateAccountDetailsFromStaging(
-        Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data, bool restoreHidden = false)
+        Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data,
+        bool restoreHidden = false, bool attachNew = false)
     {
         sh.LastUpdate = Now;
 
@@ -810,6 +841,7 @@ public static class Tools
         var foreign = sh.Holdings.Where(h =>
         {
             if (h.Hidden) return false;
+            if (h.Status != ShareHoldingStatus.Verified) return false;
             if (!int.TryParse(h.AccountNo, out var acc))
                 return false;
             var row = fetched.FirstOrDefault(x => x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
@@ -831,22 +863,21 @@ public static class Tools
         if (hasChn)
         {
             foreach (var live in await FindLiveRegisterHoldingsByChn(chn, data))
-            {
-                if (!StagingRowBelongsToShareholder(sh, live))
-                    continue;
-                if (rows.Any(r => r.RegisterCode == live.RegisterCode && r.AccountNumber == live.AccountNumber))
-                    continue;
-                rows.Add(live);
-            }
+                MergeLiveRegisterRow(rows, sh, holdingKeys, live);
         }
 
-        static decimal ParseUnits(string holdings)
+        // Oando is often missing from Shareholders_staging. Always take it from the live register.
+        var oandoKeys = accountNos
+            .Distinct()
+            .Select(acc => (Acc: acc, Reg: OandoRegisterId))
+            .ToList();
+        foreach (var key in holdingKeys.Where(k => k.RegisterId == OandoRegisterId))
         {
-            if (string.IsNullOrWhiteSpace(holdings))
-                return 0m;
-            var cleaned = holdings.Replace(",", "").Trim();
-            return decimal.TryParse(cleaned, out var units) ? units : 0m;
+            if (!oandoKeys.Any(x => x.Acc == key.AccountNo && x.Reg == key.RegisterId))
+                oandoKeys.Add((key.AccountNo, key.RegisterId));
         }
+        foreach (var live in await FindLiveRegisterHoldingsByAccounts(oandoKeys, data))
+            MergeLiveRegisterRow(rows, sh, holdingKeys, live);
 
         static bool SameAccountNo(string stored, int accountNumber)
         {
@@ -855,9 +886,11 @@ public static class Tools
             return int.TryParse(stored.Trim(), out var acc) && acc == accountNumber;
         }
 
+        var canAttach = attachNew || restoreHidden;
+
         foreach (var row in rows)
         {
-            var units = ParseUnits(row.Holdings);
+            var units = ParseStagingHoldings(row.Holdings);
             var accountNo = row.AccountNumber.ToString();
 
             var existing = sh.Holdings.FirstOrDefault(x =>
@@ -866,12 +899,22 @@ public static class Tools
             {
                 if (restoreHidden)
                     existing.Hidden = false;
-                existing.AccountNo = accountNo;
-                existing.AccountName = row.Names;
-                existing.Units = units;
-                existing.Status = ShareHoldingStatus.Verified;
+
+                if (existing.Status == ShareHoldingStatus.Verified)
+                {
+                    existing.AccountNo = accountNo;
+                    existing.AccountName = row.Names;
+                    existing.Units = units;
+                }
+                continue;
             }
-            else if (registerIds.Contains(row.RegisterCode) &&
+
+            var typed = holdingKeys.Any(k => k.RegisterId == row.RegisterCode && k.AccountNo == row.AccountNumber);
+            var sameChn = hasChn && string.Equals((row.ClearingNo ?? "").Trim(), chn, StringComparison.OrdinalIgnoreCase);
+            if (!canAttach || (!typed && !sameChn))
+                continue;
+
+            if (registerIds.Contains(row.RegisterCode) &&
                 !sh.Holdings.Any(x => x.RegisterId == row.RegisterCode && SameAccountNo(x.AccountNo, row.AccountNumber)))
             {
                 sh.Holdings.Add(new()
@@ -881,13 +924,13 @@ public static class Tools
                     AccountName = row.Names,
                     Units = units,
                     Value = 0,
-                    Status = ShareHoldingStatus.Verified,
+                    Status = ShareHoldingStatus.Pending,
                     Date = Now
                 });
             }
         }
 
-        var unmatched = sh.Holdings.Where(x => !x.Hidden).Where(h =>
+        var unmatched = sh.Holdings.Where(x => !x.Hidden && x.Status == ShareHoldingStatus.Verified).Where(h =>
         {
             if (!int.TryParse(h.AccountNo, out var acc))
                 return true;
@@ -900,11 +943,7 @@ public static class Tools
             foreach (var h in unmatched)
             {
                 if (!int.TryParse(h.AccountNo, out var acc))
-                {
-                    h.Units = 0;
-                    h.Status = ShareHoldingStatus.Pending;
                     continue;
-                }
 
                 var live = liveRows.FirstOrDefault(x =>
                     x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
@@ -913,13 +952,8 @@ public static class Tools
                 {
                     h.AccountNo = live.AccountNumber.ToString();
                     h.AccountName = live.Names;
-                    h.Units = ParseUnits(live.Holdings);
-                    h.Status = ShareHoldingStatus.Verified;
-                    continue;
+                    h.Units = ParseStagingHoldings(live.Holdings);
                 }
-
-                h.Units = 0;
-                h.Status = ShareHoldingStatus.Pending;
             }
         }
 
@@ -934,21 +968,78 @@ public static class Tools
         return new SqlConnectionStringBuilder(frdbCs) { InitialCatalog = "estock" }.ConnectionString;
     }
 
+    static void MergeLiveRegisterRow(
+        List<ShareholderStaging> rows,
+        Shareholder sh,
+        List<(int RegisterId, int AccountNo)> holdingKeys,
+        ShareholderStaging live)
+    {
+        if (live == null)
+            return;
+
+        var alreadyOnProfile = holdingKeys.Any(k =>
+            k.RegisterId == live.RegisterCode && k.AccountNo == live.AccountNumber);
+        if (!alreadyOnProfile && !StagingRowBelongsToShareholder(sh, live))
+            return;
+
+        var idx = rows.FindIndex(r =>
+            r.RegisterCode == live.RegisterCode && r.AccountNumber == live.AccountNumber);
+        if (idx >= 0)
+            rows[idx] = live;
+        else
+            rows.Add(live);
+    }
+
     static async Task<decimal> LiveRegisterUnits(SqlConnection conn, int accountNo, int registerId)
     {
-        await using var cmd = new SqlCommand(@"
-SELECT TOP 1 SumOfno_of_units
-FROM getSumOfHoldings WITH (NOLOCK)
-WHERE account_no = @acc AND reg_code = @reg", conn)
+        try
         {
-            CommandTimeout = 15
-        };
-        cmd.Parameters.AddWithValue("@acc", accountNo);
-        cmd.Parameters.AddWithValue("@reg", registerId);
-        var value = await cmd.ExecuteScalarAsync();
-        if (value == null || value == DBNull.Value)
-            return 0m;
-        return Convert.ToDecimal(value);
+            await using var cmd = new SqlCommand(@"
+SELECT TOP 1 SumOfno_of_units
+FROM getSumOfHoldings
+WHERE account_no = @acc AND reg_code = @reg", conn)
+            {
+                CommandTimeout = 15
+            };
+            cmd.Parameters.AddWithValue("@acc", accountNo);
+            cmd.Parameters.AddWithValue("@reg", registerId);
+            var value = await cmd.ExecuteScalarAsync();
+            if (value != null && value != DBNull.Value)
+                return Convert.ToDecimal(value);
+        }
+        catch { /* fall through to T_units */ }
+
+        try
+        {
+            await using var cmd = new SqlCommand(@"
+SELECT ISNULL(SUM(no_of_units), 0)
+FROM T_units WITH (NOLOCK)
+WHERE account_no = @acc AND reg_code = @reg AND ISNULL(certificate_status, 0) = 1", conn)
+            {
+                CommandTimeout = 15
+            };
+            cmd.Parameters.AddWithValue("@acc", accountNo);
+            cmd.Parameters.AddWithValue("@reg", registerId);
+            var value = await cmd.ExecuteScalarAsync();
+            if (value != null && value != DBNull.Value)
+                return Convert.ToDecimal(value);
+        }
+        catch { }
+
+        return 0m;
+    }
+
+    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldingsByAccounts(
+        List<(int Acc, int Reg)> keys, FirstReg.Services.DataService data)
+    {
+        if (keys == null || keys.Count == 0)
+            return [];
+
+        var holdings = keys
+            .Distinct()
+            .Select(k => new ShareHolding { AccountNo = k.Acc.ToString(), RegisterId = k.Reg })
+            .ToList();
+        return await FindLiveRegisterHoldings(holdings, data);
     }
 
     static async Task<List<ShareholderStaging>> FindLiveRegisterHoldingsByChn(
