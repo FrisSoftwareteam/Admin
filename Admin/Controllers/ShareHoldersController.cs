@@ -110,10 +110,16 @@ namespace FirstReg.Admin.Controllers
 
         [HttpPost("delete-account/{code}")]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteAccount(string code)
+        public async Task<IActionResult> DeleteAccount(string code, string reason)
         {
             try
             {
+                if (string.IsNullOrWhiteSpace(reason))
+                {
+                    TempData["error"] = "Please enter a reason for deletion.";
+                    return RedirectToAction(nameof(Details), new { code });
+                }
+
                 var hs = await _service.Data.GetAsQueryable<Shareholder>()
                     .Include(x => x.Holdings)
                     .Include(x => x.User)
@@ -128,12 +134,13 @@ namespace FirstReg.Admin.Controllers
                 var userId = shareholder.UserId;
                 var email = user?.Email;
                 var fullName = user?.FullName ?? shareholder.FullName;
+                var deletionReason = reason.Trim();
 
                 if (!string.IsNullOrWhiteSpace(email))
                 {
                     try
                     {
-                        await _service.Email.SendAccountDeletedEmailAsync(email, fullName);
+                        await _service.Email.SendAccountDeletedEmailAsync(email, fullName, deletionReason);
                     }
                     catch (Exception emailEx)
                     {

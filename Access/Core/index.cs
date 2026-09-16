@@ -127,15 +127,23 @@ public class ShareholderModel
 
         LastUpdate = shareholder.LastUpdate;
 
+        var hasAccountNo = !string.IsNullOrWhiteSpace(shareholder.AccountNo)
+            || (shareholder.Holdings?.Any(h => !string.IsNullOrWhiteSpace(h.AccountNo)) ?? false);
+        var hasClearingNo = !string.IsNullOrEmpty(shareholder.ClearingNo);
+        var hasSignature = !string.IsNullOrEmpty(shareholder.Signature);
+
         ActivationSteps =
         [
             new ActivationStep("Complete Registration", "Register by completing the sin-up form with your basic and contact details, and choose a password.", true, false, "", ""),
             new ActivationStep("Confirm your Account", "Validate your email exits using an automatically generated validation code.", shareholder.User?.EmailConfirmed ?? false, false, "Confirm", ""),
-            new ActivationStep("Update your Clearing number", "Add your Clearing number to your profile as part of your verification process.", !string.IsNullOrEmpty(shareholder.ClearingNo), true, "", "chn"),
-            new ActivationStep("Add your Signature", "Add your signature to your profile either by signing online or uploading one.", !string.IsNullOrEmpty(shareholder.Signature), false, "Sign", ""),
         ];
+        if (!hasAccountNo)
+        {
+            ActivationSteps.Add(new ActivationStep("Update your Clearing number", "Add your Clearing number to your profile as part of your verification process.", hasClearingNo, true, "", "chn"));
+        }
+        ActivationSteps.Add(new ActivationStep("Add your Signature", "Add your signature to your profile either by signing online or uploading one.", hasSignature, false, "Sign", ""));
         ActivationSteps.AddRange([
-            new ActivationStep("Wait for Verification", "Wait for your account to be verified by one of our specialists.", shareholder.Verified, false, "", "", true, (ActivationSteps[2].Status && ActivationSteps[3].Status && !shareholder.Verified)),
+            new ActivationStep("Wait for Verification", "Wait for your account to be verified by one of our specialists.", shareholder.Verified, false, "", "", true, ((hasClearingNo || hasAccountNo) && hasSignature && !shareholder.Verified)),
             new ActivationStep("Subscribe to Service", "Subscribe to start using your account after verification is complete.", shareholder.IsSubscribed, false, "Subscribe", "", !shareholder.Verified)
         ]);
     }

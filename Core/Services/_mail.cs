@@ -20,7 +20,7 @@ namespace FirstReg.Services
         Task SendValidationEmailAsync(string email, string name, string code);
         Task<SendResponse> SendWelcomeEmailAsync(string email, string name);
         Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link);
-        Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name);
+        Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name, string reason);
     }
 
     //=====================
@@ -74,8 +74,8 @@ namespace FirstReg.Services
         public async Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link) =>
            await SendEmailAsync(new MailAddress(email, name), "Reset Password", "reset", new { name, link });
 
-        public async Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name) =>
-           await SendEmailAsync(new MailAddress(email, name), "Account Deleted", "accountdeleted", new { name });
+        public async Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name, string reason) =>
+           await SendEmailAsync(new MailAddress(email, name), "Account Deleted", "accountdeleted", new { name, reason });
 
         public async Task<SendResponse> SendPasswordEmailAsync(string email, string name, string link) =>
            await SendEmailAsync(new MailAddress(email, name), "Password Changed", "newpassword", new { name, link });
