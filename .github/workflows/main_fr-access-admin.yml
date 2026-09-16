@@ -10,9 +10,10 @@ on:
   workflow_dispatch:
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: windows-latest
     permissions:
+      id-token: write
       contents: read
 
     steps:
@@ -25,29 +26,10 @@ jobs:
 
       - name: Publish Admin app
         run: |
-          dotnet publish Admin/FirstReg.Admin.csproj -c Release -o "${{env.DOTNET_ROOT}}/myapp"
-          if (Test-Path "${{env.DOTNET_ROOT}}/myapp/appsettings.Development.json") {
-            Remove-Item "${{env.DOTNET_ROOT}}/myapp/appsettings.Development.json"
+          dotnet publish Admin/FirstReg.Admin.csproj -c Release -o publish-admin
+          if (Test-Path publish-admin/appsettings.Development.json) {
+            Remove-Item publish-admin/appsettings.Development.json
           }
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
-
-  deploy:
-    runs-on: windows-latest
-    needs: build
-    permissions:
-      id-token: write
-      contents: read
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
 
       - name: Login to Azure
         uses: azure/login@v2
@@ -62,4 +44,4 @@ jobs:
         with:
           app-name: 'fr-access-admin'
           slot-name: 'Production'
-          package: .
+          package: publish-admin
