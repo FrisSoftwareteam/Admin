@@ -760,62 +760,45 @@ public static class Tools
     }
 
     /// <summary>
-    /// Pending accounts should only keep the registrar(s) and account number entered at signup,
-    /// not extra companies attached later by name or CHN.
+    /// Register name belongs to this pending applicant when it has no extra given names.
+    /// "Anosike Chioma Lilian" is not the same person as "Anosike Chioma".
+    /// </summary>
+    public static bool AccountNameMatchesApplicant(string fullName, string accountName)
+    {
+        var profile = SignificantNameTokens(fullName);
+        var account = SignificantNameTokens(accountName);
+        if (profile.Length == 0 || account.Length == 0)
+            return false;
+        return account.All(profile.Contains);
+    }
+
+    /// <summary>
+    /// Pending accounts should only keep registrar + account numbers from signup or Admin
+    /// update. Do not keep extra companies pulled from the register by CHN, name, or
+    /// account-number search.
     /// </summary>
     public static void RestrictUnverifiedHoldingsToRegistration(Shareholder sh)
     {
         if (sh == null || sh.Verified || sh.Holdings == null || sh.Holdings.Count == 0)
             return;
 
-        var holdings = sh.Holdings.ToList();
-        var earliest = holdings.Min(h => h.Date);
-        var firstBatch = holdings.Where(h => h.Date <= earliest.AddSeconds(3)).ToList();
-        var declaredRegs = firstBatch.Select(h => h.RegisterId).Distinct().ToList();
-        if (declaredRegs.Count == 0 || declaredRegs.Count > 5)
-            declaredRegs = [holdings.OrderBy(h => h.Id).First().RegisterId];
+        var typedAcc = (sh.AccountNo ?? "").Trim();
 
-        var profileAcc = (sh.AccountNo ?? "").Trim();
-
-        bool SameAcc(string stored)
+        // CHN-only signup: every holding was imported from the register. Hide them all
+        // until Admin types the actual registrar + account number on Update.
+        if (string.IsNullOrWhiteSpace(typedAcc))
         {
-            if (string.IsNullOrWhiteSpace(profileAcc))
-                return true;
-            if (string.IsNullOrWhiteSpace(stored))
-                return false;
-            if (int.TryParse(profileAcc, out var a) && int.TryParse(stored.Trim(), out var b))
-                return a == b;
-            return string.Equals(profileAcc, stored.Trim(), StringComparison.OrdinalIgnoreCase);
-        }
-
-        var visible = holdings.Where(h => !h.Hidden).ToList();
-        if (visible.Count > 0 && visible.Count <= 8)
-            return;
-
-        foreach (var h in holdings)
-        {
-            var belongs = declaredRegs.Contains(h.RegisterId) && SameAcc(h.AccountNo);
-            if (!belongs)
+            foreach (var h in sh.Holdings)
                 h.Hidden = true;
+            return;
         }
 
-        if (string.IsNullOrWhiteSpace(profileAcc))
-            return;
-
-        foreach (var regId in declaredRegs)
+        foreach (var h in sh.Holdings)
         {
-            if (holdings.Any(h => h.RegisterId == regId && SameAcc(h.AccountNo)))
+            if (SameShareAccountNo(h.AccountNo, typedAcc) ||
+                AccountNameMatchesApplicant(sh.FullName, h.AccountName))
                 continue;
-
-            sh.Holdings.Add(new ShareHolding
-            {
-                Date = Now,
-                RegisterId = regId,
-                AccountNo = profileAcc,
-                AccountName = sh.FullName,
-                Units = 0,
-                Status = ShareHoldingStatus.Pending
-            });
+            h.Hidden = true;
         }
     }
 
@@ -844,6 +827,8 @@ public static class Tools
             .Select(g => g.First())
             .ToList();
 
+        var stamp = sh.Holdings.Count > 0 ? sh.Holdings.Min(h => h.Date) : Now;
+
         foreach (var h in sh.Holdings)
         {
             var keep = entries.Any(e => e.RegisterId == h.RegisterId && SameShareAccountNo(h.AccountNo, e.Acc));
@@ -858,14 +843,14 @@ public static class Tools
             {
                 match.Hidden = false;
                 match.AccountNo = entry.Acc;
-                if (string.IsNullOrWhiteSpace(match.AccountName))
-                    match.AccountName = sh.FullName;
+                match.Date = stamp;
+                match.AccountName = sh.FullName;
                 continue;
             }
 
             sh.Holdings.Add(new ShareHolding
             {
-                Date = Now,
+                Date = stamp,
                 RegisterId = entry.RegisterId,
                 AccountNo = entry.Acc,
                 AccountName = sh.FullName,
@@ -907,6 +892,35 @@ public static class Tools
         bool restoreHidden = false, bool attachNew = false)
     {
         sh.LastUpdate = Now;
+
+        if (!sh.Verified)
+        {
+            var existing = sh.Holdings.Where(h => !h.Hidden).ToList();
+            if (existing.Count == 0)
+                return sh;
+
+            var liveRows = await FindLiveRegisterHoldings(existing, data);
+            foreach (var h in existing)
+            {
+                if (!int.TryParse(h.AccountNo, out var acc))
+                    continue;
+                var live = liveRows.FirstOrDefault(x =>
+                    x.RegisterCode == h.RegisterId && x.AccountNumber == acc);
+                if (live == null)
+                    continue;
+                if (h.Status == ShareHoldingStatus.Verified)
+                {
+                    h.AccountName = live.Names;
+                    h.Units = ParseStagingHoldings(live.Holdings);
+                }
+                else if (string.IsNullOrWhiteSpace(h.AccountName))
+                {
+                    h.AccountName = live.Names;
+                }
+            }
+
+            return sh;
+        }
 
         var holdingKeys = sh.Holdings
             .Select(h => new

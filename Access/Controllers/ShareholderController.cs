@@ -140,10 +140,19 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
     {
         try
         {
-            var shs = await service.Data.Find<Shareholder>(x => x.Code == code && !x.Hidden);
-            if (shs.Count <= 0) throw new InvalidOperationException("Shareholder not found, please try again");
+            var holder = await service.Data.GetAsQueryable<Shareholder>()
+                .Include(x => x.Holdings)
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.Code == code && !x.Hidden);
+            if (holder == null) throw new InvalidOperationException("Shareholder not found, please try again");
 
-            var sh = new ShareholderModel(shs.First());
+            if (!holder.Verified)
+            {
+                Tools.RestrictUnverifiedHoldingsToRegistration(holder);
+                await service.Data.UpdateAsync(holder);
+            }
+
+            var sh = new ShareholderModel(holder);
             if (sh.ActionRequired && sh.TicketId > 0)
                 sh.Ticket = await service.Data.Get<Ticket>(x => x.Id == sh.TicketId);
 
@@ -614,8 +623,13 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                 var loaded = await service.Data.GetAsQueryable<Shareholder>()
                     .Include(x => x.Holdings)
                     .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
-                var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
-                loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+                if (loaded.Verified)
+                {
+                    var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
+                    loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+                }
+                else
+                    Tools.RestrictUnverifiedHoldingsToRegistration(loaded);
                 await service.Data.UpdateAsync(loaded);
             }
 
@@ -649,8 +663,13 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                 .FirstOrDefaultAsync(x => x.Id == holder.Id) ?? holder;
             loaded.ClearingNo = holder.ClearingNo;
             loaded.ActionRequired = holder.ActionRequired;
-            var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
-            loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+            if (loaded.Verified)
+            {
+                var regids = (await service.Data.Get<Register>()).Select(x => x.Id).ToList();
+                loaded = await Tools.UpdateAccountDetailsFromStaging(loaded, regids, service.Data, restoreHidden: true);
+            }
+            else
+                Tools.RestrictUnverifiedHoldingsToRegistration(loaded);
             await service.Data.UpdateAsync(loaded);
 
             TempData["success"] = "Your clearing house number has been updated";

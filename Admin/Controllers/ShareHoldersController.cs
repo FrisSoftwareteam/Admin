@@ -82,7 +82,7 @@ namespace FirstReg.Admin.Controllers
                 if (sh == null || sh.Hidden)
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                if (!sh.Verified && sh.VisibleHoldings.Count() > 8)
+                if (!sh.Verified)
                 {
                     Tools.RestrictUnverifiedHoldingsToRegistration(sh);
                     await _service.Data.UpdateAsync(sh);
@@ -457,7 +457,7 @@ namespace FirstReg.Admin.Controllers
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: true);
+                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: sh.Verified, attachNew: sh.Verified);
                     if (!sh.Verified)
                     {
                         Tools.RestrictUnverifiedHoldingsToRegistration(sh);
@@ -502,6 +502,8 @@ namespace FirstReg.Admin.Controllers
                     throw new InvalidOperationException("Add at least one registrar and account number.");
 
                 Tools.ApplyRegisteredAccounts(sh, entries);
+                if (!sh.Verified)
+                    Tools.RestrictUnverifiedHoldingsToRegistration(sh);
                 await _service.Data.UpdateAsync(sh);
 
                 TempData["success"] = "Registers and account numbers were successfully updated";
