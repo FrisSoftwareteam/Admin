@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    if: github.repository != 'FrisSoftwareteam/Admin1'
+    if: github.repository != 'FrisSoftwareteam/Admin1' && github.repository != 'FrisSoftwareteam/Admin'
     runs-on: windows-latest
     permissions:
       contents: read #This is required for actions/checkout
