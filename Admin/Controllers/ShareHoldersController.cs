@@ -82,16 +82,13 @@ namespace FirstReg.Admin.Controllers
                 if (sh == null || sh.Hidden)
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                if (!sh.Verified)
-                {
-                    Tools.RestrictUnverifiedHoldingsToRegistration(sh);
-                    await _service.Data.UpdateAsync(sh);
-                    sh = await _service.Data.GetAsQueryable<Shareholder>()
-                        .Include(x => x.User)
-                        .Include(x => x.Holdings)
-                        .ThenInclude(x => x.Register)
-                        .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
-                }
+                Tools.RestrictHoldingsToTypedAccounts(sh);
+                await _service.Data.UpdateAsync(sh);
+                sh = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.User)
+                    .Include(x => x.Holdings)
+                    .ThenInclude(x => x.Register)
+                    .FirstOrDefaultAsync(x => x.Id == sh.Id) ?? sh;
 
                 ViewBag.CertificateRegisters = (await _service.Data.Get<Register>())
                     .Where(x => Tools.IsCertificateRegister(x.Id))
@@ -436,7 +433,7 @@ namespace FirstReg.Admin.Controllers
         }
 
         [HttpPost("update/chn/{code}")]
-        public async Task<IActionResult> UpdateCHN(string code, string chn)
+        public async Task<IActionResult> UpdateCHN(string code, string[] chn)
         {
             try
             {
@@ -448,21 +445,28 @@ namespace FirstReg.Admin.Controllers
                 if (!hs.Any())
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
-                Shareholder sh = hs.First();
+                var numbers = Tools.ParseClearingNos(string.Join(",", chn ?? []));
+                if (numbers.Count == 0)
+                    throw new InvalidOperationException("Enter at least one clearing number.");
 
-                sh.ClearingNo = chn;
+                var joined = Tools.JoinClearingNos(numbers);
+                if (joined.Length > 100)
+                    throw new InvalidOperationException("Too many clearing numbers. Remove one and try again.");
+
+                Shareholder sh = hs.First();
+                sh.ClearingNo = joined;
                 await _service.Data.UpdateAsync(sh);
 
-                TempData["success"] = $"Clearing number was successfully updated";
+                TempData["success"] = numbers.Count == 1
+                    ? "Clearing number was successfully updated"
+                    : "Clearing numbers were successfully updated";
 
                 try
                 {
-                    sh = await RefreshHoldingsFromStaging(sh, restoreHidden: sh.Verified, attachNew: sh.Verified);
-                    if (!sh.Verified)
-                    {
-                        Tools.RestrictUnverifiedHoldingsToRegistration(sh);
-                        await _service.Data.UpdateAsync(sh);
-                    }
+                    var matched = await Tools.AttachHoldingsFromChnAndAccountNo(sh, _service.Data);
+                    await _service.Data.UpdateAsync(sh);
+                    if (matched == 0)
+                        TempData["warning"] = "Clearing number was saved. Add a registrar and account number to look up holdings. Search uses CHN and account number, not name.";
                 }
                 catch (Exception vex)
                 {

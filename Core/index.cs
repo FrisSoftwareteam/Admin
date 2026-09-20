@@ -694,6 +694,36 @@ public static class Tools
         return true;
     }
 
+    public static List<string> ParseClearingNos(string clearingNo)
+    {
+        if (string.IsNullOrWhiteSpace(clearingNo))
+            return [];
+
+        return clearingNo
+            .Split([',', ';', '/', '|', '\n', '\r', ' '], StringSplitOptions.RemoveEmptyEntries)
+            .Select(x => x.Trim())
+            .Where(x => x.Length > 0 && !x.Equals("##PARSE_ERROR##", StringComparison.OrdinalIgnoreCase))
+            .Where(x => x.Trim('0').Length > 0)
+            .GroupBy(x => x.ToUpperInvariant())
+            .Select(g => g.First())
+            .ToList();
+    }
+
+    public static string JoinClearingNos(IEnumerable<string> clearingNos)
+    {
+        var items = ParseClearingNos(string.Join(",", clearingNos ?? []));
+        return string.Join(",", items);
+    }
+
+    public static bool ClearingNoBelongsToShareholder(Shareholder sh, string clearingNo)
+    {
+        if (sh == null || !IsRealClearingNo(clearingNo))
+            return false;
+        var wanted = clearingNo.Trim();
+        return ParseClearingNos(sh.ClearingNo).Any(x =>
+            string.Equals(x, wanted, StringComparison.OrdinalIgnoreCase));
+    }
+
     static readonly HashSet<string> NameSalutations = new(StringComparer.OrdinalIgnoreCase)
     {
         "MR", "MRS", "MISS", "MS", "DR"
@@ -773,33 +803,79 @@ public static class Tools
     }
 
     /// <summary>
-    /// Pending accounts should only keep registrar + account numbers from signup or Admin
-    /// update. Do not keep extra companies pulled from the register by CHN, name, or
-    /// account-number search.
+    /// Passport / NIN name matches a register account when surname, first name and
+    /// middle name are the same set of words. Extra family names do not match.
     /// </summary>
-    public static void RestrictUnverifiedHoldingsToRegistration(Shareholder sh)
+    public static bool PassportNameMatchesRegister(string passportName, string registerName)
     {
-        if (sh == null || sh.Verified || sh.Holdings == null || sh.Holdings.Count == 0)
-            return;
+        var profile = SignificantNameTokens(passportName);
+        var account = SignificantNameTokens(registerName);
+        if (profile.Length == 0 || account.Length == 0)
+            return false;
+        if (profile.Length != account.Length)
+            return false;
+        return profile.All(account.Contains) && account.All(profile.Contains);
+    }
 
-        var typedAcc = (sh.AccountNo ?? "").Trim();
+    public static List<string> DeclaredAccountNumbers(Shareholder sh)
+    {
+        var numbers = new List<string>();
+        if (sh == null)
+            return numbers;
 
-        // CHN-only signup: every holding was imported from the register. Hide them all
-        // until Admin types the actual registrar + account number on Update.
-        if (string.IsNullOrWhiteSpace(typedAcc))
+        if (!string.IsNullOrWhiteSpace(sh.AccountNo))
+            numbers.Add(sh.AccountNo.Trim());
+
+        if (sh.Holdings != null)
         {
+            var profileName = (sh.FullName ?? "").Trim();
             foreach (var h in sh.Holdings)
-                h.Hidden = true;
-            return;
+            {
+                if (string.IsNullOrWhiteSpace(h.AccountNo))
+                    continue;
+                // Signup / Admin "Update Account Number" stamps the profile name exactly.
+                // Register names from a CHN dump are not treated as typed accounts.
+                var typed = string.IsNullOrWhiteSpace(h.AccountName)
+                    || string.Equals(h.AccountName.Trim(), profileName, StringComparison.OrdinalIgnoreCase);
+                if (typed || numbers.Any(x => SameShareAccountNo(x, h.AccountNo)))
+                    numbers.Add(h.AccountNo.Trim());
+            }
         }
 
+        return numbers
+            .GroupBy(x => int.TryParse(x, out var n) ? n.ToString() : x.ToUpperInvariant())
+            .Select(g => g.First())
+            .ToList();
+    }
+
+    public static bool IsDeclaredAccountNo(Shareholder sh, string accountNo)
+    {
+        return DeclaredAccountNumbers(sh).Any(x => SameShareAccountNo(x, accountNo));
+    }
+
+    public static void RestrictHoldingsToTypedAccounts(Shareholder sh)
+    {
+        if (sh?.Holdings == null || sh.Holdings.Count == 0)
+            return;
+
+        var declared = DeclaredAccountNumbers(sh);
         foreach (var h in sh.Holdings)
         {
-            if (SameShareAccountNo(h.AccountNo, typedAcc) ||
-                AccountNameMatchesApplicant(sh.FullName, h.AccountName))
+            if (declared.Any(x => SameShareAccountNo(h.AccountNo, x)))
                 continue;
             h.Hidden = true;
         }
+    }
+
+    /// <summary>
+    /// Pending accounts should only keep registrar + account numbers from signup or Admin
+    /// update. Do not keep extra companies pulled from the register by CHN or name.
+    /// </summary>
+    public static void RestrictUnverifiedHoldingsToRegistration(Shareholder sh)
+    {
+        if (sh == null || sh.Verified)
+            return;
+        RestrictHoldingsToTypedAccounts(sh);
     }
 
     public static bool SameShareAccountNo(string left, string right)
@@ -864,34 +940,140 @@ public static class Tools
     }
 
     /// <summary>
-    /// Staging rows belong to this profile when the CHN matches, or the names match
-    /// after ignoring salutations such as Mr/Mrs. Account number alone is not enough.
+    /// CHN update: look up the register by clearing number AND account number.
+    /// Do not search or attach by name.
+    /// </summary>
+    public static async Task<int> AttachHoldingsFromChnAndAccountNo(
+        Shareholder sh, FirstReg.Services.DataService data)
+    {
+        if (sh == null)
+            return 0;
+
+        sh.Holdings ??= new HashSet<ShareHolding>();
+
+        var chns = ParseClearingNos(sh.ClearingNo);
+        var declared = DeclaredAccountNumbers(sh);
+        RestrictHoldingsToTypedAccounts(sh);
+
+        if (chns.Count == 0 || declared.Count == 0)
+            return 0;
+
+        var matched = new List<ShareholderStaging>();
+        foreach (var chn in chns)
+        {
+            foreach (var acc in declared)
+            {
+                if (!int.TryParse(acc, out var accNo))
+                    continue;
+                foreach (var live in await FindLiveRegisterHoldingsByChnAndAccount(chn, accNo, data))
+                {
+                    if (!IsCertificateRegister(live.RegisterCode))
+                        continue;
+                    matched.Add(live);
+                }
+            }
+        }
+
+        var accInts = declared
+            .Select(x => int.TryParse(x, out var n) ? n : (int?)null)
+            .Where(x => x.HasValue)
+            .Select(x => x.Value)
+            .ToList();
+        if (accInts.Count > 0)
+        {
+            var staging = await data.Find<ShareholderStaging>(x =>
+                chns.Contains(x.ClearingNo) && accInts.Contains(x.AccountNumber));
+            foreach (var row in staging)
+            {
+                if (!IsCertificateRegister(row.RegisterCode))
+                    continue;
+                if (matched.Any(m => m.RegisterCode == row.RegisterCode && m.AccountNumber == row.AccountNumber))
+                    continue;
+                matched.Add(row);
+            }
+        }
+
+        string Key(int reg, string acc)
+        {
+            var trimmed = (acc ?? "").Trim();
+            return int.TryParse(trimmed, out var n) ? $"{reg}:{n}" : $"{reg}:{trimmed.ToUpperInvariant()}";
+        }
+
+        var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var m in matched)
+            keep.Add(Key(m.RegisterCode, m.AccountNumber.ToString()));
+        foreach (var h in sh.Holdings)
+        {
+            if (IsDeclaredAccountNo(sh, h.AccountNo))
+                keep.Add(Key(h.RegisterId, h.AccountNo));
+        }
+
+        foreach (var h in sh.Holdings)
+            h.Hidden = !keep.Contains(Key(h.RegisterId, h.AccountNo));
+
+        var stamp = sh.Holdings.Count > 0 ? sh.Holdings.Min(h => h.Date) : Now;
+        foreach (var m in matched)
+        {
+            var acc = m.AccountNumber.ToString();
+            var existing = sh.Holdings.FirstOrDefault(h =>
+                h.RegisterId == m.RegisterCode && SameShareAccountNo(h.AccountNo, acc));
+            var units = ParseStagingHoldings(m.Holdings);
+            if (existing != null)
+            {
+                existing.Hidden = false;
+                existing.AccountNo = acc;
+                existing.AccountName = m.Names;
+                existing.Units = units;
+                continue;
+            }
+
+            sh.Holdings.Add(new ShareHolding
+            {
+                Date = stamp,
+                RegisterId = m.RegisterCode,
+                AccountNo = acc,
+                AccountName = m.Names,
+                Units = units,
+                Status = sh.Verified ? ShareHoldingStatus.Verified : ShareHoldingStatus.Pending
+            });
+        }
+
+        return matched.Count;
+    }
+
+    /// <summary>
+    /// Staging rows belong to this profile when the account number is one already
+    /// on the profile (signup or Admin update) and, if a CHN is present, that CHN
+    /// matches. Name is never used to attach extra family accounts.
     /// </summary>
     public static bool StagingRowBelongsToShareholder(Shareholder sh, ShareholderStaging row)
     {
         if (sh == null || row == null)
             return false;
 
-        var shChn = IsRealClearingNo(sh.ClearingNo);
-        var rowChn = IsRealClearingNo(row.ClearingNo);
+        if (!IsDeclaredAccountNo(sh, row.AccountNumber.ToString()))
+            return false;
 
-        if (shChn && rowChn &&
-            string.Equals(sh.ClearingNo.Trim(), row.ClearingNo.Trim(), StringComparison.OrdinalIgnoreCase))
+        var chns = ParseClearingNos(sh.ClearingNo);
+        if (chns.Count == 0)
             return true;
 
-        return NamesLikelySame(sh.FullName, row.Names);
+        if (!IsRealClearingNo(row.ClearingNo))
+            return true;
+
+        return ClearingNoBelongsToShareholder(sh, row.ClearingNo);
     }
 
     /// <summary>
-    /// Populates a shareholder's holdings/units from frdb's Shareholders_staging import,
-    /// matched by clearing house number. Existing account numbers are used only when
-    /// the staging row also belongs to this shareholder.
+    /// Refresh holdings/units from staging and the live register using CHN and
+    /// account number. Name is never used to attach extra family accounts.
     /// </summary>
     public static async Task<Shareholder> UpdateAccountDetailsFromStaging(
         Shareholder sh, List<int> registerIds, FirstReg.Services.DataService data,
         bool restoreHidden = false, bool attachNew = false)
     {
         sh.LastUpdate = Now;
+        RestrictHoldingsToTypedAccounts(sh);
 
         if (!sh.Verified)
         {
@@ -923,6 +1105,7 @@ public static class Tools
         }
 
         var holdingKeys = sh.Holdings
+            .Where(h => IsDeclaredAccountNo(sh, h.AccountNo))
             .Select(h => new
             {
                 h.RegisterId,
@@ -932,54 +1115,48 @@ public static class Tools
             .Select(x => (x.RegisterId, AccountNo: x.AccountNo.Value))
             .ToList();
 
-        var accountNos = holdingKeys.Select(x => x.AccountNo).Distinct().ToList();
-        int? profileAcc = int.TryParse((sh.AccountNo ?? "").Trim(), out var parsedProfileAcc)
-            ? parsedProfileAcc
-            : null;
-        if (profileAcc.HasValue && !accountNos.Contains(profileAcc.Value))
-            accountNos.Add(profileAcc.Value);
+        var accountNos = DeclaredAccountNumbers(sh)
+            .Select(x => int.TryParse(x, out var n) ? n : (int?)null)
+            .Where(x => x.HasValue)
+            .Select(x => x.Value)
+            .Distinct()
+            .ToList();
 
-        var hasChn = IsRealClearingNo(sh.ClearingNo);
-        var chn = hasChn ? sh.ClearingNo.Trim() : null;
-        var nameTokens = SignificantNameTokens(sh.FullName);
+        var chns = ParseClearingNos(sh.ClearingNo);
+        var hasChn = chns.Count > 0;
 
-        if (!hasChn && accountNos.Count == 0 && nameTokens.Length < 2)
+        if (accountNos.Count == 0)
             return sh;
 
         List<ShareholderStaging> fetched = new();
-        if (hasChn && accountNos.Count > 0)
-            fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn || accountNos.Contains(x.AccountNumber));
-        else if (hasChn)
-            fetched = await data.Find<ShareholderStaging>(x => x.ClearingNo == chn);
-        else if (accountNos.Count > 0)
+        if (hasChn)
+            fetched = await data.Find<ShareholderStaging>(x =>
+                chns.Contains(x.ClearingNo) && accountNos.Contains(x.AccountNumber));
+        else
             fetched = await data.Find<ShareholderStaging>(x => accountNos.Contains(x.AccountNumber));
 
         var foreign = sh.Holdings.Where(h =>
         {
             if (h.Hidden) return false;
-            if (h.Status != ShareHoldingStatus.Verified) return false;
             if (!int.TryParse(h.AccountNo, out var acc))
                 return false;
-            var row = fetched.FirstOrDefault(x => x.AccountNumber == acc && x.RegisterCode == h.RegisterId);
-            return row != null && !StagingRowBelongsToShareholder(sh, row);
+            return !accountNos.Contains(acc);
         }).ToList();
         foreach (var h in foreign)
             h.Hidden = true;
 
-        var rows = fetched.Where(x =>
-            StagingRowBelongsToShareholder(sh, x) &&
-            (
-                (hasChn && string.Equals((x.ClearingNo ?? "").Trim(), chn, StringComparison.OrdinalIgnoreCase))
-                || holdingKeys.Any(k => k.RegisterId == x.RegisterCode && k.AccountNo == x.AccountNumber)
-                || (profileAcc.HasValue && x.AccountNumber == profileAcc.Value)
-                || NamesLikelySame(sh.FullName, x.Names)
-            )
-        ).ToList();
+        var rows = fetched.Where(x => StagingRowBelongsToShareholder(sh, x)).ToList();
 
         if (hasChn)
         {
-            foreach (var live in await FindLiveRegisterHoldingsByChn(chn, data))
-                MergeLiveRegisterRow(rows, sh, holdingKeys, live);
+            foreach (var chn in chns)
+            {
+                foreach (var acc in accountNos)
+                {
+                    foreach (var live in await FindLiveRegisterHoldingsByChnAndAccount(chn, acc, data))
+                        MergeLiveRegisterRow(rows, sh, live);
+                }
+            }
         }
 
         // Oando is often missing from Shareholders_staging. Always take it from the live register.
@@ -993,7 +1170,7 @@ public static class Tools
                 oandoKeys.Add((key.AccountNo, key.RegisterId));
         }
         foreach (var live in await FindLiveRegisterHoldingsByAccounts(oandoKeys, data))
-            MergeLiveRegisterRow(rows, sh, holdingKeys, live);
+            MergeLiveRegisterRow(rows, sh, live);
 
         static bool SameAccountNo(string stored, int accountNumber)
         {
@@ -1086,15 +1263,12 @@ public static class Tools
     static void MergeLiveRegisterRow(
         List<ShareholderStaging> rows,
         Shareholder sh,
-        List<(int RegisterId, int AccountNo)> holdingKeys,
         ShareholderStaging live)
     {
         if (live == null)
             return;
 
-        var alreadyOnProfile = holdingKeys.Any(k =>
-            k.RegisterId == live.RegisterCode && k.AccountNo == live.AccountNumber);
-        if (!alreadyOnProfile && !StagingRowBelongsToShareholder(sh, live))
+        if (!StagingRowBelongsToShareholder(sh, live))
             return;
 
         var idx = rows.FindIndex(r =>
@@ -1157,12 +1331,12 @@ WHERE account_no = @acc AND reg_code = @reg AND ISNULL(certificate_status, 0) = 
         return await FindLiveRegisterHoldings(holdings, data);
     }
 
-    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldingsByChn(
-        string chn, FirstReg.Services.DataService data)
+    static async Task<List<ShareholderStaging>> FindLiveRegisterHoldingsByChnAndAccount(
+        string chn, int accountNo, FirstReg.Services.DataService data)
     {
         var results = new List<ShareholderStaging>();
         var estockCs = EstockConnectionString(data);
-        if (string.IsNullOrWhiteSpace(estockCs) || !IsRealClearingNo(chn))
+        if (string.IsNullOrWhiteSpace(estockCs) || !IsRealClearingNo(chn) || accountNo <= 0)
             return results;
 
         try
@@ -1178,11 +1352,12 @@ SELECT Acctno, regcode,
     ))) AS Names,
     LTRIM(RTRIM(ISNULL(chn, ''))) AS ClearingNo
 FROM T_shold WITH (NOLOCK)
-WHERE chn = @chn", conn)
+WHERE chn = @chn AND Acctno = @acc", conn)
             {
                 CommandTimeout = 30
             };
             cmd.Parameters.AddWithValue("@chn", chn.Trim());
+            cmd.Parameters.AddWithValue("@acc", accountNo);
 
             var pending = new List<(int Acc, int Reg, string Names, string ClearingNo)>();
             await using (var reader = await cmd.ExecuteReaderAsync())

@@ -457,7 +457,9 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                     .AsNoTracking()
                     .FirstOrDefaultAsync(x => x.RegisterCode == regid && x.AccountNumber == accNo);
 
-                if (staging != null && !Tools.StagingRowBelongsToShareholder(sh, staging))
+                var chns = Tools.ParseClearingNos(sh.ClearingNo);
+                if (staging != null && chns.Count > 0 &&
+                    !Tools.ClearingNoBelongsToShareholder(sh, staging.ClearingNo))
                 {
                     rejected++;
                     continue;
@@ -467,7 +469,8 @@ public class ShareholderController(ILogger<ShareholderController> logger, Servic
                     x.Hidden && x.RegisterId == regid && x.AccountNo == accNo.ToString());
                 if (existingHidden != null)
                 {
-                    if (staging == null || !Tools.StagingRowBelongsToShareholder(sh, staging))
+                    if (staging != null && chns.Count > 0 &&
+                        !Tools.ClearingNoBelongsToShareholder(sh, staging.ClearingNo))
                     {
                         rejected++;
                         continue;

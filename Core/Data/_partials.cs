@@ -100,6 +100,15 @@ namespace FirstReg.Data
         [NotMapped]
         public IEnumerable<ShareHolding> VisibleHoldings => Holdings.Where(x => !x.Hidden);
         [NotMapped]
+        public IEnumerable<string> DisplayClearingNos
+        {
+            get
+            {
+                var items = Tools.ParseClearingNos(ClearingNo);
+                return items.Count > 0 ? items : Array.Empty<string>();
+            }
+        }
+        [NotMapped]
         public string DisplayAccountNo
         {
             get

@@ -114,3 +114,34 @@ $('#accno_rows').on('click', '.bt-remove-accno-row', function () {
         return;
     $(this).closest('.accno-row').remove();
 });
+
+$('#bt_add_chn_row').on('click', function () {
+    var row = $('#chn_row_template .chn-row').first().clone();
+    row.find('input').val('');
+    $('#chn_rows').append(row);
+});
+
+$('#chn_rows').on('click', '.bt-remove-chn-row', function () {
+    if ($('#chn_rows .chn-row').length < 2)
+        return;
+    $(this).closest('.chn-row').remove();
+});
+
+$('#form_update_chn').on('submit', function (e) {
+    var hasValue = false;
+    $(this).find('#chn_rows input[name="chn"]').each(function () {
+        if (($(this).val() || '').trim())
+            hasValue = true;
+    });
+    if (!hasValue) {
+        e.preventDefault();
+        e.stopImmediatePropagation();
+        $(this).find('.bt-submit').removeAttr('data-kt-indicator');
+        if (window.toastr)
+            toastr.error('Enter at least one clearing number.');
+        else
+            alert('Enter at least one clearing number.');
+        $(this).find('#chn_rows input[name="chn"]').first().focus();
+        return false;
+    }
+});
