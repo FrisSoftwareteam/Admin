@@ -278,7 +278,15 @@ namespace FirstReg.Admin.Controllers
         {
             try
             {
-                var sh = await _service.Data.Get<Shareholder>(x => x.Id == model.ShareholderId);
+                var sh = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.User)
+                    .ThenInclude(x => x.Payments)
+                    .Include(x => x.User)
+                    .ThenInclude(x => x.Subscriptions)
+                    .FirstOrDefaultAsync(x => x.Id == model.ShareholderId);
+
+                if (sh == null)
+                    throw new InvalidOperationException("Shareholder was not found, please try again.");
 
                 var payment = Payment.CreateForSubscription(new BankPayModel
                 {
@@ -311,6 +319,22 @@ namespace FirstReg.Admin.Controllers
                 });
 
                 await _service.Data.UpdateAsync(sh);
+
+                TempData["success"] = "Subscription was added successfully.";
+
+                var email = sh.User?.Email;
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    try
+                    {
+                        await _service.Email.SendSubscriptionSuccessfulEmailAsync(email, sh.User.FullName ?? sh.FullName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Subscription email could not be sent to {Email}", email);
+                        TempData["warning"] = "Subscription was added, but the notification email could not be sent.";
+                    }
+                }
             }
             catch (Exception ex)
             {

@@ -21,6 +21,7 @@ namespace FirstReg.Services
         Task<SendResponse> SendWelcomeEmailAsync(string email, string name);
         Task<SendResponse> SendAccountActivatedEmailAsync(string email, string name);
         Task<SendResponse> SendSubscriptionExpiredEmailAsync(string email, string name);
+        Task<SendResponse> SendSubscriptionSuccessfulEmailAsync(string email, string name);
         Task<SendResponse> SendResetPasswordEmailAsync(string email, string name, string link);
         Task<SendResponse> SendAccountDeletedEmailAsync(string email, string name, string reason);
     }
@@ -82,6 +83,13 @@ namespace FirstReg.Services
 
         public async Task<SendResponse> SendSubscriptionExpiredEmailAsync(string email, string name) =>
             await SendEmailAsync(new MailAddress(email, name), "Your subscription has expired", "subscriptionexpired", new
+            {
+                name,
+                link = "https://access.firstregistrarsnigeria.com/login"
+            });
+
+        public async Task<SendResponse> SendSubscriptionSuccessfulEmailAsync(string email, string name) =>
+            await SendEmailAsync(new MailAddress(email, name), "Your subscription is successful", "subscriptionsuccessful", new
             {
                 name,
                 link = "https://access.firstregistrarsnigeria.com/login"
