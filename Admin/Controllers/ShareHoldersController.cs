@@ -321,6 +321,36 @@ namespace FirstReg.Admin.Controllers
             return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
         }
 
+        [HttpPost("notify/{code}")]
+        public async Task<IActionResult> Notify(string code)
+        {
+            try
+            {
+                var hs = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.User)
+                    .Where(x => x.Code.ToLower() == code.ToLower())
+                    .ToListAsync();
+
+                if (!hs.Any())
+                    throw new InvalidOperationException("Shareholder was not found, please try again.");
+
+                var sh = hs.First();
+                var email = sh.User?.Email;
+                if (string.IsNullOrWhiteSpace(email))
+                    throw new InvalidOperationException("This shareholder has no email address to notify.");
+
+                await _service.Email.SendSubscriptionExpiredEmailAsync(email, sh.User.FullName ?? sh.FullName);
+                TempData["success"] = "Subscription expiry notice was sent to the shareholder.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex.ToString());
+                TempData["error"] = $"Could not send notification: {Clear.Tools.GetAllExceptionMessage(ex)}";
+            }
+
+            return Redirect(Request.Headers[Tools.UrlReferrer].ToString());
+        }
+
         [HttpPost("reject")]
         public async Task<IActionResult> Reject(ShareholdersRejectModel model)
         {
@@ -390,14 +420,17 @@ namespace FirstReg.Admin.Controllers
         {
             try
             {
-                var hs = await _service.Data.Find<Shareholder>(x => x.Code.ToLower() == code.ToLower());
+                var hs = await _service.Data.GetAsQueryable<Shareholder>()
+                    .Include(x => x.User)
+                    .Where(x => x.Code.ToLower() == code.ToLower())
+                    .ToListAsync();
 
                 if (!hs.Any())
                     throw new InvalidOperationException("Shareholder was not found, please try again.");
 
                 Shareholder sh = hs.First();
 
-                if (!sh.User.EmailConfirmed)
+                if (sh.User == null || !sh.User.EmailConfirmed)
                     throw new InvalidOperationException("Account cannot be activated because user email has not been confirmed, " +
                         "please advice shareholder to validate their email address at-least.");
 
@@ -414,6 +447,20 @@ namespace FirstReg.Admin.Controllers
                 await _service.Data.UpdateAsync(sh);
 
                 TempData["success"] = $"Account was successfully verified";
+
+                var email = sh.User.Email;
+                if (!string.IsNullOrWhiteSpace(email))
+                {
+                    try
+                    {
+                        await _service.Email.SendAccountActivatedEmailAsync(email, sh.User.FullName ?? sh.FullName);
+                    }
+                    catch (Exception emailEx)
+                    {
+                        _logger.LogWarning(emailEx, "Account activated email could not be sent to {Email}", email);
+                        TempData["warning"] = "Account was activated, but the notification email could not be sent.";
+                    }
+                }
 
                 try
                 {
